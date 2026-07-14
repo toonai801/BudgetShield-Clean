@@ -18,6 +18,16 @@
 - Created docs/TEST_PLAN.md
 - Established reference image directory
 
+### TASK 2 Correction — Reference Images Added
+- Added `docs/reference/home-reference.png` (main dashboard with Safe Now and treasure chest)
+- Added `docs/reference/setup-quest-reference.png` (Setup Quest Chapter 1 of 6, Money In)
+- Added `docs/reference/bill-protected-reference.png` (Bill Protected achievement overlay)
+- Verified formats: all PNG, 864x1536 pixels
+- Verified SHA-256 hashes
+- Updated PROJECT_STATE.md: Task 2 marked COMPLETE, all reference images tracked
+- Updated TASK_QUEUE.md: Task 2 marked COMPLETE with evidence
+- Task 3 remains NOT STARTED
+
 ## [1.0.0-shell] — TASK 1 Complete
 
 ### TASK 1 — Clean Project Shell
