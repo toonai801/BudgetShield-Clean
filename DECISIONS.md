@@ -1,5 +1,32 @@
 # Decisions
 
+## Architecture-Independent Data Decisions
+
+### Monetary Storage
+- All monetary values stored as **Long cents** (integer minor units)
+- Never use Float or Double for money
+- Display: `$X.YY` format derived from cents / 100
+
+### Schedule vs Occurrence Separation
+- **Schedules** define recurrence rules and templates
+- **Occurrences** represent dated obligations generated from schedules
+- **Transactions** are immutable ledger events
+- Historical occurrences linked to transactions remain immutable when schedules change
+
+### Immutable Transaction Ledger
+- Transaction ledger is the audit trail of truth
+- Corrections create new transactions, never mutate existing ones
+- Historical activity derived from ledger, not mutable current-state flags
+
+### Same-Day Income Ordering
+- Confirmed income dated on a bill due date is available to protect that bill
+- Date-level ordering treats same-day confirmed income as available
+
+### Safe Now Planning Horizon
+- Planning horizon extends from today through the latest protected unpaid obligation
+- Minimum horizon: through end of next calendar month
+- Configurable via UserSettings.planningHorizonMonths
+
 ## Product Decisions
 
 ### App Name

@@ -3,7 +3,7 @@
 | Task | Deliverable | Status | Evidence / Notes |
 |------|-------------|--------|------------------|
 | TASK 1 | Clean project shell | COMPLETE | Commit 6ce7d9af3753f070a2d842d2064ca3ccafcfb629 |
-| TASK 2 | Product/design/project contracts | COMPLETE | Contract commit c2b963914d1240f544e0fa718aefe830e3d251c0; Correction commit adds three immutable reference images to docs/reference/ |
+| TASK 2 | Product/design/project contracts | COMPLETE | Contract commit c2b963914d1240f544e0fa718aefe830e3d251c0; Reference correction bf999d2574dc392eb3c1cb98f61722197d165854; Final document repair adds complete screen map, corrected data model, clarified Safe Now rules with worked examples |
 | TASK 3 | Android architecture and navigation foundation | NOT STARTED | |
 | TASK 4 | Exact design system and reusable components | NOT STARTED | |
 | TASK 5 | Setup Quest | NOT STARTED | |

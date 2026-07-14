@@ -1,5 +1,30 @@
 # Changelog
 
+### TASK 2 Final Document Repair
+- Completed docs/SCREEN_MAP.md with full specifications for all 13 required destinations:
+  - Stats, Goals, Settings, Income Entry, Bill Entry, Bill Payment
+  - Savings Entry, Transaction Details, Shield Progression, plus existing screens
+- Repaired docs/DATA_MODEL_PLAN.md with architecture-independent decisions:
+  - Long cents for all monetary values (no Float/Double)
+  - Schedule vs occurrence separation (IncomeSchedule/IncomeOccurrence, BillSchedule/BillOccurrence)
+  - Immutable transaction ledger with audit trail
+  - BillPaymentAllocation for partial payments
+  - SavingsGoal separated from SavingsContribution
+  - Removed unsafe isPaid from recurring templates
+- Clarified docs/SAFE_NOW_RULES.md with precise decisions:
+  - Planning horizon: through latest protected obligation, minimum through end of next month
+  - Same-day ordering: confirmed income available for same-day bills
+  - Overdue bills treated as due today
+  - Partial payment handling (remaining due only)
+  - Unprotected bills excluded from Safe Now
+  - Unconfirmed income never protects bills
+  - Added 9 worked examples with integer cents calculations
+- Updated docs/TEST_PLAN.md with future deterministic test categories for all Safe Now examples
+- Updated DECISIONS.md with architecture-independent data decisions
+- Updated PROJECT_STATE.md and TASK_QUEUE.md with final Task 2 status
+- Confirmed no application code, resources, Gradle files, or reference images changed
+- Task 3 remains NOT STARTED
+
 ## [Unreleased]
 
 ### TASK 2 — Product/Design/Project Contracts
