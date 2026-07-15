@@ -20,7 +20,7 @@
 
 ### Same-Day Income Ordering
 - Confirmed income dated on a bill due date is available to protect that bill
-- Date-level ordering treats same-day confirmed income as available
+- Date-level ordering: income processed before obligations on the same date
 
 ### Safe Now Planning Horizon
 - Planning horizon extends from today through the latest protected unpaid obligation

@@ -33,11 +33,13 @@ The source of actual cleared money and its opening balance.
 |-------|------|-------------|
 | id | Long | Primary key |
 | name | String | Display name (e.g., "Checking", "Cash") |
-| openingBalanceCents | Long | Opening balance in cents |
-| currentBalanceCents | Long | Derived: opening + posted transactions |
+| openingBalanceCents | Long | Opening balance in cents (stored) |
 | isDefault | Boolean | Primary account for Safe Now |
 | createdAt | Long | Timestamp |
 | updatedAt | Long | Timestamp |
+
+**Derived value (not stored):**
+- currentBalanceCents: openingBalanceCents + sum(allPostedTransactions) — query/result only
 
 ### IncomeSchedule
 Recurrence rules and expected amount for an income source.
@@ -60,16 +62,18 @@ One dated expected or received income event.
 | Field | Type | Description |
 |-------|------|-------------|
 | id | Long | Primary key |
-| scheduleId | Long | Foreign key to IncomeSchedule |
+| scheduleId | Long? | Foreign key to IncomeSchedule (null for manual one-time income) |
 | expectedDate | String | Expected date (YYYY-MM-DD) |
 | expectedAmountCents | Long | Expected amount in cents |
 | isConfirmed | Boolean | User has confirmed this will arrive |
-| receivedDate | String | Actual received date (null if not yet) |
-| receivedAmountCents | Long | Actual amount received (null if not yet) |
+| receivedDate | String? | Actual received date (null if not yet received) |
+| receivedAmountCents | Long? | Actual amount received in cents (null if not yet received) |
 | transactionId | Long? | Linked ledger transaction when received |
-| isGenerated | Boolean | True if auto-generated from schedule |
+| isGenerated | Boolean | True if auto-generated from schedule; false if manual one-time entry |
 | createdAt | Long | Timestamp |
 | updatedAt | Long | Timestamp |
+
+**Uniqueness constraint:** (scheduleId, expectedDate) prevents duplicate generated occurrences for the same schedule and date.
 
 ### BillSchedule
 Recurring bill template, normal amount, category, and recurrence rule.
@@ -90,22 +94,31 @@ Recurring bill template, normal amount, category, and recurrence rule.
 **Note:** No `isPaid` field on the schedule. Payment status belongs to each BillOccurrence.
 
 ### BillOccurrence
-One dated obligation generated from a schedule.
+One dated obligation generated from a schedule or entered manually.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | id | Long | Primary key |
-| scheduleId | Long | Foreign key to BillSchedule |
+| scheduleId | Long? | Foreign key to BillSchedule (null for manual one-time bill) |
 | dueDate | String | Due date (YYYY-MM-DD) |
 | amountDueCents | Long | Amount due in cents |
 | isProtected | Boolean | Whether Safe Now reserves for this |
-| status | Enum | UPCOMING, DUE, OVERDUE, PAID, PARTIAL |
+| isGenerated | Boolean | True if generated from BillSchedule; false if manual one-time bill |
 | createdAt | Long | Timestamp |
 | updatedAt | Long | Timestamp |
+
+**Derived status (not stored):** Calculated from dueDate, remainingDueCents, payment allocations, and current date:
+- UPCOMING: Due date is in the future, no payments
+- DUE: Due date is today, no payments or partial
+- OVERDUE: Due date is in the past, not fully paid
+- PAID: Fully paid (remainingDueCents == 0)
+- PARTIAL: Partially paid (0 < amountPaidCents < amountDueCents)
 
 **Calculated fields (not stored):**
 - amountPaidCents: Sum of linked BillPaymentAllocation amounts
 - remainingDueCents: amountDueCents - amountPaidCents
+
+**Uniqueness constraint:** (scheduleId, dueDate) prevents duplicate generated occurrences for the same schedule and date.
 
 ### Transaction
 Immutable ledger event for income, spending, bill payment, savings, correction, or transfer.
@@ -169,7 +182,7 @@ Individual contribution to a savings goal.
 | Field | Type | Description |
 |-------|------|-------------|
 | id | Long | Primary key |
-| goalId | Long | Which goal (null for general savings) |
+| goalId | Long? | Which goal (null for general savings without a specific goal) |
 | amountCents | Long | Contribution amount |
 | contributionDate | String | Date contributed |
 | transactionId | Long | Linked SAVINGS transaction |
@@ -225,13 +238,20 @@ Currency, timezone, first-run completion, notifications, and planning horizon.
 
 ### Schedule → Occurrence Integrity
 - Deleting or editing a schedule must NOT silently rewrite completed historical occurrences
-- Historical occurrences (linked to transactions) remain immutable
+- Historical occurrences (linked to transactions) remain immutable when schedules change
 - Future generated occurrences can be regenerated if schedule changes
+- **Deleting a schedule must not delete historical occurrences or ledger-linked records**
 
 ### Occurrence Distinguishability
 - Generated future occurrences have `isGenerated = true`
 - Manually entered one-time occurrences have `isGenerated = false`
 - Both types can coexist in the same date range
+- Manual occurrences have `scheduleId = null`
+
+### Duplicate Prevention
+- **IncomeOccurrence:** Unique index on (scheduleId, expectedDate) prevents duplicate generated occurrences
+- **BillOccurrence:** Unique index on (scheduleId, dueDate) prevents duplicate generated occurrences
+- Manual occurrences (scheduleId = null) are exempt from duplicate checking
 
 ### Income Linkage
 - A received income occurrence must link to its ledger transaction via `transactionId`

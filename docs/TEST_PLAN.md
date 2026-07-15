@@ -12,7 +12,8 @@ Deterministic tests for Safe Now calculation engine:
 | Single Income | One confirmed income, no bills | Safe Now equals starting cash (income not yet received) |
 | Bill Before Payday | Bill due before next confirmed income | Safe Now must cover bill from starting cash |
 | Bill On Payday | Bill and confirmed income same day | Same-day ordering: income available for bill |
-| Bill After Payday | Bill due one day after confirmed income | Income cannot protect bill, shortage expected |
+| Income Before Bill | Confirmed income arrives before bill due | Income CAN protect the bill |
+| Income After Bill | Confirmed income arrives after bill due | Income CANNOT protect the earlier bill |
 | Multiple Bills Cross-Paydays | Two paydays with bills distributed | Minimum balance across full horizon |
 | Multiple Income Sources | Salary + side income, different dates | Aggregate confirmed income |
 | Recurring Bills | Monthly bills across months | Generated occurrences respected |
@@ -33,7 +34,7 @@ Must match the 9 worked examples in SAFE_NOW_RULES.md:
 6. Partially paid bill
 7. Unconfirmed side income
 8. Unprotected bill
-9. Spending transaction causing underfunding
+9. Spending transaction causing underfunding — **shortage must be 20000 cents ($200.00)**
 
 Each test must:
 - Use integer cents (Long) for all amounts
@@ -45,14 +46,24 @@ Each test must:
 ### Data Model Tests
 - IncomeSchedule CRUD operations
 - IncomeOccurrence generation and confirmation
+- **IncomeOccurrence.scheduleId nullable for manual one-time income**
+- **IncomeOccurrence.isGenerated true (schedule) vs false (manual)**
+- **IncomeOccurrence.receivedDate and receivedAmountCents null until received**
 - BillSchedule CRUD operations
 - BillOccurrence generation and status
+- **BillOccurrence.scheduleId nullable for manual one-time bills**
+- **BillOccurrence.isGenerated true (schedule) vs false (manual)**
+- **BillOccurrence status derived (not stored): UPCOMING, DUE, OVERDUE, PAID, PARTIAL**
 - Transaction immutable ledger (create, never mutate)
 - BillPaymentAllocation partial payment linking
 - SavingsGoal and SavingsContribution separation
+- **SavingsContribution.goalId nullable for general savings**
 - ShieldProgress and ShieldXpEvent history
 - UserSettings persistence
 - Long cents overflow protection
+- **Account currentBalanceCents derived from opening + transactions (not stored)**
+- **Duplicate occurrence prevention via (scheduleId, date) unique index**
+- **Schedule deletion preserves historical occurrences and ledger-linked records**
 
 ## Integration Tests
 
@@ -121,12 +132,12 @@ Back button behavior for each flow
 - Different Android versions (26-35)
 - Rotation handling (portrait/landscape where supported)
 - Dark mode system setting
-- Accessibility features ( TalkBack, large text)
+- Accessibility features (TalkBack, large text)
 
 ## Test Requirements
 
 ### Before TASK 9
-- Plan Safe Now unit tests (all 15 cases + 9 worked examples)
+- Plan Safe Now unit tests (all cases + 9 worked examples)
 - Set up testing framework (JUnit, MockK, etc.)
 - Define test data fixtures
 

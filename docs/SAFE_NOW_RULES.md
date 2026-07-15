@@ -49,7 +49,7 @@ The active planning period extends from today through the **latest protected unp
 
 **Confirmed income dated on a bill due date is available to protect that bill.**
 
-The initial implementation uses date-level ordering and treats same-day confirmed income as available. Users can mark income as arriving "after" bill payment cutoff if needed.
+The initial implementation uses date-level ordering and treats same-day confirmed income as available.
 
 Processing order for events on the same date:
 1. Confirmed income (adds to balance)
@@ -314,43 +314,46 @@ Unprotected streaming bill does NOT reduce Safe Now.
 
 **Events (initial):**
 - Today: July 14
-- Bill due: July 20 (Insurance $900.00, protected)
-- Confirmed income: July 18 ($500.00)
+- Starting cleared cash: $1,000.00 = 100000 cents
+- Bill due: July 20 (Insurance $900.00 = 90000 cents, protected)
+- Confirmed income: July 18 ($500.00 = 50000 cents)
 
 **Initial projection:**
 | Date | Event | Change | Balance |
 |------|-------|--------|---------|
-| Jul 14 | Start | +100000 | 100000 |
+| Jul 14 | Starting | +100000 | 100000 |
 | Jul 18 | Income | +50000 | 150000 |
 | Jul 20 | Bill | -90000 | 60000 |
 
 - **Initial Safe Now:** 60000 cents ($600.00)
 
 **After spending $100.00 on July 14:**
+- Cleared cash after spending: $900.00 = 90000 cents
+
 | Date | Event | Change | Balance |
 |------|-------|--------|---------|
-| Jul 14 | Start | +100000 | 100000 |
-| Jul 14 | Spending | -10000 | 90000 |
+| Jul 14 | Starting (now $900) | +90000 | 90000 |
 | Jul 18 | Income | +50000 | 140000 |
 | Jul 20 | Bill | -90000 | 50000 |
 
 - **New Safe Now:** 50000 cents ($500.00)
 - **Shortage:** None
 
-**After spending $700.00 on July 14 (total $800 spent):**
+**After spending $800.00 total on July 14:**
+- Cleared cash after spending: $200.00 = 20000 cents
+
 | Date | Event | Change | Balance |
 |------|-------|--------|---------|
-| Jul 14 | Start | +100000 | 100000 |
-| Jul 14 | Spending | -70000 | 30000 |
-| Jul 18 | Income | +50000 | 80000 |
-| Jul 20 | Bill | -90000 | -10000 |
+| Jul 14 | Starting (now $200) | +20000 | 20000 |
+| Jul 18 | Income | +50000 | 70000 |
+| Jul 20 | Bill | -90000 | -20000 |
 
 - **Safe Now:** 0 cents ($0.00)
-- **Shortage:** 10000 cents ($100.00)
+- **Shortage:** 20000 cents ($200.00)
 - **First failing date:** July 20
-- **Failing bill:** Insurance ($900.00 due, but only $800 available after income)
+- **Failing bill:** Insurance ($900.00 due, but only $700.00 available after income)
 
-The spending transaction reduced available cash, causing the bill to become underfunded.
+The spending transaction reduced cleared cash from $1000 to $200, causing the bill to become underfunded by $200 even after the July 18 income arrives.
 
 ---
 
