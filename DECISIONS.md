@@ -55,11 +55,34 @@ Native Android (Kotlin)
 ### Target SDK
 35
 
-### Theme
-Material3 Dark with custom styling
-
-### Storage
-Local persistent storage (Room/SQLite planned)
+### Compile SDK
+36
 
 ### Architecture
-Will be defined in TASK 3
+Single-activity Jetpack Compose with Navigation 3 type-safe routes
+
+### Build Foundation
+- Android Gradle Plugin: 8.13.2
+- Gradle: 8.13
+- Kotlin: 2.2.21 (Android, Compose, Serialization plugins)
+- Java toolchain: 17
+
+### Compose Foundation
+- Compose BOM: 2025.06.00
+- Activity Compose: 1.10.1
+- Lifecycle: 2.8.7
+- Navigation Compose: 2.8.7 (with Navigation 3 type-safe routes)
+- Kotlinx Serialization: 1.9.0
+
+### Theme
+Task 3: Minimal dark Material3 theme placeholder
+Task 4: Premium dark fantasy finance game aesthetic (teal/cyan primary, gold accents, treasure/shield imagery)
+
+### Storage
+Local persistent storage (Room/SQLite planned for future tasks)
+
+### Navigation Strategy
+- Type-safe routes with `@Serializable`
+- 13 destinations: SetupQuest, Home, Treasure, Stats, Goals, Settings, IncomeEntry, BillEntry, BillPayment, SavingsEntry, TransactionDetails, BillProtected, ShieldProgression
+- Back-stack managed by Navigation 3
+- Start route: SetupQuest (temporary, until first-run persistence)

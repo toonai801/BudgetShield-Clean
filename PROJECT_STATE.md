@@ -1,38 +1,68 @@
 # Project State
 
 ## Current Task
-**TASK 2:** Product/design/project contracts — COMPLETE
+**TASK 3:** Android architecture and navigation foundation — COMPLETE
 
 ## Project Identity
 - **Folder:** BudgetShield_CLEAN
 - **Repo:** toonai801/BudgetShield-Clean
 - **Branch:** main
+- **Package:** com.toonai.budgetshield
+
+## Task History
 - **Task 2 Contract commit:** c2b963914d1240f544e0fa718aefe830e3d251c0 (initial contracts)
 - **Task 2 Reference correction:** bf999d2574dc392eb3c1cb98f61722197d165854 (three immutable reference images)
 - **Task 2 Document repair:** 48e5b06b94d33a174b4e92d89cd7e394049d3b44 (complete screen map, data model, Safe Now rules)
 - **Task 2 Logic correction:** a625993079318acbca155a528f85c1146e2701ab (resolved model contradictions)
-- **Working tree:** Clean
-
-## Task 2 Status
-Task 2 contracts audited, repaired, and logic-corrected. Complete screen map, corrected data model plan with nullable scheduleIds for manual occurrences, derived status fields, clarified Safe Now rules with corrected Example 9 shortage calculation. Task 2 complete.
-
-## Reference Images
-All three immutable reference images are saved and tracked in Git:
-- `docs/reference/home-reference.png` — Main dashboard (Safe Now + treasure chest)
-- `docs/reference/setup-quest-reference.png` — Setup Quest, Chapter 1 of 6, Money In screen
-- `docs/reference/bill-protected-reference.png` — Bill Protected achievement overlay (Rent paid + Shield XP)
-
-**Rule:** Do not modify, crop, regenerate, compress, recolor, or replace the reference images.
-
-## Build Status
-- Last build: Successful
-- APK: `app/build/outputs/apk/debug/app-debug.apk`
+- **Task 2 SHA correction:** eb54be3522ee514a14e416104c322ddd388009d4 (corrected recorded SHA)
 
 ## Task 3 Status
-**TASK 3:** Android architecture and navigation foundation — NOT STARTED
+Single-activity Jetpack Compose architecture established with Navigation 3. All 13 destinations reachable. Old XML/AppCompat shell removed. Type-safe routes working. Build successful. Automated tests created. Architecture documented.
+
+## Technical Foundation
+- **AGP:** 8.13.2
+- **Gradle:** 8.13
+- **Kotlin:** 2.2.21
+- **compileSdk:** 36
+- **targetSdk:** 35
+- **minSdk:** 26
+- **Compose BOM:** 2025.06.00
+- **Navigation:** 2.8.7 (Navigation 3 type-safe routes)
+
+## Architecture
+- Single MainActivity (ComponentActivity)
+- Navigation 3 with serializable typed routes
+- 13 destinations: SetupQuest, Home, Treasure, Stats, Goals, Settings, IncomeEntry, BillEntry, BillPayment, SavingsEntry, TransactionDetails, BillProtected, ShieldProgression
+- Minimal dark theme placeholder (Task 4 will add fantasy styling)
+- Functional placeholder screens with navigation
+
+## Build Status
+- **Last build:** BUILD SUCCESSFUL
+- **Unit tests:** No source (PASS - no unit tests yet)
+- **Instrumentation tests:** NavigationSmokeTest.kt created (requires device)
+- **APK:** `app/build/outputs/apk/debug/app-debug.apk`
+
+## Reference Images
+All three immutable reference images preserved:
+- `docs/reference/home-reference.png`
+- `docs/reference/setup-quest-reference.png`
+- `docs/reference/bill-protected-reference.png`
+
+## Files Created/Updated
+- `docs/ARCHITECTURE.md` - Architecture documentation
+- `qa/TASK3_NAVIGATION_QA.md` - Navigation QA report
+- `.github/workflows/android-debug.yml` - CI workflow
+- `MainActivity.kt` - Single activity entry point
+- `BudgetShieldApp.kt` - Application class
+- `navigation/BudgetShieldRoute.kt` - Type-safe routes
+- `navigation/BudgetShieldNavigation.kt` - Navigation host
+- `ui/screens/*` - 13 placeholder screens
+- `ui/theme/BudgetShieldTheme.kt` - Minimal theme
+
+## Task 4 Status
+**TASK 4:** Exact design system and reusable components — NOT STARTED
 
 ## Upcoming Tasks (Not Started)
-- TASK 4: Exact design system and reusable components
 - TASK 5: Setup Quest
 - TASK 6: Home screen visual implementation
 - TASK 7: Income and payday system

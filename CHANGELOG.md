@@ -48,6 +48,26 @@
 - No application code, resources, Gradle files, or reference images changed
 - Task 3 remains NOT STARTED
 
+### TASK 3 — Android Architecture and Navigation Foundation
+- Migrated from XML/AppCompat placeholder to single-activity Jetpack Compose
+- Updated Gradle: AGP 8.13.2, Gradle 8.13, Kotlin 2.2.21, compileSdk 36
+- Removed old shell: HomeActivity.kt, activity_home.xml deleted
+- Created MainActivity.kt (ComponentActivity) with setContent
+- Created BudgetShieldApp.kt Application class
+- Added Navigation 3 with type-safe serializable routes
+- Created 13 destination routes: SetupQuest, Home, Treasure, Stats, Goals, Settings, IncomeEntry, BillEntry, BillPayment, SavingsEntry, TransactionDetails, BillProtected, ShieldProgression
+- Created BudgetShieldNavigation.kt with NavHost and route wiring
+- Created 13 placeholder screens with ARCHITECTURE FOUNDATION labels
+- Implemented back-stack rules: Setup Quest completion replaces stack
+- Created BudgetShieldTheme.kt minimal dark theme placeholder
+- Created NavigationSmokeTest.kt with 8 automated navigation tests
+- Created .github/workflows/android-debug.yml for CI
+- Created docs/ARCHITECTURE.md documenting decisions and structure
+- Created qa/TASK3_NAVIGATION_QA.md with reachability matrix
+- Updated DECISIONS.md with Task 3 architecture/toolchain decisions
+- Build: BUILD SUCCESSFUL
+- Task 4 remains NOT STARTED
+
 ## [Unreleased]
 
 ### TASK 2 — Product/Design/Project Contracts
