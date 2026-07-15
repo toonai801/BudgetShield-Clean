@@ -1,26 +1,180 @@
-Logcat captured for Budget Shield Task 3 Navigation 3 runtime test
-Device: emulator-5554 (Android API 34)
-Package: com.toonai.budgetshield
-Test Date: 2026-07-15
-
-=== LAUNCH VERIFICATION ===
-- adb install: Success
-- adb shell am start: Status ok, Activity started successfully
-- Process ID: 24947 (confirmed running)
-- sys.boot_completed: 1 (emulator ready)
-
-=== LOGCAT SUMMARY ===
-07-15 12:51:09.190   546   576 I ActivityManager: Start proc 24947:com.toonai.budgetshield/u0a217 for next-top-activity {com.toonai.budgetshield/com.toonai.budgetshield.MainActivity}
-07-15 12:51:09.241 24947 24947 I ai.budgetshield: Late-enabling -Xcheck:jni
-07-15 12:51:09.279 24947 24947 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10217; state: ENABLED
-07-15 12:51:09.498   546  2375 I ActivityManager: Flag disabled. Ignoring finishAttachApplication from uid: 10217. pid: 24947
-07-15 12:51:09.646 24947 24947 W ai.budgetshield: Accessing hidden method (normal for Compose)
-07-15 12:51:09.750   758   816 V WindowManagerShell: Transition animation finished
-
-=== CRASH CHECK ===
-No FATAL EXCEPTION found
-No AndroidRuntime errors found
-No crashes detected for com.toonai.budgetshield
-
-=== VERDICT ===
-LAUNCH SUCCESSFUL - No runtime crashes detected
+--------- beginning of system
+07-15 16:00:53.238   546   742 W ActivityTaskManager: callingPackage for (uid=2000, pid=26317) has no WPC
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 265464455; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 265452344; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 266124927; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 265451093; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 265456536; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 255940284; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 236283604; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 263959004; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 264304459; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 264301586; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 254631730; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 273509367; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 263259275; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 174042980; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 174042936; UID 10221; state: DISABLED
+07-15 16:00:53.239   546   742 D CompatibilityChangeReporter: Compat change id reported: 181136395; UID 10221; state: DISABLED
+07-15 16:00:53.240   546   742 D CompatibilityChangeReporter: Compat change id reported: 194480991; UID 10221; state: ENABLED
+07-15 16:00:53.242   546   742 D CompatibilityChangeReporter: Compat change id reported: 184838306; UID 10221; state: DISABLED
+07-15 16:00:53.242   546   742 D CompatibilityChangeReporter: Compat change id reported: 185004937; UID 10221; state: DISABLED
+07-15 16:00:53.242   546   742 D CompatibilityChangeReporter: Compat change id reported: 197654537; UID 10221; state: ENABLED
+07-15 16:00:53.243   546   742 V SplashScreenExceptionList: SplashScreen checking exception for package com.toonai.budgetshield (target sdk:35) -> false
+07-15 16:00:53.243   546   742 D CompatibilityChangeReporter: Compat change id reported: 205907456; UID 10221; state: ENABLED
+07-15 16:00:53.244   758   816 V WindowManagerShell: Transition requested: android.os.BinderProxy@8e2ca0b TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=144 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.toonai.budgetshield/.MainActivity } baseActivity=ComponentInfo{com.toonai.budgetshield/com.toonai.budgetshield.MainActivity} topActivity=ComponentInfo{com.toonai.budgetshield/com.toonai.budgetshield.MainActivity} origActivity=null realActivity=ComponentInfo{com.toonai.budgetshield/com.toonai.budgetshield.MainActivity} numActivities=1 lastActiveTime=591148348 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@1a190e8} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{7619301 com.toonai.budgetshield.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+07-15 16:00:53.244   546   742 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.toonai.budgetshield/.MainActivity} with LAUNCH_MULTIPLE from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+07-15 16:00:53.245   546   566 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10221; state: DISABLED
+07-15 16:00:53.245   546   576 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10221; state: ENABLED
+--------- beginning of main
+07-15 16:00:53.248   758   840 D SplashScreenView: Build android.window.SplashScreenView{b2880df V.E...... ......ID 0,0-0,0}
+07-15 16:00:53.248   758   840 D SplashScreenView: Icon: view: android.widget.ImageView{2fd012c V.ED..... ......I. 0,0-0,0 #10204f0 android:id/splashscreen_icon_view} drawable: com.android.wm.shell.startingsurface.SplashscreenIconDrawableFactory$ImmobileIconDrawable@1d17f5 size: 420
+07-15 16:00:53.248   758   840 D SplashScreenView: Branding: view: android.view.View{62e098a G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+07-15 16:00:53.251   360   360 D Zygote  : Forked child process 26320
+07-15 16:00:53.251   546   576 I ActivityManager: Start proc 26320:com.toonai.budgetshield/u0a221 for next-top-activity {com.toonai.budgetshield/com.toonai.budgetshield.MainActivity}
+07-15 16:00:53.251   546  2531 D CoreBackPreview: Window{5c9ad43 u0 Splash Screen com.toonai.budgetshield}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@38fdc3e, mPriority=0, mIsAnimationCallback=false}
+07-15 16:00:53.253   546   621 D CompatibilityChangeReporter: Compat change id reported: 265195908; UID 10221; state: ENABLED
+07-15 16:00:53.266   426   426 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+07-15 16:00:53.278   758   816 V WindowManagerShell: onTransitionReady android.os.BinderProxy@8e2ca0b: {id=271 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@9043f73} m=OPEN f=NONE leash=Surface(name=Task=144)/@0xabc49c4 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8163e30} m=TO_BACK f=NONE leash=Surface(name=Task=141)/@0x23d50ad sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+07-15 16:00:53.278   546   563 V WindowManager: Sent Transition #271 createdAt=07-15 16:00:53.240 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=144 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.toonai.budgetshield/.MainActivity } baseActivity=ComponentInfo{com.toonai.budgetshield/com.toonai.budgetshield.MainActivity} topActivity=ComponentInfo{com.toonai.budgetshield/com.toonai.budgetshield.MainActivity} origActivity=null realActivity=ComponentInfo{com.toonai.budgetshield/com.toonai.budgetshield.MainActivity} numActivities=1 lastActiveTime=591148348 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{c2d66d8 Task{e8da3b6 #144 type=standard A=10221:com.toonai.budgetshield}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{7baca31 com.toonai.budgetshield.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+07-15 16:00:53.278   546   563 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+07-15 16:00:53.278   758   816 V WindowManagerShell: Playing animation for (#271)android.os.BinderProxy@8e2ca0b@0
+07-15 16:00:53.278   546   563 V WindowManager:     info={id=271 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{c2d66d8 Task{e8da3b6 #144 type=standard A=10221:com.toonai.budgetshield}}} m=OPEN f=NONE leash=Surface(name=Task=144)/@0xf96b7ec sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{RemoteToken{c397a4 Task{5a09a5e #141 type=standard A=10216:com.toonai.budgetbuddy}}} m=TO_BACK f=NONE leash=Surface(name=Task=141)/@0x26f9736 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@f941a00
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@dfb4239
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@33ec07e
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@fd289df
+07-15 16:00:53.278   758   816 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@420d62c
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@544c8f5
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@602668a
+07-15 16:00:53.278   758   816 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=271 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@9043f73} m=OPEN f=NONE leash=Surface(name=Task=144)/@0xabc49c4 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8163e30} m=TO_BACK f=NONE leash=Surface(name=Task=141)/@0x23d50ad sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+07-15 16:00:53.278   758   816 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@b2d979f, appThread = android.app.IApplicationThread$Stub$Proxy@a9630ec, debugName = LauncherToDream }}
+07-15 16:00:53.278   758   816 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@762ecb5, appThread = android.app.IApplicationThread$Stub$Proxy@23c1f4a, debugName = QuickstepLaunchHome }}
+07-15 16:00:53.278   758   816 V WindowManagerShell:  Delegate animation for #271 to null
+07-15 16:00:53.278   758   816 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultTransitionHandler@2ffe4fb
+07-15 16:00:53.278   758   816 V WindowManagerShell: start default transition animation, info = {id=271 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@9043f73} m=OPEN f=NONE leash=Surface(name=Task=144)/@0xabc49c4 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8163e30} m=TO_BACK f=NONE leash=Surface(name=Task=141)/@0x23d50ad sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+07-15 16:00:53.279   758   816 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@1d95fcf animAttr=0x9 type=OPEN isEntrance=false
+07-15 16:00:53.279   758   816 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@797a348 animAttr=0x8 type=OPEN isEntrance=true
+07-15 16:00:53.280   758   816 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@2ffe4fb
+07-15 16:00:53.305 26320 26320 I ai.budgetshield: Late-enabling -Xcheck:jni
+07-15 16:00:53.314 26320 26320 I ai.budgetshield: Using CollectorTypeCC GC.
+07-15 16:00:53.315 26320 26320 W ai.budgetshield: Unexpected CPU variant for x86: x86_64.
+07-15 16:00:53.315 26320 26320 W ai.budgetshield: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+07-15 16:00:53.339   442   453 I adbd    : jdwp connection from 26320
+07-15 16:00:53.348   546   574 D IntervalStats: Unable to parse usage stats packages: [213, 225, 226]
+07-15 16:00:53.348 26320 26320 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10221; state: ENABLED
+07-15 16:00:53.349 26320 26320 D CompatibilityChangeReporter: Compat change id reported: 242716250; UID 10221; state: ENABLED
+07-15 16:00:53.349   546   574 D IntervalStats: Unable to parse event packages: [226]
+07-15 16:00:53.350   546   574 D IntervalStats: Unable to parse usage stats packages: [227, 228, 229, 230, 231]
+07-15 16:00:53.350   546   574 D IntervalStats: Unable to parse usage stats packages: [233, 234, 235, 236, 237, 238, 239]
+07-15 16:00:53.356   546  2531 D CompatibilityChangeReporter: Compat change id reported: 170503758; UID 10221; state: ENABLED
+07-15 16:00:53.360 26320 26320 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+07-15 16:00:53.360 26320 26320 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+07-15 16:00:53.360 26320 26320 W ziparchive: Unable to open '/data/app/~~WVFqcfO3yjozzFOEBk1mlg==/com.toonai.budgetshield-z2Y5D4AvTYVG9AIVT7L4IQ==/base.dm': No such file or directory
+07-15 16:00:53.360 26320 26320 W ziparchive: Unable to open '/data/app/~~WVFqcfO3yjozzFOEBk1mlg==/com.toonai.budgetshield-z2Y5D4AvTYVG9AIVT7L4IQ==/base.dm': No such file or directory
+07-15 16:00:53.562 26320 26320 D nativeloader: Configuring clns-6 for other apk /data/app/~~WVFqcfO3yjozzFOEBk1mlg==/com.toonai.budgetshield-z2Y5D4AvTYVG9AIVT7L4IQ==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~WVFqcfO3yjozzFOEBk1mlg==/com.toonai.budgetshield-z2Y5D4AvTYVG9AIVT7L4IQ==/lib/x86_64:/data/app/~~WVFqcfO3yjozzFOEBk1mlg==/com.toonai.budgetshield-z2Y5D4AvTYVG9AIVT7L4IQ==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.toonai.budgetshield
+07-15 16:00:53.571 26320 26320 V GraphicsEnvironment: Currently set values for:
+07-15 16:00:53.571 26320 26320 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+07-15 16:00:53.571 26320 26320 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+07-15 16:00:53.571 26320 26320 V GraphicsEnvironment: ANGLE GameManagerService for com.toonai.budgetshield: false
+07-15 16:00:53.571 26320 26320 V GraphicsEnvironment: com.toonai.budgetshield is not listed in per-application setting
+07-15 16:00:53.571 26320 26320 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+07-15 16:00:53.583   546  2083 I ActivityManager: Flag disabled. Ignoring finishAttachApplication from uid: 10221. pid: 26320
+07-15 16:00:53.593 26320 26341 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+07-15 16:00:53.594 26320 26341 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+07-15 16:00:53.595 26320 26341 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+07-15 16:00:53.628 26320 26320 D CompatibilityChangeReporter: Compat change id reported: 237531167; UID 10221; state: DISABLED
+07-15 16:00:53.632 26320 26320 W OpenGLRenderer: Unknown dataspace 0
+07-15 16:00:53.742 26320 26320 W ai.budgetshield: Accessing hidden method Landroid/os/SystemProperties;->addChangeCallback(Ljava/lang/Runnable;)V (unsupported, reflection, allowed)
+07-15 16:00:53.742 26320 26320 D CompatibilityChangeReporter: Compat change id reported: 193247900; UID 10221; state: ENABLED
+07-15 16:00:53.783   758   816 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#271)android.os.BinderProxy@8e2ca0b@0
+07-15 16:00:53.783   546   563 V WindowManager: Finish Transition #271: created at 07-15 16:00:53.240 collect-started=0.014ms request-sent=3.298ms started=4.259ms ready=27.421ms sent=36.744ms finished=542.722ms
+07-15 16:00:53.785   758   816 V WindowManagerShell: Track 0 became idle
+07-15 16:00:53.785   758   816 V WindowManagerShell: All active transition animations finished
+07-15 16:00:53.861   546  2083 D CoreBackPreview: Window{f7be3d9 u0 com.toonai.budgetshield/com.toonai.budgetshield.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@5e53138, mPriority=0, mIsAnimationCallback=false}
+07-15 16:00:53.895   426   748 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10221 pid=0
+07-15 16:00:53.895   426   748 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10221 => denied (110 us)
+07-15 16:00:53.895   426   748 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10221 pid=0
+07-15 16:00:53.895   426   748 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10221 => denied (61 us)
+07-15 16:00:53.895   426   437 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10221 pid=26320
+07-15 16:00:53.895   426   748 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10221 pid=0
+07-15 16:00:53.895   426   437 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10221 => denied (69 us)
+07-15 16:00:53.895   426   748 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10221 => denied (35 us)
+07-15 16:00:53.895   426   437 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10221 pid=26320
+07-15 16:00:53.895   426   437 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10221 => denied (27 us)
+07-15 16:00:53.904 26320 26339 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+--------- beginning of kernel
+07-15 16:00:54.035     0     0 I servicemanager: Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+07-15 16:00:53.924   158   158 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+07-15 16:00:53.925 26320 26339 I Gralloc4: mapper 4.x is not supported
+07-15 16:00:54.072   546  2083 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10221 pid=0
+07-15 16:00:54.072   546  2083 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10221 => denied (93 us)
+07-15 16:00:54.072   546  2083 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10221 pid=0
+07-15 16:00:54.072   546  2083 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10221 => denied (17 us)
+07-15 16:00:54.072   546  2083 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10221 pid=0
+07-15 16:00:54.072   546  2083 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10221 => denied (12 us)
+07-15 16:00:54.073   546   563 W ziparchive: Unable to open '/data/app/~~WVFqcfO3yjozzFOEBk1mlg==/com.toonai.budgetshield-z2Y5D4AvTYVG9AIVT7L4IQ==/base.dm': No such file or directory
+07-15 16:00:54.074   546   563 I ActivityTaskManager: Displayed com.toonai.budgetshield/.MainActivity for user 0: +835ms
+07-15 16:00:54.086   546   742 D CompatibilityChangeReporter: Compat change id reported: 214016041; UID 10221; state: ENABLED
+07-15 16:00:54.087   546   742 I ImeTracker: com.toonai.budgetshield:bf9575f: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+07-15 16:00:54.087   546   742 I ImeTracker: com.toonai.budgetshield:bf9575f: onCancelled at PHASE_SERVER_SHOULD_HIDE
+07-15 16:00:54.091  1422  1422 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3227 
+07-15 16:00:54.091  1422  1422 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+07-15 16:00:54.092  1422  1422 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.toonai.budgetshield fieldId=0 fieldName=null extras=null}, false)
+07-15 16:00:54.092  1422  1422 I GoogleInputMethodService: GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+07-15 16:00:54.092  1422  1422 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+07-15 16:00:54.148   881  1088 D BtGatt.ScanManager: uid 10132 isForeground true scanMode -1
+07-15 16:00:54.149 21909 22025 I FontLog : Received query Noto Color Emoji Compat, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+07-15 16:00:54.149 21909 22025 I FontLog : Query [emojicompat-emoji-font] resolved to {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+07-15 16:00:54.151 21909 22025 I FontLog : Fetch {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+07-15 16:00:54.153 21909 22025 I FontLog : Pulling font file for id = 15, cache size = 5 [CONTEXT service_id=132 ]
+07-15 16:00:54.156 21909 22025 I FontLog : Pulling font file for id = 15, cache size = 5 [CONTEXT service_id=132 ]
+07-15 16:00:54.466   758   839 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@33e4bfb
+07-15 16:00:54.467   546  2083 D CoreBackPreview: Window{5c9ad43 u0 Splash Screen com.toonai.budgetshield EXITING}: Setting back callback null
+07-15 16:00:54.467   546   742 W InputManager-JNI: Input channel object '5c9ad43 Splash Screen com.toonai.budgetshield (client)' was disposed without first being removed with the input manager!
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:PREDICTION_ERROR, 38687424, 11595309, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:PREDICTION_ERROR, 38687439, 8961966, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:PREDICTION_ERROR, 38687447, 9382664, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed App frame:UNKNOWN: 24, 38687455, 17052982, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 24, 38687455, 17052982, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687463, 32189556, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687471, 33495819, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687479, 33448988, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687487, 21308932, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687495, 33467257, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed App frame:UNKNOWN: 88, 38687503, 33871655, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 88, 38687503, 33871655, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687511, 25387882, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed App frame:UNKNOWN: 72, 38687519, 34669018, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687535, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missing HWUI jank callback for vsyncId: 38687535, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687543, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missing HWUI jank callback for vsyncId: 38687543, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687550, 50093586, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687558, 43323275, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 80, 38687566, 50113568, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed App frame:UNKNOWN: 88, 38687574, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missed SF frame:UNKNOWN: 88, 38687574, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.517   758   839 W FrameTracker: Missing HWUI jank callback for vsyncId: 38687574, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+07-15 16:00:54.523   758   878 D EGL_emulation: app_time_stats: avg=7545.36ms min=10.78ms max=135306.84ms count=18
+07-15 16:00:54.639   758   878 D EGL_emulation: app_time_stats: avg=54620.84ms min=54620.84ms max=54620.84ms count=1
+07-15 16:00:55.534   758   878 D EGL_emulation: app_time_stats: avg=14.73ms min=9.46ms max=22.47ms count=61
+07-15 16:00:56.246   546  1579 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+07-15 16:00:56.481   758   758 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+07-15 16:00:56.993   546  2531 W ProcessStats: Tracking association SourceState{2daae61 com.toonai.budgetshield/10221 BTop #85138} whose proc state 2 is better than process ProcessState{526d58e com.google.android.gms.persistent/10132 pkg=com.google.android.gms} proc state 3 (86 skipped)
+07-15 16:00:59.415   184 26286 I keystore2: system/security/keystore2/src/watchdog.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+07-15 16:00:59.443   546   629 D ActivityManager: freezing 19078 com.google.android.adservices.api
+07-15 16:00:59.617 26320 26350 D ProfileInstaller: Installing profile for com.toonai.budgetshield
+07-15 16:01:00.002  1481  1837 I AiAiEcho: Predicting[0]: 
+07-15 16:01:00.002  1481  1837 I AiAiEcho: EchoTargets: 
+07-15 16:01:00.002  1481  1837 I AiAiEcho: Filtered by AiAi flag check: 
+07-15 16:01:00.002  1481  1837 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+07-15 16:01:00.002  1481  1837 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+07-15 16:01:00.017   758   758 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+07-15 16:01:00.019   758   878 D EGL_emulation: app_time_stats: avg=537.87ms min=15.39ms max=5229.73ms count=10
+07-15 16:01:00.168   881  1088 D BtGatt.ScanManager: uid 10132 isForeground true scanMode -1
+07-15 16:01:02.809 23605 26016 I ContentMaintenance: Internal cache bytes used: 0; limit: 100000000; download size: 0
+07-15 16:01:02.811 23605 26016 I RealtimeCacheCleanup: Beginning Realtime garbage collection.
+07-15 16:01:02.811 23605 26016 I RealtimeCacheCleanup: Finished Realtime garbage collection.
+07-15 16:01:05.033 23605 23605 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.feedback.internal.IFeedbackService dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }

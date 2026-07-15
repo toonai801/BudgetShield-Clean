@@ -35,11 +35,13 @@ object Home
 data class TransactionDetails(val transactionId: Long? = null)
 ```
 
+All routes implement the `NavKey` interface from Navigation 3.
+
 ### Navigation State Management
 
-- Uses `rememberNavController()` for nav controller instance
-- Uses `rememberNavBackStack()` for back-stack state
-- Uses `NavHost` with `composable<T>()` for type-safe route registration
+- Uses `rememberNavBackStack()` for back-stack state (NOT `rememberNavController()`)
+- Uses `NavDisplay` and entry provider function for rendering (NOT `NavHost`)
+- Uses `createBudgetShieldEntryProvider()` for Navigation 3 route registration
 
 ### Start Route
 
@@ -49,10 +51,10 @@ data class TransactionDetails(val transactionId: Long? = null)
 
 | Scenario | Behavior |
 |----------|----------|
-| Setup Quest complete | Replaces stack with Home (Setup Quest removed) |
+| Setup Quest complete | Replaces stack with Home (Setup Quest removed) via `onReplaceStack` |
 | Home + system back | Exits app |
 | Detail screens | Pop back to previous |
-| Main destinations (Home/Treasure/Stats/Goals/Settings) | `launchSingleTop = true` prevents endless duplicates |
+| Main destinations (Home/Treasure/Stats/Goals/Settings) | Navigation 3 back-stack manages entries |
 | Settings → Restart Setup Quest | Allowed temporary flow |
 
 ---
@@ -119,17 +121,19 @@ com.toonai.budgetshield/
 
 ### Pinned Versions
 
-| Component | Version |
-|-----------|---------|
-| Android Gradle Plugin | 8.13.2 |
-| Gradle | 8.13 |
-| Kotlin | 2.2.21 |
-| compileSdk | 36 |
-| targetSdk | 35 |
-| minSdk | 26 |
-| Compose BOM | 2025.06.00 |
-| Navigation Compose | 2.8.7 |
-| Kotlinx Serialization | 1.9.0 |
+| Component | Version | Notes |
+|-----------|---------|-------|
+| Android Gradle Plugin | 8.13.2 | Locked |
+| Gradle | 8.13 | Locked |
+| Kotlin | 2.2.21 | Locked |
+| compileSdk | 36 | Locked |
+| targetSdk | 35 | Locked |
+| minSdk | 26 | Locked |
+| Compose BOM | 2026.06.00 | Updated for Navigation 3 compatibility |
+| Activity Compose | 1.13.0 | Updated for Navigation 3 compatibility |
+| Lifecycle | 2.10.0 | Compatible with compileSdk 36 (2.11.0 requires compileSdk 37) |
+| Navigation 3 | 1.1.4 | REAL Navigation 3 (navigation3-runtime and navigation3-ui) |
+| Kotlinx Serialization | 1.9.0 | Required for type-safe routes |
 
 ### Theme
 

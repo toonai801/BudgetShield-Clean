@@ -43,6 +43,11 @@ Premium dark fantasy finance game aesthetic.
 
 ## Technical Decisions
 
+### Lifecycle Version Compatibility
+- **Lifecycle 2.10.0** is the intentional compatible version for AGP 8.13.2 and compileSdk 36
+- Lifecycle 2.11.0 requires compileSdk 37 and AGP 9.2.0, which is outside Task 3 scope
+- This decision prevents unnecessary project risk while maintaining full functionality
+
 ### Platform
 Native Android (Kotlin)
 
@@ -68,10 +73,10 @@ Single-activity Jetpack Compose with Navigation 3 type-safe routes
 - Java toolchain: 17
 
 ### Compose Foundation
-- Compose BOM: 2025.06.00
-- Activity Compose: 1.10.1
-- Lifecycle: 2.8.7
-- Navigation Compose: 2.8.7 (with Navigation 3 type-safe routes)
+- Compose BOM: 2026.06.00
+- Activity Compose: 1.13.0
+- Lifecycle: 2.10.0 (2.11.0 requires compileSdk 37)
+- Navigation 3: 1.1.4 (androidx.navigation3:navigation3-runtime and navigation3-ui)
 - Kotlinx Serialization: 1.9.0
 
 ### Theme
