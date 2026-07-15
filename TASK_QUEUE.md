@@ -3,7 +3,7 @@
 | Task | Deliverable | Status | Evidence / Notes |
 |------|-------------|--------|------------------|
 | TASK 1 | Clean project shell | COMPLETE | Commit 6ce7d9af3753f070a2d842d2064ca3ccafcfb629 |
-| TASK 2 | Product/design/project contracts | COMPLETE | Contract c2b96391; Reference bf999d25; Document repair 48e5b06b; Logic correction a6259937 |
+| TASK 2 | Product/design/project contracts | COMPLETE | Contract c2b96391; Reference bf999d25; Document repair 48e5b06b; Logic correction a625993079318acbca155a528f85c1146e2701ab |
 | TASK 3 | Android architecture and navigation foundation | NOT STARTED | |
 | TASK 4 | Exact design system and reusable components | NOT STARTED | |
 | TASK 5 | Setup Quest | NOT STARTED | |

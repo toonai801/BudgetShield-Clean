@@ -10,7 +10,7 @@
 - **Task 2 Contract commit:** c2b963914d1240f544e0fa718aefe830e3d251c0 (initial contracts)
 - **Task 2 Reference correction:** bf999d2574dc392eb3c1cb98f61722197d165854 (three immutable reference images)
 - **Task 2 Document repair:** 48e5b06b94d33a174b4e92d89cd7e394049d3b44 (complete screen map, data model, Safe Now rules)
-- **Task 2 Logic correction:** a6259937dbce8d0c6b0b0f48d0ff6c9f4b3e5c2f (resolved model contradictions)
+- **Task 2 Logic correction:** a625993079318acbca155a528f85c1146e2701ab (resolved model contradictions)
 - **Working tree:** Clean
 
 ## Task 2 Status
