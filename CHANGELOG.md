@@ -25,6 +25,29 @@
 - Confirmed no application code, resources, Gradle files, or reference images changed
 - Task 3 remains NOT STARTED
 
+### TASK 2 Logic and Metadata Correction
+- Removed nonexistent 8f115f4 reference from all documents
+- Corrected docs/DATA_MODEL_PLAN.md data model contradictions:
+  - Account.currentBalanceCents: documented as derived query/result only (not stored mutable field)
+  - IncomeOccurrence.scheduleId: changed to Long? for manual one-time income without schedule
+  - IncomeOccurrence.receivedDate and receivedAmountCents: String? and Long? (null until received)
+  - BillOccurrence.scheduleId: changed to Long? for manual one-time bills
+  - BillOccurrence.isGenerated: added Boolean to distinguish generated vs manual
+  - BillOccurrence.status: documented as derived from dueDate/remainingDue/payments (not stored)
+  - SavingsContribution.goalId: Long? for general savings without specific goal
+  - Added uniqueness constraints on (scheduleId, date) for duplicate occurrence prevention
+  - Documented that schedule deletion preserves historical occurrences and ledger-linked records
+- Corrected docs/SAFE_NOW_RULES.md:
+  - Removed unimplemented "arriving after cutoff" user feature mention
+  - Fixed Example 9 shortage calculation: spending $800 from $1000 leaves $200; $500 income = $700; $900 bill = -$200; shortage is $200 (20000 cents), not $100
+- Corrected docs/TEST_PLAN.md:
+  - Split "Income After Bill" test into two cases: Income Before Bill (CAN protect) and Income After Bill (CANNOT protect)
+  - Updated Example 9 expected shortage to 20000 cents
+  - Added data-model tests for nullable fields, derived values, and duplicate prevention
+- Corrected DECISIONS.md: removed "after cutoff" reference from Same-Day Income Ordering
+- No application code, resources, Gradle files, or reference images changed
+- Task 3 remains NOT STARTED
+
 ## [Unreleased]
 
 ### TASK 2 — Product/Design/Project Contracts

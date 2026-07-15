@@ -7,12 +7,14 @@
 - **Folder:** BudgetShield_CLEAN
 - **Repo:** toonai801/BudgetShield-Clean
 - **Branch:** main
-- **Starting commit:** bf999d2574dc392eb3c1cb98f61722197d165854 (Task 2 reference correction)
-- **Final Task 2 commit:** 8f115f4 Task 2 final repair: complete contracts and calculation rules
+- **Task 2 Contract commit:** c2b963914d1240f544e0fa718aefe830e3d251c0 (initial contracts)
+- **Task 2 Reference correction:** bf999d2574dc392eb3c1cb98f61722197d165854 (three immutable reference images)
+- **Task 2 Document repair:** 48e5b06b94d33a174b4e92d89cd7e394049d3b44 (complete screen map, data model, Safe Now rules)
+- **Task 2 Logic correction:** a6259937dbce8d0c6b0b0f48d0ff6c9f4b3e5c2f (resolved model contradictions)
 - **Working tree:** Clean
 
 ## Task 2 Status
-Task 2 contracts audited and repaired. Complete screen map, corrected data model plan (schedule/occurrence/transaction separation, Long cents), clarified Safe Now rules with planning horizon and worked examples. Final Task 2 commit: 8f115f4 Task 2 final repair: complete contracts and calculation rules.
+Task 2 contracts audited, repaired, and logic-corrected. Complete screen map, corrected data model plan with nullable scheduleIds for manual occurrences, derived status fields, clarified Safe Now rules with corrected Example 9 shortage calculation. Task 2 complete.
 
 ## Reference Images
 All three immutable reference images are saved and tracked in Git:
