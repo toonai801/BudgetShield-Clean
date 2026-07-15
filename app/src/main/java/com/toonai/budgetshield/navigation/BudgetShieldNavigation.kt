@@ -1,9 +1,8 @@
 package com.toonai.budgetshield.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
 import com.toonai.budgetshield.ui.screens.BillEntryScreen
 import com.toonai.budgetshield.ui.screens.BillPaymentScreen
 import com.toonai.budgetshield.ui.screens.BillProtectedScreen
@@ -18,122 +17,139 @@ import com.toonai.budgetshield.ui.screens.StatsScreen
 import com.toonai.budgetshield.ui.screens.TransactionDetailsScreen
 import com.toonai.budgetshield.ui.screens.TreasureScreen
 
+/**
+ * Creates a Navigation 3 entry for the given key.
+ * This is used with NavDisplay and rememberNavBackStack.
+ */
 @Composable
-fun BudgetShieldNavigation(navController: NavHostController) {
-    NavHost(
-        navController = navController,
-        startDestination = SetupQuest
-    ) {
-        composable<SetupQuest> {
+fun BudgetShieldEntry(
+    key: NavKey,
+    onNavigate: (NavKey) -> Unit,
+    onNavigateBack: () -> Unit,
+    onReplaceStack: (NavKey) -> Unit
+) {
+    when (key) {
+        is SetupQuest -> {
             SetupQuestScreen(
                 onComplete = {
                     // Replace stack so Back from Home doesn't return to Setup Quest
-                    navController.navigate(Home) {
-                        popUpTo(SetupQuest) { inclusive = true }
-                        launchSingleTop = true
-                    }
+                    onReplaceStack(Home)
                 }
             )
         }
-
-        composable<Home> {
+        is Home -> {
             HomeScreen(
-                onNavigateToTreasure = { navController.navigate(Treasure) },
-                onNavigateToStats = { navController.navigate(Stats) },
-                onNavigateToGoals = { navController.navigate(Goals) },
-                onNavigateToSettings = { navController.navigate(Settings) },
-                onNavigateToIncomeEntry = { navController.navigate(IncomeEntry) },
-                onNavigateToBillEntry = { navController.navigate(BillEntry) },
-                onNavigateToSavingsEntry = { navController.navigate(SavingsEntry) },
-                onNavigateToTransactionDetails = { navController.navigate(TransactionDetails()) },
-                onNavigateToShieldProgression = { navController.navigate(ShieldProgression) }
+                onNavigateToTreasure = { onNavigate(Treasure) },
+                onNavigateToStats = { onNavigate(Stats) },
+                onNavigateToGoals = { onNavigate(Goals) },
+                onNavigateToSettings = { onNavigate(Settings) },
+                onNavigateToIncomeEntry = { onNavigate(IncomeEntry) },
+                onNavigateToBillEntry = { onNavigate(BillEntry) },
+                onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
+                onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
+                onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
             )
         }
-
-        composable<Treasure> {
+        is Treasure -> {
             TreasureScreen(
-                onNavigateToBillEntry = { navController.navigate(BillEntry) },
-                onNavigateToBillPayment = { navController.navigate(BillPayment) },
-                onNavigateToTransactionDetails = { navController.navigate(TransactionDetails()) },
-                onNavigateToHome = { navController.navigate(Home) }
+                onNavigateToBillEntry = { onNavigate(BillEntry) },
+                onNavigateToBillPayment = { onNavigate(BillPayment) },
+                onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
+                onNavigateToHome = { onNavigate(Home) }
             )
         }
-
-        composable<Stats> {
+        is Stats -> {
             StatsScreen(
-                onNavigateToGoals = { navController.navigate(Goals) },
-                onNavigateToSettings = { navController.navigate(Settings) },
-                onNavigateToTransactionDetails = { navController.navigate(TransactionDetails()) }
+                onNavigateToGoals = { onNavigate(Goals) },
+                onNavigateToSettings = { onNavigate(Settings) },
+                onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) }
             )
         }
-
-        composable<Goals> {
+        is Goals -> {
             GoalsScreen(
-                onNavigateToSavingsEntry = { navController.navigate(SavingsEntry) },
-                onNavigateToTransactionDetails = { navController.navigate(TransactionDetails()) },
-                onNavigateToShieldProgression = { navController.navigate(ShieldProgression) }
+                onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
+                onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
+                onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
             )
         }
-
-        composable<Settings> {
+        is Settings -> {
             SettingsScreen(
-                onNavigateToSetupQuest = { navController.navigate(SetupQuest) },
-                onNavigateToHome = { navController.navigate(Home) }
+                onNavigateToSetupQuest = { onNavigate(SetupQuest) },
+                onNavigateToHome = { onNavigate(Home) }
             )
         }
-
-        composable<IncomeEntry> {
+        is IncomeEntry -> {
             IncomeEntryScreen(
-                onNavigateToHome = { navController.navigate(Home) },
-                onNavigateToSetupQuest = { navController.navigate(SetupQuest) }
+                onNavigateToHome = { onNavigate(Home) },
+                onNavigateToSetupQuest = { onNavigate(SetupQuest) }
             )
         }
-
-        composable<BillEntry> {
+        is BillEntry -> {
             BillEntryScreen(
-                onNavigateToTreasure = { navController.navigate(Treasure) },
-                onNavigateToHome = { navController.navigate(Home) },
-                onNavigateToSetupQuest = { navController.navigate(SetupQuest) }
+                onNavigateToTreasure = { onNavigate(Treasure) },
+                onNavigateToHome = { onNavigate(Home) },
+                onNavigateToSetupQuest = { onNavigate(SetupQuest) }
             )
         }
-
-        composable<BillPayment> {
+        is BillPayment -> {
             BillPaymentScreen(
-                onPaymentComplete = { navController.navigate(BillProtected) },
-                onCancel = { navController.popBackStack() }
+                onPaymentComplete = { onNavigate(BillProtected) },
+                onCancel = { onNavigateBack() }
             )
         }
-
-        composable<SavingsEntry> {
+        is SavingsEntry -> {
             SavingsEntryScreen(
-                onNavigateToGoals = { navController.navigate(Goals) },
-                onNavigateToHome = { navController.navigate(Home) }
+                onNavigateToGoals = { onNavigate(Goals) },
+                onNavigateToHome = { onNavigate(Home) }
             )
         }
-
-        composable<TransactionDetails> { backStackEntry ->
+        is TransactionDetails -> {
             TransactionDetailsScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToHome = { navController.navigate(Home) },
-                onNavigateToTreasure = { navController.navigate(Treasure) },
-                onNavigateToStats = { navController.navigate(Stats) },
-                onNavigateToGoals = { navController.navigate(Goals) }
+                transactionId = key.transactionId,
+                onNavigateBack = { onNavigateBack() },
+                onNavigateToHome = { onNavigate(Home) },
+                onNavigateToTreasure = { onNavigate(Treasure) },
+                onNavigateToStats = { onNavigate(Stats) },
+                onNavigateToGoals = { onNavigate(Goals) }
             )
         }
-
-        composable<BillProtected> {
+        is BillProtected -> {
             BillProtectedScreen(
-                onNavigateToHome = { navController.navigate(Home) },
-                onNavigateToTreasure = { navController.navigate(Treasure) },
-                onNavigateToShieldProgression = { navController.navigate(ShieldProgression) }
+                onNavigateToHome = { onNavigate(Home) },
+                onNavigateToTreasure = { onNavigate(Treasure) },
+                onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
             )
         }
-
-        composable<ShieldProgression> {
+        is ShieldProgression -> {
             ShieldProgressionScreen(
-                onNavigateToHome = { navController.navigate(Home) },
-                onNavigateToGoals = { navController.navigate(Goals) },
-                onNavigateToSettings = { navController.navigate(Settings) }
+                onNavigateToHome = { onNavigate(Home) },
+                onNavigateToGoals = { onNavigate(Goals) },
+                onNavigateToSettings = { onNavigate(Settings) }
+            )
+        }
+        else -> {
+            // Fallback for any unknown keys
+            androidx.compose.material3.Text("Unknown screen: ${key::class.simpleName}")
+        }
+    }
+}
+
+/**
+ * Creates the Navigation 3 entry provider for all 13 destinations.
+ * Returns a function that creates NavEntry for a given key.
+ */
+fun createBudgetShieldEntryProvider(
+    onNavigate: (NavKey) -> Unit,
+    onNavigateBack: () -> Unit,
+    onReplaceStack: (NavKey) -> Unit
+): (NavKey) -> NavEntry<NavKey> {
+    return { key: NavKey ->
+        NavEntry(key) {
+            BudgetShieldEntry(
+                key = key,
+                onNavigate = onNavigate,
+                onNavigateBack = onNavigateBack,
+                onReplaceStack = onReplaceStack
             )
         }
     }

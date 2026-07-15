@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun TransactionDetailsScreen(
+    transactionId: Long? = null,
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToTreasure: () -> Unit,
@@ -59,7 +60,7 @@ fun TransactionDetailsScreen(
                     modifier = Modifier.padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Transaction ID: [placeholder]")
+                    Text("Transaction ID: ${transactionId ?: "[not set]"}")
                     Text("Type: [placeholder]")
                     Text("Amount: $--.--")
                     Text("Date: [placeholder]")
