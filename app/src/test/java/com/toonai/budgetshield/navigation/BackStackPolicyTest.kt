@@ -1,6 +1,5 @@
 package com.toonai.budgetshield.navigation
 
-import androidx.navigation3.runtime.NavKey
 import org.junit.Test
 import org.junit.Assert.*
 
@@ -13,7 +12,7 @@ class BackStackPolicyTest {
     @Test
     fun `setup quest completion should replace stack with home`() {
         // Simulate: App starts at SetupQuest
-        val backStack = mutableListOf<NavKey>(SetupQuest)
+        val backStack = mutableListOf<Any>(SetupQuest)
 
         // User completes Setup Quest - should replace stack
         backStack.clear()
@@ -31,7 +30,7 @@ class BackStackPolicyTest {
     @Test
     fun `nested navigation back returns to prior screen`() {
         // Simulate: Home -> Treasure -> BillPayment
-        val backStack = mutableListOf<NavKey>(Home, Treasure, BillPayment)
+        val backStack = mutableListOf<Any>(Home, Treasure, BillPayment)
 
         // User presses Back from BillPayment
         backStack.removeLastOrNull()
@@ -45,10 +44,10 @@ class BackStackPolicyTest {
     fun `launch single top prevents duplicate at top of stack`() {
         // Test the launchSingleTop behavior - when navigating to same destination
         // that's already at top, it should not duplicate
-        val backStack = mutableListOf<NavKey>(Home)
+        val backStack = mutableListOf<Any>(Home)
 
         // Simulate launchSingleTop: check if last is same before adding
-        fun navigateWithSingleTop(key: NavKey) {
+        fun navigateWithSingleTop(key: Any) {
             if (backStack.lastOrNull() != key) {
                 backStack.add(key)
             }
@@ -70,7 +69,7 @@ class BackStackPolicyTest {
 
     @Test
     fun `back stack operations follow expected patterns`() {
-        val backStack = mutableListOf<NavKey>()
+        val backStack = mutableListOf<Any>()
 
         // Start at SetupQuest
         backStack.add(SetupQuest)
@@ -103,7 +102,7 @@ class BackStackPolicyTest {
 
     @Test
     fun `all 13 destinations can be added to back stack`() {
-        val backStack = mutableListOf<NavKey>()
+        val backStack = mutableListOf<Any>()
 
         // Add all 13 destinations
         val allDestinations = listOf(
@@ -119,7 +118,7 @@ class BackStackPolicyTest {
         assertEquals("Should have 13 entries", 13, backStack.size)
 
         // Pop all and verify order
-        val popped = mutableListOf<NavKey>()
+        val popped = mutableListOf<Any>()
         while (backStack.isNotEmpty()) {
             popped.add(backStack.removeLast())
         }
@@ -142,7 +141,7 @@ class BackStackPolicyTest {
 
     @Test
     fun `transaction details with different ids are different entries`() {
-        val backStack = mutableListOf<NavKey>()
+        val backStack = mutableListOf<Any>()
 
         val details1 = TransactionDetails(1L)
         val details2 = TransactionDetails(2L)
@@ -159,7 +158,7 @@ class BackStackPolicyTest {
     @Test
     fun `clear and replace works for setup quest completion`() {
         // Simulate the exact pattern used in Setup Quest completion
-        val backStack = mutableListOf<NavKey>(SetupQuest)
+        val backStack = mutableListOf<Any>(SetupQuest)
         
         // onReplaceStack callback behavior
         backStack.clear()
