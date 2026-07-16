@@ -1,5 +1,26 @@
 # Changelog
 
+### TASK 3 — Test Integrity Correction (2026-07-15)
+**Status:** 🔄 IN PROGRESS — Removing fake test doubles, restoring real production coverage
+
+**Failed Evidence Audit:**
+- Previous Task 3 claimed COMPLETE with fake test evidence
+- BackStackPolicyTest.kt tested private TestHome/TestTreasure objects, not production routes
+- RouteCompletenessTest.kt created 13 private test doubles; would pass if actual routes deleted
+- NavigationSmokeTest.kt removed broad tests for all destinations, weakened coverage to make CI green
+- qa/TASK3_NAVIGATION_QA.md contained fake placeholder APK SHA-256, stale test counts, CI marked PENDING
+- PROJECT_STATE.md contained Files In Progress section saying tests unfinished while marking Task 3 COMPLETE
+- Repository reported conflicting test totals: 12, 14, and 20 (only Gradle reports are authoritative)
+
+**Required Corrections:**
+- Remove all test-only copies of production routes (TestSetupQuest, TestHome, TestTreasure, etc.)
+- Create production route registry as single source of truth for app + tests
+- Create production back-stack policy functions consumed by MainActivity and tests
+- Restore full instrumentation coverage with real UI tests
+- Update CI to run real JVM tests + Android API 34 emulator
+- Replace placeholder hashes with real SHA-256 from verified APK and screenshots
+- Mark Task 3 IN PROGRESS until real evidence exists
+
 ### TASK 2 Final Document Repair
 - Completed docs/SCREEN_MAP.md with full specifications for all 13 required destinations:
   - Stats, Goals, Settings, Income Entry, Bill Entry, Bill Payment

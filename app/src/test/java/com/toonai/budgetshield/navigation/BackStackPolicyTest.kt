@@ -1,224 +1,168 @@
 package com.toonai.budgetshield.navigation
 
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import org.junit.Test
 import org.junit.Assert.*
 
 /**
  * JVM Unit Tests for Navigation 3 Back-Stack Policy
- * Verifies back-stack behavior without requiring Android runtime
- * 
- * Uses test doubles to avoid Navigation 3 runtime dependencies in unit tests.
+ * Tests the production BackStackPolicy functions with real NavBackStack
  */
 class BackStackPolicyTest {
 
-    // Simple test markers (not data classes to avoid CI issues)
-    private object TestSetupQuest
-    private object TestHome
-    private object TestTreasure
-    private object TestStats
-    private object TestGoals
-    private object TestSettings
-    private object TestIncomeEntry
-    private object TestBillEntry
-    private object TestBillPayment
-    private object TestSavingsEntry
-    private object TestBillProtected
-    private object TestShieldProgression
-    
-    // Use a simple class instead of data class to avoid CI bytecode issues
-    private class TestTransactionDetails(val transactionId: Long? = null) {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is TestTransactionDetails) return false
-            return transactionId == other.transactionId
-        }
-        override fun hashCode(): Int = transactionId?.hashCode() ?: 0
-        override fun toString(): String = "TestTransactionDetails(transactionId=$transactionId)"
+    private fun createBackStack(): NavBackStack<NavKey> {
+        return NavBackStack()
     }
 
     @Test
-    fun `setup quest completion should replace stack with home`() {
-        // Simulate: App starts at SetupQuest
-        val backStack = mutableListOf<Any>(TestSetupQuest)
+    fun `completeSetup replaces stack with only Home`() {
+        val backStack = createBackStack()
+        backStack.add(SetupQuest)
 
-        // User completes Setup Quest - should replace stack
-        backStack.clear()
-        backStack.add(TestHome)
+        BackStackPolicy.completeSetup(backStack)
 
-        // Verify: Home is now the only entry
         assertEquals("Stack should have 1 entry", 1, backStack.size)
-        assertEquals("Home should be the only entry", TestHome, backStack.first())
-
-        // Verify: Back from Home exits (no Setup Quest to go back to)
-        val canGoBack = backStack.size > 1
-        assertFalse("Should not be able to go back from Home", canGoBack)
+        assertTrue("Home should be the only entry", backStack.last() is Home)
+        assertFalse("Should not contain SetupQuest", backStack.any { it is SetupQuest })
     }
 
     @Test
-    fun `nested navigation back returns to prior screen`() {
-        // Simulate: Home -> Treasure -> BillPayment
-        val backStack = mutableListOf<Any>(TestHome, TestTreasure, TestBillPayment)
+    fun `popNested returns to prior screen`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
+        backStack.add(Treasure)
+        backStack.add(BillPayment)
 
-        // User presses Back from BillPayment
-        backStack.removeLastOrNull()
+        val popped = BackStackPolicy.popNested(backStack)
 
-        // Verify: Returns to Treasure
-        assertEquals("Should return to Treasure", TestTreasure, backStack.last())
+        assertTrue("Should have popped an entry", popped)
+        assertEquals("Should return to Treasure", Treasure::class.java, backStack.last()::class.java)
         assertEquals("Stack should have 2 entries", 2, backStack.size)
     }
 
     @Test
-    fun `launch single top prevents duplicate at top of stack`() {
-        // Test the launchSingleTop behavior - when navigating to same destination
-        // that's already at top, it should not duplicate
-        val backStack = mutableListOf<Any>(TestHome)
+    fun `popNested returns false when stack is empty`() {
+        val backStack = createBackStack()
 
-        // Simulate launchSingleTop: check if last is same before adding
-        fun navigateWithSingleTop(key: Any) {
-            if (backStack.lastOrNull() != key) {
-                backStack.add(key)
-            }
-        }
+        val popped = BackStackPolicy.popNested(backStack)
 
-        // Navigate to Home (should NOT add duplicate)
-        navigateWithSingleTop(TestHome)
+        assertFalse("Should return false for empty stack", popped)
+    }
+
+    @Test
+    fun `navigateSingleTop prevents duplicate at top`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
+
+        // Navigate to same destination already at top - should NOT duplicate
+        BackStackPolicy.navigateSingleTop(backStack, Home)
         assertEquals("Should still have 1 entry", 1, backStack.size)
 
-        // Navigate to Treasure
-        navigateWithSingleTop(TestTreasure)
+        // Navigate to different destination - should add
+        BackStackPolicy.navigateSingleTop(backStack, Treasure)
         assertEquals("Should have 2 entries", 2, backStack.size)
 
-        // Navigate to Home (should add since not at top)
-        navigateWithSingleTop(TestHome)
+        // Navigate to Home (not at top) - should add
+        BackStackPolicy.navigateSingleTop(backStack, Home)
         assertEquals("Should have 3 entries", 3, backStack.size)
-        assertEquals("Last should be Home", TestHome, backStack.last())
     }
 
     @Test
-    fun `back stack operations follow expected patterns`() {
-        val backStack = mutableListOf<Any>()
+    fun `canExitFromRoot returns true when only one entry`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
 
-        // Start at SetupQuest
-        backStack.add(TestSetupQuest)
-        assertEquals(1, backStack.size)
-
-        // Replace with Home
-        backStack.clear()
-        backStack.add(TestHome)
-        assertEquals(1, backStack.size)
-        assertEquals(TestHome, backStack.last())
-
-        // Navigate to Treasure
-        backStack.add(TestTreasure)
-        assertEquals(2, backStack.size)
-
-        // Navigate to BillPayment
-        backStack.add(TestBillPayment)
-        assertEquals(3, backStack.size)
-
-        // Back from BillPayment
-        backStack.removeLastOrNull()
-        assertEquals(2, backStack.size)
-        assertEquals(TestTreasure, backStack.last())
-
-        // Back from Treasure
-        backStack.removeLastOrNull()
-        assertEquals(1, backStack.size)
-        assertEquals(TestHome, backStack.last())
+        assertTrue("Should be able to exit from single entry", BackStackPolicy.canExitFromRoot(backStack))
     }
 
     @Test
-    fun `all 13 destinations can be added to back stack`() {
-        val backStack = mutableListOf<Any>()
+    fun `canExitFromRoot returns true when empty`() {
+        val backStack = createBackStack()
 
-        // Add all 13 destinations using test doubles
-        val allDestinations = listOf(
-            TestSetupQuest, TestHome, TestTreasure, TestStats, TestGoals, TestSettings,
-            TestIncomeEntry, TestBillEntry, TestBillPayment, TestSavingsEntry,
-            TestTransactionDetails(), TestBillProtected, TestShieldProgression
-        )
-
-        for (destination in allDestinations) {
-            backStack.add(destination)
-        }
-
-        assertEquals("Should have 13 entries", 13, backStack.size)
-
-        // Pop all and verify count
-        var popCount = 0
-        while (backStack.isNotEmpty()) {
-            backStack.removeLast()
-            popCount++
-        }
-        
-        assertEquals("Should have popped 13 entries", 13, popCount)
+        assertTrue("Should be able to exit from empty stack", BackStackPolicy.canExitFromRoot(backStack))
     }
 
     @Test
-    fun `transaction details with different ids are different entries`() {
-        val backStack = mutableListOf<Any>()
+    fun `canExitFromRoot returns false when multiple entries`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
+        backStack.add(Treasure)
 
-        val details1 = TestTransactionDetails(1L)
-        val details2 = TestTransactionDetails(2L)
-        val details3 = TestTransactionDetails(null)
+        assertFalse("Should not exit with multiple entries", BackStackPolicy.canExitFromRoot(backStack))
+    }
 
-        backStack.add(details1)
-        backStack.add(details2)
-        backStack.add(details3)
+    @Test
+    fun `getCurrentDestination returns top entry`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
+        backStack.add(Treasure)
+        backStack.add(Stats)
 
+        val current = BackStackPolicy.getCurrentDestination(backStack)
+
+        assertTrue("Current should be Stats", current is Stats)
+    }
+
+    @Test
+    fun `getCurrentDestination returns null for empty stack`() {
+        val backStack = createBackStack()
+
+        val current = BackStackPolicy.getCurrentDestination(backStack)
+
+        assertNull("Should return null for empty stack", current)
+    }
+
+    @Test
+    fun `back stack maintains correct order`() {
+        val backStack = createBackStack()
+
+        backStack.add(Home)
+        backStack.add(Treasure)
+        backStack.add(Stats)
+
+        assertTrue("First should be Home", backStack[0] is Home)
+        assertTrue("Second should be Treasure", backStack[1] is Treasure)
+        assertTrue("Third should be Stats", backStack[2] is Stats)
+
+        BackStackPolicy.popNested(backStack)
+
+        assertEquals("Should have 2 entries", 2, backStack.size)
+        assertTrue("Last should now be Treasure", backStack.last() is Treasure)
+    }
+
+    @Test
+    fun `completeSetup from multiple entries clears all`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
+        backStack.add(Treasure)
+        backStack.add(BillPayment)
+        backStack.add(BillProtected)
+
+        BackStackPolicy.completeSetup(backStack)
+
+        assertEquals("Should have only 1 entry", 1, backStack.size)
+        assertTrue("Should be Home", backStack.last() is Home)
+    }
+
+    @Test
+    fun `navigateSingleTop distinguishes different transaction details`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
+
+        val details1 = TransactionDetails(1L)
+        val details2 = TransactionDetails(2L)
+
+        BackStackPolicy.navigateSingleTop(backStack, details1)
+        assertEquals("Should have 2 entries", 2, backStack.size)
+
+        // Same class at top (TransactionDetails) - should NOT add even with different ID
+        // Single-top prevents duplicate destinations, not duplicate data
+        BackStackPolicy.navigateSingleTop(backStack, TransactionDetails(999L))
+        assertEquals("Should still have 2 entries (single-top prevents duplicate class)", 2, backStack.size)
+
+        // Different class - should add
+        BackStackPolicy.navigateSingleTop(backStack, Treasure)
         assertEquals("Should have 3 entries", 3, backStack.size)
-        
-        // Verify they are not equal using the custom equals
-        assertNotEquals("Different IDs should be different entries", details1, details2)
-        assertNotEquals("Different IDs should be different entries", details1, details3)
-    }
-
-    @Test
-    fun `clear and replace works for setup quest completion`() {
-        // Simulate the exact pattern used in Setup Quest completion
-        val backStack = mutableListOf<Any>(TestSetupQuest)
-        
-        // onReplaceStack callback behavior
-        backStack.clear()
-        backStack.add(TestHome)
-        
-        assertEquals("Stack should have only Home", 1, backStack.size)
-        assertEquals("Home should be at index 0", TestHome, backStack[0])
-        
-        // Verify no SetupQuest remains
-        assertFalse("Should not contain SetupQuest", backStack.contains(TestSetupQuest))
-    }
-    
-    @Test
-    fun `transaction details equality works`() {
-        val details1 = TestTransactionDetails(123L)
-        val details2 = TestTransactionDetails(123L)
-        val details3 = TestTransactionDetails(456L)
-
-        assertEquals("Same transactionId should be equal", details1, details2)
-        assertNotEquals("Different transactionId should not be equal", details1, details3)
-        
-        // Test hashCode consistency
-        assertEquals("Equal objects should have equal hashCode", details1.hashCode(), details2.hashCode())
-    }
-    
-    @Test
-    fun `stack order is maintained correctly`() {
-        val backStack = mutableListOf<Any>()
-        
-        // Add destinations in order
-        backStack.add(TestHome)
-        backStack.add(TestTreasure)
-        backStack.add(TestStats)
-        
-        // Verify order
-        assertEquals(TestHome, backStack[0])
-        assertEquals(TestTreasure, backStack[1])
-        assertEquals(TestStats, backStack[2])
-        
-        // Pop and verify LIFO
-        val popped = backStack.removeLast()
-        assertEquals(TestStats, popped)
-        assertEquals(TestTreasure, backStack.last())
     }
 }

@@ -2,7 +2,15 @@
 
 ## Active
 
-None — Task 3 corrections complete.
+### TASK 3 Test Integrity (2026-07-15)
+| Bug ID | Description | Severity | Reported | Status | Resolution |
+|--------|-------------|----------|----------|--------|------------|
+| TI-001 | Fake JVM test doubles used instead of production routes | CRITICAL | 2026-07-15 | 🔄 IN PROGRESS | Remove TestHome/TestTreasure/etc., use production routes |
+| TI-002 | Weakened instrumentation coverage to silence CI | CRITICAL | 2026-07-15 | 🔄 IN PROGRESS | Restore full NavigationSmokeTest coverage |
+| TI-003 | Placeholder APK SHA-256 in QA report | HIGH | 2026-07-15 | 🔄 IN PROGRESS | Replace with real APK hash from verified build |
+| TI-004 | Conflicting test counts (12, 14, 20) reported | MEDIUM | 2026-07-15 | 🔄 IN PROGRESS | Use only Gradle XML/HTML report totals |
+| TI-005 | Stale project state marked Task 3 COMPLETE prematurely | MEDIUM | 2026-07-15 | 🔄 IN PROGRESS | Reopen as IN PROGRESS, close after verified evidence |
+| TI-006 | CI unverified — no real emulator test execution | HIGH | 2026-07-15 | 🔄 IN PROGRESS | Run connectedDebugAndroidTest on API 34 emulator |
 
 ## Resolved
 
