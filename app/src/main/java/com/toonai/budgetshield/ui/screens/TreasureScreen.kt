@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
@@ -25,24 +28,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Premium gamified dark theme colors (matching Home)
+// Premium gamified dark theme - Treasure Vault Edition
 private val BackgroundDark = Color(0xFF02070D)
 private val PanelDark = Color(0xFF06121D)
 private val PanelBorder = Color(0xFF14364A)
 private val CyanAccent = Color(0xFF17E8F2)
+private val CyanGlow = Color(0xFF10CDD9)
 private val GreenAccent = Color(0xFF2FE6A7)
 private val GoldAccent = Color(0xFFFFC545)
+private val GoldGlow = Color(0xFFFFD700)
 private val BlueAccent = Color(0xFF1678B9)
+private val PurpleAccent = Color(0xFF9D4EDD)
 private val TextPrimary = Color(0xFFF4F7FB)
 private val TextMuted = Color(0xFFA6B1BF)
-private val DangerDot = Color(0xFFFF553D)
-private val PurpleAccent = Color(0xFF9D4EDD)
+private val ProtectedGreen = Color(0xFF2FE6A7)
+private val UnprotectedAmber = Color(0xFFFFB74D)
 
 @Composable
 fun TreasureScreen(
@@ -51,10 +60,24 @@ fun TreasureScreen(
     onNavigateToTransactionDetails: () -> Unit,
     onNavigateToHome: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = BackgroundDark
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
+        // Background gradient
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            BackgroundDark,
+                            Color(0xFF06121D),
+                            Color(0xFF0A1A2E)
+                        )
+                    )
+                )
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -64,33 +87,38 @@ fun TreasureScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
-                    .padding(top = 16.dp, bottom = 100.dp),
+                    .padding(top = 16.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header
-                HeaderSection()
+                // Header with back navigation
+                TreasureHeader(onNavigateToHome = onNavigateToHome)
 
-                // Protected Money Card
-                ProtectedMoneyCard(amount = "$1,250.00")
+                // Protected Money Vault Card
+                VaultCard(protectedAmount = "$1,250.00", totalBills = "$1,240.49")
 
-                // Bills Section
-                BillsSection(
+                // Bills Protection Status
+                ProtectionSummary(
+                    protectedCount = 2,
+                    unprotectedCount = 2,
+                    protectedAmount = "$1,029.99",
+                    unprotectedAmount = "$210.50"
+                )
+
+                // Bills List
+                BillsVaultSection(
                     onPayBill = onNavigateToBillPayment,
                     onAddBill = onNavigateToBillEntry
                 )
 
-                // Quick Actions
-                QuickActionsSection(
-                    onViewHistory = onNavigateToTransactionDetails,
-                    onBackHome = onNavigateToHome
-                )
+                // Transaction History Link
+                HistorySection(onViewHistory = onNavigateToTransactionDetails)
             }
         }
     }
 }
 
 @Composable
-private fun HeaderSection() {
+private fun TreasureHeader(onNavigateToHome: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -98,108 +126,283 @@ private fun HeaderSection() {
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Vault icon with glow
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(GoldAccent.copy(alpha = 0.15f)),
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                GoldAccent.copy(alpha = 0.3f),
+                                GoldAccent.copy(alpha = 0.1f)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "🗝️",
-                    fontSize = 20.sp
+                    fontSize = 24.sp
                 )
             }
 
             Column {
                 Text(
-                    text = "Treasure",
+                    text = "Treasure Vault",
                     color = TextPrimary,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Your Protected Funds",
-                    color = TextMuted,
-                    fontSize = 12.sp
+                    text = "Protected Funds",
+                    color = GoldAccent,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
+        }
+
+        // Close/Back button
+        TextButton(
+            onClick = onNavigateToHome,
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            Text(
+                text = "✕",
+                color = TextMuted,
+                fontSize = 20.sp
+            )
         }
     }
 }
 
 @Composable
-private fun ProtectedMoneyCard(amount: String) {
+private fun VaultCard(protectedAmount: String, totalBills: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp),
-        shape = RoundedCornerShape(20.dp),
+            .height(160.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0A1F2C)
+            containerColor = Color.Transparent
         )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
+                    Brush.linearGradient(
                         colors = listOf(
-                            GoldAccent.copy(alpha = 0.1f),
-                            Color.Transparent
-                        )
+                            Color(0xFF1A3A4A),
+                            Color(0xFF0D2430)
+                        ),
+                        start = Offset(0f, 0f),
+                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
                     )
                 )
+                .drawBehind {
+                    // Glowing border effect
+                    drawRect(
+                        color = GoldAccent.copy(alpha = 0.3f),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                }
                 .padding(20.dp)
         ) {
-            // Decorative icon
+            // Decorative vault illustration
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .size(80.dp)
+                    .size(100.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(GoldAccent.copy(alpha = 0.08f)),
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                GoldAccent.copy(alpha = 0.15f),
+                                Color.Transparent
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "🏆",
-                    fontSize = 40.sp
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "🏆",
+                        fontSize = 48.sp
+                    )
+                    Text(
+                        text = "VAULT",
+                        color = GoldAccent.copy(alpha = 0.6f),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Column(
                 modifier = Modifier.align(Alignment.CenterStart),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Shield badge
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(
-                        text = "🛡️",
-                        fontSize = 14.sp
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(ProtectedGreen.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🛡️",
+                            fontSize = 12.sp
+                        )
+                    }
                     Text(
                         text = "Protected Money",
-                        color = GoldAccent,
-                        fontSize = 14.sp,
+                        color = ProtectedGreen,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
 
+                // Amount
                 Text(
-                    text = amount,
+                    text = protectedAmount,
                     color = TextPrimary,
-                    fontSize = 36.sp,
+                    fontSize = 40.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
 
+                // Total bills context
                 Text(
-                    text = "Safe from overspending",
+                    text = "of $1,240.49 total bills",
                     color = TextMuted,
                     fontSize = 13.sp
+                )
+
+                // Progress bar
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .padding(top = 8.dp)
+                ) {
+                    // Background track
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Color(0xFF14364A))
+                    )
+                    // Progress fill (101% protected)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(1f)
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(ProtectedGreen, CyanAccent)
+                                )
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProtectionSummary(
+    protectedCount: Int,
+    unprotectedCount: Int,
+    protectedAmount: String,
+    unprotectedAmount: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Protected count
+        StatusPill(
+            modifier = Modifier.weight(1f),
+            icon = "🛡️",
+            label = "Protected",
+            count = protectedCount,
+            amount = protectedAmount,
+            color = ProtectedGreen
+        )
+
+        // Unprotected count
+        StatusPill(
+            modifier = Modifier.weight(1f),
+            icon = "⚠️",
+            label = "Needs Shield",
+            count = unprotectedCount,
+            amount = unprotectedAmount,
+            color = UnprotectedAmber
+        )
+    }
+}
+
+@Composable
+private fun StatusPill(
+    modifier: Modifier = Modifier,
+    icon: String,
+    label: String,
+    count: Int,
+    amount: String,
+    color: Color
+) {
+    Card(
+        modifier = modifier.height(80.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(text = icon, fontSize = 14.sp)
+                Text(
+                    text = label,
+                    color = TextMuted,
+                    fontSize = 12.sp
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$count",
+                    color = color,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = amount,
+                    color = TextPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -207,7 +410,7 @@ private fun ProtectedMoneyCard(amount: String) {
 }
 
 @Composable
-private fun BillsSection(
+private fun BillsVaultSection(
     onPayBill: () -> Unit,
     onAddBill: () -> Unit
 ) {
@@ -222,6 +425,7 @@ private fun BillsSection(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Section header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -232,246 +436,260 @@ private fun BillsSection(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "📄",
+                        text = "📜",
                         fontSize = 18.sp
                     )
                     Text(
-                        text = "Upcoming Bills",
+                        text = "Your Bills",
                         color = TextPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                TextButton(
+                Button(
                     onClick = onAddBill,
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CyanAccent.copy(alpha = 0.15f),
+                        contentColor = CyanAccent
+                    ),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "+ Add Bill",
-                        color = CyanAccent,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            // Bill cards
+            VaultBillCard(
+                icon = "🏠",
+                name = "Rent",
+                amount = "$950.00",
+                dueDate = "Jul 30",
+                daysLeft = 12,
+                isProtected = true,
+                onPay = onPayBill
+            )
+
+            VaultBillCard(
+                icon = "⚡",
+                name = "Utilities",
+                amount = "$145.50",
+                dueDate = "Jul 25",
+                daysLeft = 7,
+                isProtected = false,
+                onPay = onPayBill
+            )
+
+            VaultBillCard(
+                icon = "🌐",
+                name = "Internet",
+                amount = "$79.99",
+                dueDate = "Jul 20",
+                daysLeft = 2,
+                isProtected = true,
+                onPay = onPayBill
+            )
+
+            VaultBillCard(
+                icon = "📱",
+                name = "Phone",
+                amount = "$65.00",
+                dueDate = "Jul 28",
+                daysLeft = 10,
+                isProtected = false,
+                onPay = onPayBill
+            )
+        }
+    }
+}
+
+@Composable
+private fun VaultBillCard(
+    icon: String,
+    name: String,
+    amount: String,
+    dueDate: String,
+    daysLeft: Int,
+    isProtected: Boolean,
+    onPay: () -> Unit
+) {
+    val statusColor = if (isProtected) ProtectedGreen else UnprotectedAmber
+    val statusBg = if (isProtected) ProtectedGreen.copy(alpha = 0.1f) else UnprotectedAmber.copy(alpha = 0.1f)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF0D1B26)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Bill icon
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(statusBg),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon,
+                        fontSize = 20.sp
+                    )
+                }
+
+                Column {
+                    // Name with status badge
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = name,
+                            color = TextPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        // Status badge
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(statusBg)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (isProtected) "🛡️ Protected" else "⚠️ Unprotected",
+                                color = statusColor,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+
+                    // Due date with urgency
+                    val dateColor = when {
+                        daysLeft <= 3 -> Color(0xFFFF553D)
+                        daysLeft <= 7 -> UnprotectedAmber
+                        else -> TextMuted
+                    }
+
+                    Text(
+                        text = "$dueDate • $daysLeft days",
+                        color = dateColor,
                         fontSize = 12.sp
                     )
                 }
             }
 
-            // Bill items
-            BillItem(
-                icon = "🏠",
-                name = "Rent",
-                amount = "$950.00",
-                dueDate = "Due Jul 30",
-                isProtected = true,
-                onPay = onPayBill
-            )
+            // Amount and Pay button
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = amount,
+                    color = TextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
-            BillItem(
-                icon = "⚡",
-                name = "Utilities",
-                amount = "$145.50",
-                dueDate = "Due Jul 25",
-                isProtected = false,
-                onPay = onPayBill
-            )
+                Spacer(modifier = Modifier.height(4.dp))
 
-            BillItem(
-                icon = "🌐",
-                name = "Internet",
-                amount = "$79.99",
-                dueDate = "Due Jul 20",
-                isProtected = true,
-                onPay = onPayBill
-            )
-
-            BillItem(
-                icon = "📱",
-                name = "Phone",
-                amount = "$65.00",
-                dueDate = "Due Jul 28",
-                isProtected = false,
-                onPay = onPayBill
-            )
+                if (!isProtected) {
+                    Button(
+                        onClick = onPay,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CyanAccent,
+                            contentColor = Color.Black
+                        ),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "Protect",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "✓ Secured",
+                        color = ProtectedGreen,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun BillItem(
-    icon: String,
-    name: String,
-    amount: String,
-    dueDate: String,
-    isProtected: Boolean,
-    onPay: () -> Unit
-) {
-    Row(
+private fun HistorySection(onViewHistory: () -> Unit) {
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        onClick = onViewHistory
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(BlueAccent.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = icon,
-                    fontSize = 18.sp
-                )
-            }
-
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(BlueAccent.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = name,
+                        text = "📜",
+                        fontSize = 18.sp
+                    )
+                }
+
+                Column {
+                    Text(
+                        text = "Payment History",
                         color = TextPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )
-                    if (isProtected) {
-                        Text(
-                            text = "🛡️",
-                            fontSize = 12.sp
-                        )
-                    }
+                    Text(
+                        text = "View all transactions",
+                        color = TextMuted,
+                        fontSize = 12.sp
+                    )
                 }
-                Text(
-                    text = dueDate,
-                    color = TextMuted,
-                    fontSize = 12.sp
-                )
-            }
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = amount,
-                color = TextPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            TextButton(
-                onClick = onPay,
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = "Pay",
-                    color = CyanAccent,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuickActionsSection(
-    onViewHistory: () -> Unit,
-    onBackHome: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = PanelDark
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = "Quick Actions",
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                ActionCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "📜",
-                    title = "History",
-                    subtitle = "View payments",
-                    onClick = onViewHistory
-                )
-
-                ActionCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "🏠",
-                    title = "Home",
-                    subtitle = "Go back",
-                    onClick = onBackHome
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ActionCard(
-    modifier: Modifier = Modifier,
-    icon: String,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0D1B26)
-        ),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(CyanAccent.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = icon,
-                    fontSize = 22.sp
-                )
             }
 
             Text(
-                text = title,
-                color = TextPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Text(
-                text = subtitle,
-                color = TextMuted,
-                fontSize = 11.sp
+                text = "›",
+                color = CyanAccent,
+                fontSize = 24.sp
             )
         }
     }
