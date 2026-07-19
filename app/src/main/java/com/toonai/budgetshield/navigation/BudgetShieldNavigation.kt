@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import com.toonai.budgetshield.ui.screens.BillEntryScreen
 import com.toonai.budgetshield.ui.screens.BillPaymentScreen
 import com.toonai.budgetshield.ui.screens.BillProtectedScreen
+import com.toonai.budgetshield.ui.screens.BillsScreen
 import com.toonai.budgetshield.ui.screens.GoalsScreen
 import com.toonai.budgetshield.ui.screens.HomeScreen
 import com.toonai.budgetshield.ui.screens.IncomeEntryScreen
@@ -44,14 +45,21 @@ fun BudgetShieldEntry(
                 onNavigateToGoals = { onNavigate(Goals) },
                 onNavigateToSettings = { onNavigate(Settings) },
                 onNavigateToIncomeEntry = { onNavigate(IncomeEntry) },
-                onNavigateToBillEntry = { onNavigate(BillEntry) },
+                onNavigateToBillEntry = { onNavigate(Bills) },  // Home Pay Bill -> Bills & Payments
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
             )
         }
         is Treasure -> {
+            // Treasure is now the rewards hub, not the bills list
             TreasureScreen(
+                onNavigateToHome = { onNavigate(Home) }
+            )
+        }
+        is Bills -> {
+            // Bills & Payments screen - manages persisted bills
+            BillsScreen(
                 onNavigateToBillEntry = { onNavigate(BillEntry) },
                 onNavigateToBillPayment = { billId -> onNavigate(BillPaymentWithId(billId)) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
@@ -85,8 +93,9 @@ fun BudgetShieldEntry(
             )
         }
         is BillEntry -> {
+            // Bill Entry returns to Bills, not Treasure
             BillEntryScreen(
-                onNavigateToTreasure = { onNavigate(Treasure) },
+                onNavigateToTreasure = { onNavigate(Bills) },
                 onNavigateToHome = { onNavigate(Home) },
                 onNavigateToSetupQuest = { onNavigate(SetupQuest) }
             )
@@ -143,7 +152,7 @@ fun BudgetShieldEntry(
 }
 
 /**
- * Creates the Navigation 3 entry provider for all 13 destinations.
+ * Creates the Navigation 3 entry provider for all 14 destinations.
  * Returns a function that creates NavEntry for a given key.
  */
 fun createBudgetShieldEntryProvider(

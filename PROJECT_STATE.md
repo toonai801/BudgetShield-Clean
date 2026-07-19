@@ -1,20 +1,16 @@
 # Project State
 
 ## Current Task
-**Treasure Persistence Verification:** TECHNICALLY VERIFIED — Owner phone review required
+**Treasure/Bills Separation:** IMPLEMENTATION COMPLETE — Owner phone review required
 
-All 8 verified defects corrected. Production-path tests added. All gates pass.
+Separated gamified Treasure rewards hub from Bills & Payments. Home Pay Bill now opens Bills screen. Treasure contains no bill management. All existing tests pass.
 
-## Previous Rejected Work
-**Commits 5b5699c and 824ac83** — Claimed COMPLETE but had verified defects:
-- No persistence tests (only pre-existing 24 tests)
-- Destructive migration fallback enabled
-- Floating-point money conversion (Double * 100)
-- Ignored Result from createBill()
-- Weak date validation (regex only)
-- Blocked "Pay Bill" workflow (only showed for unprotected bills)
-- Unverified process death claims
-- Mismatched release tagging
+## Previous Work
+**Treasure Persistence Verification (04bbe94)** — COMPLETE, now superseded by this separation task
+
+All 8 verified defects corrected. Production-path tests added. All gates passed.
+
+**Commits 5b5699c and 824ac83** — Previously rejected, defects corrected in 04bbe94
 
 ## Project Identity
 - **Folder:** BudgetShield_CLEAN
@@ -22,51 +18,100 @@ All 8 verified defects corrected. Production-path tests added. All gates pass.
 - **Branch:** main
 - **Package:** com.toonai.budgetshield
 
-## Correction Status (2026-07-18) — COMPLETE
+## Task Status: Screen Ownership Correction COMPLETE
 
-### Defects Fixed
-1. **TI-007** (Tests): Added 54 original focused tests + 19 production-path tests
-   - MoneyParserTest.kt: 19 tests for exact currency parsing
-   - DateParserTest.kt: 19 tests for strict date validation  
-   - BillDaoTest.kt: 12 Room integration tests
-   - BillDatabasePersistenceTest.kt: 4 disk-based persistence tests
-   - BillRepositoryTest.kt: 13 tests for production payBill() path
-   - BillEntryViewModelTest.kt: 6 tests for validation and persistence failure
+### What Changed
+Created dedicated Bills route and BillsScreen, extracted from Treasure. Rebuilt Treasure as rewards hub. Updated navigation routing. HomeScreen.kt unchanged.
 
-2. **TI-008** (Migration): Removed destructive fallback
+### New Files Created
+- `app/src/main/java/com/toonai/budgetshield/ui/screens/BillsScreen.kt` — Extracted bill management UI
+- `app/src/main/java/com/toonai/budgetshield/ui/viewmodel/BillsViewModel.kt` — Bill management ViewModel (renamed from TreasureViewModel)
 
-3. **TI-009** (Money): Exact integer parsing via MoneyParser.kt
-   - 0.01, 0.10, 0.29, 1.05, 10.99, 9999.99 → exact cents
-   - Rejects negative, empty, malformed, overflow
+### Routes Updated
+- Added `Bills` typed route to BudgetShieldRoute.kt
+- Updated BudgetShieldRouteRegistry: 13 → 14 destinations
+- BudgetShieldNavigation: Home Pay Bill → Bills, Bill Entry completion → Bills
+- Treasure: Removed bill callbacks, now only onNavigateToHome
 
-4. **TI-010** (Result handling): BillEntryScreen and BillEntryViewModel properly handle Result
-   - Navigates only on success with valid ID
-   - Shows error on failure, preserves form
-   - Guards against duplicate saves
-   - BillEntryViewModelTest verifies Result.failure for blank name, zero/negative amount, blank date
-   - BillEntryViewModelTest verifies Result.failure on real persistence failure (closed database)
+### Screen Ownership (Corrected)
 
-5. **TI-011** (Date validation): Strict LocalDate validation via DateParser.kt
-   - Rejects Feb 30, Sept 31, month 13, day 32
-   - Leap year validation
+| Screen | Purpose | Navigation Changes |
+|--------|---------|-------------------|
+| Home | Dashboard, Safe Now | Pay Bill → Bills (was BillEntry) |
+| **Bills** | **Bills & Payments** | NEW ROUTE: manages bills, payments, protected money |
+| **Treasure** | **Rewards Hub** | No bill callbacks; contains chests, achievements, XP, streaks |
+| Stats | Read-only statistics | Unchanged (Stats/Goals out of scope for this task) |
+| Goals | Read-only goal progress | Unchanged (Stats/Goals out of scope for this task) |
 
-6. **TI-012** (Pay Bill access): TreasureScreen shows "Pay Bill" for ALL unpaid bills
-   - Protected and unprotected bills can both navigate to payment
+### Navigation Flow (Corrected)
 
-7. **TI-013** (Persistence proof): Disk-backed database tests
-   - Bill survives close/reopen
-   - Payment state persists
+```
+Home
+├── Pay Bill → Bills (NOT BillEntry)
+├── Treasure → Treasure (rewards hub)
+├── Stats → Stats (unchanged)
+├── Goals → Goals (unchanged)
+├── Add Income → IncomeEntry
+├── Save Money → SavingsEntry
+└── ...
 
-8. **TI-014** (Tagging): New verified release created with unique tag
+Bills
+├── Add Bill → BillEntry
+├── Pay Bill → BillPaymentWithId
+├── Transaction History → TransactionDetails
+└── Close → Home
 
-### Verification (this verification commit)
+BillEntry
+└── Save Success → Bills (NOT Treasure)
+
+Treasure
+├── Sections: Treasure Chests, Achievements, Reward History
+└── Close → Home
+```
+
+## Verification Results
+
+### Build & Tests
 - Build: ✅ SUCCESS (./gradlew clean assembleDebug)
-- Tests: ✅ 97 PASSED (MoneyParserTest 19 + DateParserTest 19 + BillDaoTest 12 + BillDatabasePersistenceTest 4 + BillRepositoryTest 13 + BillEntryViewModelTest 6 + BackStackPolicyTest 12 + RouteCompletenessTest 12)
-- Lint: ✅ SUCCESS (25 warnings only)
+- Unit Tests: ✅ PASSING (existing 97 tests)
+- Lint: ✅ SUCCESS
+- androidTest compilation: ✅ SUCCESS (./gradlew assembleDebugAndroidTest)
+
+### Files Unchanged (As Required)
 - HomeScreen.kt: ✅ UNCHANGED
-- BillRepositoryTest proves payBill() behavior directly via production repository
-- BillEntryViewModelTest proves persistence failures return Result.failure
-- Build size: ~15.02 MB
+- StatsScreen.kt: ✅ UNCHANGED  
+- GoalsScreen.kt: ✅ UNCHANGED
+- Bill persistence layer (entity, DAO, repository): ✅ UNCHANGED
+- All existing 97 tests: ✅ PASSING
+
+### Files Changed
+- BudgetShieldRoute.kt: Added Bills route
+- BudgetShieldRouteRegistry.kt: Updated to 14 destinations
+- BudgetShieldNavigation.kt: Corrected routing (Home→Bills, BillEntry→Bills)
+- TreasureScreen.kt: Rebuilt as rewards hub
+- BillsScreen.kt: NEW (extracted bill management)
+- BillsViewModel.kt: NEW (bill management ViewModel)
+- RouteCompletenessTest.kt: Updated for 14 routes
+- NavigationSmokeTest.kt: Updated for Bills/Treasure separation
+
+### Treasure (Rewards Hub) Content
+- Header: "Treasure Vault" with chest/gem imagery
+- XP & Shield Level: Progress bar (empty/coming soon state)
+- Current Streak: Flame icon, "No active streak" (empty state)
+- Treasure Chests (expandable): "No treasures unlocked yet", locked previews
+- Achievements (expandable): Locked achievements (Bill Protector, Savings Starter, Streak Keeper)
+- Reward History (expandable): "No rewards earned yet"
+- **NO:** Bill list, protected money totals, Add Bill, Pay Bill
+
+### Bills (Bill Management) Content
+- Header: "Bills & Payments" with bill icon
+- Protected Money Vault card with totals
+- Protection Summary (protected/unprotected counts)
+- Bills list with due dates, amounts, status
+- Add Bill button
+- Pay Bill buttons for unpaid bills
+- Transaction History link
+- **NO:** Chests, achievements, XP, streaks
 
 ## Technical Foundation
 - **AGP:** 8.13.2
@@ -78,72 +123,49 @@ All 8 verified defects corrected. Production-path tests added. All gates pass.
 - **minSdk:** 26
 - **Compose BOM:** 2026.06.00
 - **Activity Compose:** 1.13.0
-- **Lifecycle:** 2.10.0 (2.11.0 requires compileSdk 37)
-- **Navigation 3:** 1.1.4 (androidx.navigation3:navigation3-runtime and navigation3-ui)
+- **Lifecycle:** 2.10.0
+- **Navigation 3:** 1.1.4
 - **Kotlinx Serialization:** 1.9.0
 - **Room:** 2.7.1
 
 ## Architecture
 - Single MainActivity (ComponentActivity)
-- REAL Navigation 3 with serializable typed routes
-- 13 destinations: SetupQuest, Home, Treasure, Stats, Goals, Settings, IncomeEntry, BillEntry, BillPayment, SavingsEntry, TransactionDetails, BillProtected, ShieldProgression
-- Room persistence for bills with reactive Flow queries
+- Navigation 3 with 14 serializable typed routes
+- Room persistence for bills (unchanged)
 - MVVM pattern: Repository → ViewModel → Compose UI
-- CompositionLocal for repository dependency injection
-- Dark premium gamified Treasure theme (vault styling)
+- Dark premium gamified theme for both screens
 
-## Data Layer
-- `app/src/main/java/com/toonai/budgetshield/data/model/Bill.kt` — Bill entity with Room annotations
-- `app/src/main/java/com/toonai/budgetshield/data/database/BillDao.kt` — Data access with Flow queries
-- `app/src/main/java/com/toonai/budgetshield/data/database/BudgetShieldDatabase.kt` — Room database
-- `app/src/main/java/com/toonai/budgetshield/data/repository/BillRepository.kt` — Repository pattern
+## Data Layer (Unchanged)
+- `Bill.kt` — Bill entity
+- `BillDao.kt` — Data access with Flow queries
+- `BudgetShieldDatabase.kt` — Room database
+- `BillRepository.kt` — Repository pattern
 
 ## ViewModels
-- `app/src/main/java/com/toonai/budgetshield/ui/viewmodel/TreasureViewModel.kt` — Treasure screen state
-- `app/src/main/java/com/toonai/budgetshield/ui/viewmodel/BillEntryViewModel.kt` — Bill creation with Result handling
-- `app/src/main/java/com/toonai/budgetshield/ui/viewmodel/BillPaymentViewModel.kt` — Payment processing
+- `BillsViewModel.kt` — Bills screen state (extracted from former TreasureViewModel)
+- `BillEntryViewModel.kt` — Bill creation
+- `BillPaymentViewModel.kt` — Payment processing
 
-## New Production-Path Tests
-- `app/src/test/java/com/toonai/budgetshield/data/repository/BillRepositoryTest.kt` — 13 tests for production repository payBill()
-- `app/src/test/java/com/toonai/budgetshield/ui/viewmodel/BillEntryViewModelTest.kt` — 6 tests for validation and persistence failure
+## Tests (All Passing)
+- 97 focused unit tests (existing, unchanged)
+- RouteCompletenessTest: Updated for 14 routes, Bills/Treasure distinct
+- NavigationSmokeTest: Updated for Bills destination
+- BackStackPolicyTest: Unchanged, passing
 
-## Existing Focused Tests
-- `app/src/test/java/com/toonai/budgetshield/util/MoneyParserTest.kt` — 19 tests for exact currency parsing
-- `app/src/test/java/com/toonai/budgetshield/util/DateParserTest.kt` — 19 tests for strict date validation
-- `app/src/test/java/com/toonai/budgetshield/data/database/BillDaoTest.kt` — 12 Room integration tests
-- `app/src/test/java/com/toonai/budgetshield/data/database/BillDatabasePersistenceTest.kt` — 4 disk-based persistence tests
-- `app/src/test/java/com/toonai/budgetshield/navigation/BackStackPolicyTest.kt` — 12 navigation tests
-- `app/src/test/java/com/toonai/budgetshield/navigation/RouteCompletenessTest.kt` — 12 route completeness tests
-
-## Reference Images
-All three immutable reference images preserved:
+## Reference Images (Preserved)
 - `docs/reference/home-reference.png`
 - `docs/reference/setup-quest-reference.png`
 - `docs/reference/bill-protected-reference.png`
 
 ## Task History
-- **Treasure Persistence Verification:** this verification commit — Production-path tests added, all defects corrected
-- **Treasure Persisted Bills:** 5b5699c113cb7ab66b55a8ffebca7ce3d26abcb4 — REJECTED (verified defects)
-- **Task 2 Contract commit:** c2b963914d1240f544e0fa718aefe830e3d251c0 (initial contracts)
-- **Task 2 Reference correction:** bf999d2574dc392eb3c1cb98f61722197d165854 (three immutable reference images)
-- **Task 2 Document repair:** 48e5b06b94d33a174b4e92d89cd7e394049d3b44 (complete screen map, data model, Safe Now rules)
-- **Task 2 Logic correction:** a625993079318acbca155a528f85c1146e2701ab (resolved model contradictions)
-- **Task 2 SHA correction:** eb54be3522ee514a14e416104c322ddd388009d4 (corrected recorded SHA)
+- **Treasure/Bills Separation:** this commit — Separated rewards hub from bill management
+- **Treasure Persistence Verification (04bbe94):** COMPLETE — All defects fixed, 97 tests
+- Earlier commits: See previous PROJECT_STATE versions
+
+## Documentation Updates
+- `docs/SCREEN_MAP.md`: Updated with corrected screen ownership
+- `DECISIONS.md`: Added Screen Ownership Correction section
 
 ## Next Tasks
-- Owner phone review of Treasure persisted bills (required before proceeding)
-- TASK 4: Exact design system and reusable components
-- TASK 5: Setup Quest
-- TASK 6: Home screen visual implementation
-- TASK 7: Income and payday system
-- TASK 8: Bills and recurrence system
-- TASK 9: Safe Now calculation engine with unit tests
-- TASK 10: Home screen live-data integration
-- TASK 11: Transactions and editing
-- TASK 12: Savings, wants, and food budgets
-- TASK 13: Shield XP and achievement system
-- TASK 14: Stats, goals, and settings
-- TASK 15: Full navigation and interaction QA
-- TASK 16: Visual accuracy pass
-- TASK 17: Fresh-install beta QA
-- TASK 18: Signed beta APK and GitHub release
+- Owner phone review of separated Treasure/Bills screens
+- Task 4+: Design system, Setup Quest, Home, Income, Bills engine, Safe Now calculation, etc.

@@ -88,6 +88,64 @@ Local persistent storage (Room/SQLite planned for future tasks)
 
 ### Navigation Strategy
 - Type-safe routes with `@Serializable`
-- 13 destinations: SetupQuest, Home, Treasure, Stats, Goals, Settings, IncomeEntry, BillEntry, BillPayment, SavingsEntry, TransactionDetails, BillProtected, ShieldProgression
+- **14 destinations:** SetupQuest, Home, Treasure, Bills, Stats, Goals, Settings, IncomeEntry, BillEntry, BillPayment, SavingsEntry, TransactionDetails, BillProtected, ShieldProgression
 - Back-stack managed by Navigation 3
 - Start route: SetupQuest (temporary, until first-run persistence)
+
+---
+
+## Screen Ownership Correction (2026-07-18)
+
+### Decision: Separate Treasure from Bills
+
+**Problem:** The original design incorrectly defined Treasure as the bills list and protected money destination. This caused Home's "Pay Bill" button to navigate to bill entry instead of bill management, and overloaded Treasure with both rewards hub and bill management responsibilities.
+
+**Decision:** Create a dedicated "Bills" route that owns:
+- Persisted bill list display
+- Protected money totals and calculations
+- Add Bill action
+- Pay Bill action
+- Transaction history
+
+Treasure is now exclusively the **gamified rewards hub** containing:
+- Treasure Chests (collectibles)
+- Achievements
+- XP and Shield Level progress
+- Streaks
+- Reward History
+
+### Corrected Entry Points
+
+| Action | Entry Route | Target Route |
+|--------|-------------|--------------|
+| Home → Pay Bill | Home | Bills (NOT BillEntry) |
+| Bills → Add Bill | Bills | BillEntry |
+| Bills → Pay Bill | Bills | BillPaymentWithId |
+| Bill Entry Save | BillEntry | Bills (NOT Treasure) |
+| Home → Treasure | Home | Treasure (rewards hub) |
+
+### Screen Ownership Summary
+
+| Screen | Purpose | Data Dependencies |
+|--------|---------|-------------------|
+| Home | Dashboard, Safe Now, quick actions | Cleared cash, protected count |
+| **Bills** | **Bill management, payments, protected money** | BillRepository, occurrences |
+| **Treasure** | **Rewards hub: chests, achievements, XP, streaks** | Shield XP, streaks, collectibles (when implemented) |
+| Stats | Read-only financial statistics | Transactions, aggregated data |
+| Goals | Read-only goal progress display | Savings goals, contributions |
+
+### Navigation Registry Update
+- `BudgetShieldRoute.kt`: Added `Bills` object route
+- `BudgetShieldRouteRegistry`: DESTINATION_COUNT updated from 13 to 14
+- `BudgetShieldNavigation.kt`: Home's onNavigateToBillEntry now routes to `Bills`
+- `BillEntryScreen`: onNavigateToTreasure callback now returns to `Bills`
+
+### Visual Requirements
+- Bills: Dark premium finance-game aesthetic, "Bills & Payments" header
+- Treasure: Dark fantasy rewards hub, "Treasure Vault" header, chest/achievement themed
+
+### Test Updates
+- `RouteCompletenessTest`: Updated to expect 14 routes, verify Bills and Treasure are distinct
+- `NavigationSmokeTest`: Updated to verify Bills destination reachable via Pay Bill, Treasure shows rewards hub
+
+This decision was made to correct the architectural confusion between game rewards (Treasure) and financial obligations (Bills), enabling each screen to have a clear, single responsibility.

@@ -4,13 +4,13 @@ import androidx.navigation3.runtime.NavKey
 
 /**
  * Production Route Registry - Single Source of Truth
- * Contains all 13 approved production destinations.
+ * Contains all 14 approved production destinations.
  * Used by both the production app and tests.
  */
 object BudgetShieldRouteRegistry {
 
     /**
-     * All 13 production destinations in approved order.
+     * All 14 production destinations in approved order.
      * This is the authoritative list. If a route is missing from here,
      * it is not part of the production app.
      */
@@ -18,6 +18,7 @@ object BudgetShieldRouteRegistry {
         SetupQuest,
         Home,
         Treasure,
+        Bills,
         Stats,
         Goals,
         Settings,
@@ -33,7 +34,7 @@ object BudgetShieldRouteRegistry {
     /**
      * Count of production destinations.
      */
-    const val DESTINATION_COUNT: Int = 13
+    const val DESTINATION_COUNT: Int = 14
 
     /**
      * Check if a given key is a valid production destination.
@@ -43,6 +44,7 @@ object BudgetShieldRouteRegistry {
             is SetupQuest,
             is Home,
             is Treasure,
+            is Bills,
             is Stats,
             is Goals,
             is Settings,

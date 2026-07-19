@@ -6,9 +6,10 @@
 |--------|---------|
 | Setup Quest | Onboarding flow |
 | Home | Main dashboard with Safe Now |
-| Treasure | Bills and protected money |
-| Stats | Financial statistics |
-| Goals | Savings goals tracking |
+| Treasure | **Gamified rewards hub** - collectibles, achievements, XP, streaks |
+| Bills | **Bills & Payments** - bill management and protected money |
+| Stats | **Read-only** game-like financial statistics (month view) |
+| Goals | **Read-only** game-like goal progress display |
 | Settings | App configuration |
 | Income Entry | Add income sources |
 | Bill Entry | Add/edit bills |
@@ -61,15 +62,15 @@ What data this screen requires.
 - Current month indicator
 
 **Required Actions:**
-- Add Income
-- Pay Bill
-- Save Money
+- Add Income → Income Entry
+- **Pay Bill → Bills** (NOT Bill Entry)
+- Save Money → Savings Entry
 - Open Safe Now details
 - Switch month
 - Open Recent Activity
-- Navigate to Treasure
-- Navigate to Stats
-- Navigate to Goals
+- Navigate to Treasure (rewards hub)
+- Navigate to Stats (statistics)
+- Navigate to Goals (progress)
 - Navigate to Settings
 
 **Entry Points:**
@@ -78,16 +79,15 @@ What data this screen requires.
 - Notification tap
 
 **Exit Points:**
-- Treasure screen
-- Stats screen
-- Goals screen
+- Treasure screen (rewards)
+- Stats screen (statistics)
+- Goals screen (progress)
 - Settings screen
 - Income Entry
-- Bill Entry
+- **Bills (via Pay Bill)**
 - Savings Entry
 - Transaction Details
 - Shield Progression
-- Bill Payment
 
 **Empty State:** Setup Quest prompt (if no income or bills configured)
 
@@ -142,48 +142,95 @@ What data this screen requires.
 
 ## Treasure Screen
 
-**Purpose:** View bills and protected money
+**Purpose:** Gamified rewards hub - displays collectibles, achievements, XP, streaks, and reward history. **NOT the bills list.**
 
 **Primary Information:**
-- Protected money total
-- Bills list with due dates
-- Payment status indicators
-- Protection status (shield icon)
+- Treasure header with chest icon
+- XP and Shield Level progress (with progress bar)
+- Current Streak display
+- Expandable sections: Treasure Chests, Achievements, Reward History
 
 **Required Actions:**
-- Add bill
-- Edit bill
-- Pay bill
-- View bill details
-- Toggle bill protection
-- Sort/filter bills
+- View XP/level progress
+- View current streak
+- Expand/collapse Treasure Chests section
+- Expand/collapse Achievements section
+- Expand/collapse Reward History section
+- Navigate back to Home
 
 **Entry Points:**
-- Home navigation button
-- Bill payment completion
+- Home navigation button (rewards hub)
+- Achievement completion
 - Notification tap
 
 **Exit Points:**
-- Bill Entry
-- Bill Payment
-- Transaction Details
 - Home
+- Shield Progression (if available)
 
-**Empty State:** "No bills yet" with add button and explanation of protection
+**Empty State:** 
+- XP/Level: "Coming Soon" with progress bar at 0%
+- Streak: "No active streak" with guidance to save daily
+- Chests: "No treasures unlocked yet" with locked chest previews (Bronze/Silver/Gold)
+- Achievements: List of locked achievements with progress
+- History: "No rewards earned yet"
+
+**Error State:** Retry / data sync error
+
+**Data Dependencies:**
+- Shield XP data (when implemented)
+- Streak data (when implemented)
+- Unlocked treasure/collectible data (when implemented)
+- Achievement progress data (when implemented)
+
+**Important:** Treasure contains NO bill list, NO protected money totals, NO Add Bill button, NO Pay Bill button. For bill management, use Bills & Payments screen.
+
+---
+
+## Bills Screen
+
+**Purpose:** Bills & Payments - manage all bills, view protected money, pay bills, add new bills.
+
+**Primary Information:**
+- Protected Money Vault card (large total)
+- Protection summary (protected count, unprotected count)
+- Bills list with due dates, amounts, and status
+- "Add Bill" action
+
+**Required Actions:**
+- Add bill → Bill Entry
+- Pay bill → Bill Payment (with selected bill ID)
+- View transaction history
+- Delete bill (if editing)
+- Navigate back to Home
+
+**Entry Points:**
+- Home → **Pay Bill** button
+- Bill Entry completion
+- Bill Payment completion
+- Notification tap (due bill)
+
+**Exit Points:**
+- Bill Entry (add new)
+- Bill Payment (pay selected)
+- Transaction Details (history)
+- Home (close/back)
+
+**Empty State:** "No Bills Yet" with "Add Your First Bill" call-to-action
 
 **Error State:** Retry / offline message with cached data
 
 **Data Dependencies:**
-- Bills list with occurrences
+- Bills list from BillRepository (Room database)
+- Protected money totals (calculated from repository)
 - Payment history
-- Protection settings
-- Safe Now calculation
+
+**Note:** This screen previously lived in Treasure. It is now a dedicated destination with its own route (Bills).
 
 ---
 
 ## Stats Screen
 
-**Purpose:** Financial statistics and insights
+**Purpose:** **Read-only** game-like financial statistics display for selected month. Input belongs elsewhere.
 
 **Primary Information:**
 - Monthly spending breakdown
@@ -216,11 +263,13 @@ What data this screen requires.
 - Bill payments
 - Date range selected
 
+**Note:** Stats is read-only in this design. Data entry flows launch from Home or dedicated entry screens.
+
 ---
 
 ## Goals Screen
 
-**Purpose:** Savings goals tracking and progress
+**Purpose:** **Read-only** game-like savings goals progress display. Add/edit/contribution input belongs to dedicated entry flows.
 
 **Primary Information:**
 - Active savings goals list
@@ -229,12 +278,9 @@ What data this screen requires.
 - Total saved this month
 
 **Required Actions:**
-- Add new savings goal
-- Edit goal
-- Delete goal
-- Add contribution to goal
+- View goal details
+- Launch Savings Entry (from Home) to contribute
 - View contribution history
-- Mark goal complete
 
 **Entry Points:**
 - Home navigation
@@ -243,8 +289,7 @@ What data this screen requires.
 
 **Exit Points:**
 - Home
-- Stats
-- Savings Entry
+- Savings Entry (add contribution)
 - Transaction Details
 
 **Empty State:** "No savings goals yet" with add button and example goals
@@ -255,6 +300,8 @@ What data this screen requires.
 - SavingsGoal entities
 - SavingsContribution history
 - Shield XP for streaks
+
+**Note:** Goals is read-only for goal display. Creating/editing goals and adding contributions happens via dedicated entry flows launched from Home.
 
 ---
 
@@ -360,13 +407,12 @@ What data this screen requires.
 - Set recurrence end date (optional)
 
 **Entry Points:**
-- Home → Pay Bill (add new)
-- Treasure → Add Bill
+- **Bills → Add Bill**
 - Setup Quest → Bills chapter
 
 **Exit Points:**
-- Treasure
-- Home
+- **Bills** (completion)
+- Home (cancel)
 - Setup Quest (next chapter)
 
 **Empty State:** N/A
@@ -399,13 +445,11 @@ What data this screen requires.
 - Split payment across multiple bills (advanced)
 
 **Entry Points:**
-- Treasure → Pay Bill
-- Home → Pay Bill
+- **Bills → Pay Bill** (with bill ID)
 - Notification tap (due bill)
 
 **Exit Points:**
-- Treasure
-- Home
+- **Bills** (cancel/back)
 - Bill Protected Achievement (on success)
 
 **Empty State:** N/A
@@ -477,13 +521,13 @@ What data this screen requires.
 
 **Entry Points:**
 - Home → Recent Activity
-- Treasure → Payment history
+- **Bills → Payment History**
 - Stats → Transaction drill-down
 - Goals → Contribution history
 
 **Exit Points:**
 - Home
-- Treasure
+- **Bills**
 - Stats
 - Goals
 - Income Entry (if income-related)
@@ -520,7 +564,7 @@ What data this screen requires.
 
 **Exit Points:**
 - Home
-- Treasure
+- **Bills**
 - Shield Progression
 
 **Empty State:** N/A

@@ -4,7 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 // Architecture Foundation - Navigation Routes (Task 3)
-// All 13 product destinations with type-safe Navigation 3
+// All 14 product destinations with type-safe Navigation 3
 // Routes implement NavKey interface for Navigation 3 compatibility
 
 @Serializable
@@ -15,6 +15,9 @@ object Home : NavKey
 
 @Serializable
 object Treasure : NavKey
+
+@Serializable
+object Bills : NavKey
 
 @Serializable
 object Stats : NavKey
