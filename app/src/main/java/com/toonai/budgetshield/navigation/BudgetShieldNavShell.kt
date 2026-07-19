@@ -54,7 +54,7 @@ fun getMainDestinationForKey(key: NavKey): MainDestination? {
         is TransactionDetails -> MainDestination.HOME
         is BillProtected -> MainDestination.HOME
         is ShieldProgression -> MainDestination.HOME
-        // SetupQuest has no footer
+        // SetupQuest has no selected tab but still shows footer
         is SetupQuest -> null
         else -> null
     }
@@ -197,8 +197,12 @@ fun createBudgetShieldEntryProvider(
         NavEntry(key) {
             val selectedDestination = getMainDestinationForKey(key)
 
-            if (selectedDestination != null) {
-                // Wrap with shared scaffold for main destinations and Home-owned routes
+            // All registered routes show the shared footer
+            // SetupQuest shows no selected tab (null), but footer still appears
+            val isRegisteredRoute = BudgetShieldRouteRegistry.isValidDestination(key)
+
+            if (isRegisteredRoute) {
+                // Wrap with shared scaffold for all registered routes
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
@@ -237,7 +241,7 @@ fun createBudgetShieldEntryProvider(
                     }
                 }
             } else {
-                // Setup Quest and unknown screens render without scaffold
+                // Unknown screens render without scaffold
                 // Apply background only
                 Box(
                     modifier = Modifier

@@ -110,24 +110,38 @@ class BudgetShieldNavShellTest {
 
     @Test
     fun `getMainDestinationForKey returns null for SetupQuest`() {
-        // SetupQuest should have no footer
+        // SetupQuest should have footer but no selected tab (null destination)
         val result = getMainDestinationForKey(SetupQuest)
-        assertNull("SetupQuest should not map to any main destination", result)
+        assertNull("SetupQuest should not have a selected tab", result)
     }
 
     @Test
-    fun `all production routes are mapped to a MainDestination or null`() {
+    fun `all production routes have footer - SetupQuest has null selection but still shows footer`() {
         val allRoutes = BudgetShieldRouteRegistry.allDestinations
+
+        // All 14 routes should either map to a destination OR SetupQuest (which has footer but no selected tab)
+        assertEquals("Should have 14 registered routes", 14, allRoutes.size)
 
         for (route in allRoutes) {
             val destination = getMainDestinationForKey(route)
 
-            // Every route should either map to a destination or explicitly be null (SetupQuest)
+            // SetupQuest returns null (no selected tab), but ALL routes show footer
+            // Footer presence is determined by isValidDestination, not by getMainDestinationForKey
             when (route) {
-                is SetupQuest -> assertNull("SetupQuest should have no destination", destination)
+                is SetupQuest -> {
+                    assertNull("SetupQuest should have no selected tab", destination)
+                    assertTrue("SetupQuest is a valid registered route", BudgetShieldRouteRegistry.isValidDestination(route))
+                }
                 else -> assertNotNull("$route should map to a MainDestination", destination)
             }
         }
+    }
+
+    @Test
+    fun `SetupQuest uses footer even with null selected destination`() {
+        // SetupQuest is registered and gets footer, but shows no selected tab
+        assertTrue("SetupQuest is valid registered route", BudgetShieldRouteRegistry.isValidDestination(SetupQuest))
+        assertNull("SetupQuest has no selected tab", getMainDestinationForKey(SetupQuest))
     }
 
     @Test

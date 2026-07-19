@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,7 +37,7 @@ private val TextMuted = Color(0xFFA6B1BF)
 @Composable
 fun BudgetShieldBottomNav(
     modifier: Modifier = Modifier,
-    currentDestination: MainDestination,
+    currentDestination: MainDestination?,
     onNavigateToHome: () -> Unit,
     onNavigateToTreasure: () -> Unit,
     onNavigateToStats: () -> Unit,
@@ -46,7 +47,8 @@ fun BudgetShieldBottomNav(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp),
+            .height(80.dp)
+            .navigationBarsPadding(),
         color = Color(0xFF06121D)
     ) {
         Column {
