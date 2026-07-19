@@ -18,6 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +52,8 @@ fun BudgetShieldBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .height(80.dp)
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .testTag("budgetshield_bottom_nav"),
         color = Color(0xFF06121D)
     ) {
         Column {
@@ -70,40 +75,45 @@ fun BudgetShieldBottomNav(
             ) {
                 // Home
                 NavItem(
-                    icon = "\uD83C\uDFE0",
+                    icon = "🏠",
                     label = "Home",
+                    testTag = "bottom_nav_home",
                     isActive = currentDestination == MainDestination.HOME,
                     onClick = onNavigateToHome
                 )
 
                 // Treasure
                 NavItem(
-                    icon = "\uD83E\uDDF0",
+                    icon = "🧰",
                     label = "Treasure",
+                    testTag = "bottom_nav_treasure",
                     isActive = currentDestination == MainDestination.TREASURE,
                     onClick = onNavigateToTreasure
                 )
 
                 // Stats
                 NavItem(
-                    icon = "\uD83D\uDCCA",
+                    icon = "📊",
                     label = "Stats",
+                    testTag = "bottom_nav_stats",
                     isActive = currentDestination == MainDestination.STATS,
                     onClick = onNavigateToStats
                 )
 
                 // Goals
                 NavItem(
-                    icon = "\uD83C\uDFAF",
+                    icon = "🎯",
                     label = "Goals",
+                    testTag = "bottom_nav_goals",
                     isActive = currentDestination == MainDestination.GOALS,
                     onClick = onNavigateToGoals
                 )
 
                 // Settings
                 NavItem(
-                    icon = "\u2699\uFE0F",
+                    icon = "⚙️",
                     label = "Settings",
+                    testTag = "bottom_nav_settings",
                     isActive = currentDestination == MainDestination.SETTINGS,
                     onClick = onNavigateToSettings
                 )
@@ -138,6 +148,7 @@ enum class MainDestination(
 private fun NavItem(
     icon: String,
     label: String,
+    testTag: String,
     isActive: Boolean,
     onClick: () -> Unit
 ) {
@@ -145,7 +156,13 @@ private fun NavItem(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier
+            .testTag(testTag)
+            .semantics {
+                contentDescription = label
+                selected = isActive
+            }
     ) {
         TextButton(
             onClick = onClick,

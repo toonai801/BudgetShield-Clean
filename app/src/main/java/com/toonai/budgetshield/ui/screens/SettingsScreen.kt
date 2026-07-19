@@ -125,9 +125,9 @@ private fun HeaderSection() {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Customize your experience",
-                    color = TextMuted,
-                    fontSize = 12.sp
+                    text = "Beta build 1.1.0-beta-footer",
+                    color = CyanAccent,
+                    fontSize = 11.sp
                 )
             }
         }
