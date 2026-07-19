@@ -167,22 +167,18 @@ What data this screen requires.
 - Home
 - Shield Progression (if available)
 
-**Empty State:** 
-- XP/Level: "Coming Soon" with progress bar at 0%
-- Streak: "No active streak" with guidance to save daily
-- Chests: "No treasures unlocked yet" with locked chest previews (Bronze/Silver/Gold)
-- Achievements: List of locked achievements with progress
-- History: "No rewards earned yet"
+**Empty State:**
+- XP & Shield Level: "No XP records"
+- Current Streak: "No streak records"
+- Treasure Chests: "No collectibles recorded"
+- Achievements: "No achievements recorded"
+- Reward History: "No reward history"
 
 **Error State:** Retry / data sync error
 
-**Data Dependencies:**
-- Shield XP data (when implemented)
-- Streak data (when implemented)
-- Unlocked treasure/collectible data (when implemented)
-- Achievement progress data (when implemented)
+**Data Dependencies:** None — Treasure is a display-only screen with local expansion state only. Real XP, streaks, collectibles, and achievements will require future data layer implementation.
 
-**Important:** Treasure contains NO bill list, NO protected money totals, NO Add Bill button, NO Pay Bill button. For bill management, use Bills & Payments screen.
+**Important:** Treasure contains NO bill list, NO protected money totals, NO Add Bill button, NO Pay Bill button, NO XP progress bars without real data, NO streak counts without real data, NO earning rules or earning guidance. For bill management, use Bills & Payments screen.
 
 ---
 

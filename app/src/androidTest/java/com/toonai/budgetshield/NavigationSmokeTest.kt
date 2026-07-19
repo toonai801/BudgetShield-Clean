@@ -262,6 +262,60 @@ class NavigationSmokeTest {
     }
 
     @Test
+    fun treasureFiveSectionsInteractiveWithHonestEmptyStates() {
+        // Complete Setup Quest
+        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+
+        // Navigate to Treasure
+        composeTestRule.onNodeWithText("Treasure").performClick()
+        composeTestRule.onNodeWithText("Treasure Vault").assertExists()
+
+        // Verify all five section headers exist
+        composeTestRule.onNodeWithText("XP & Shield Level").assertExists()
+        composeTestRule.onNodeWithText("Current Streak").assertExists()
+        composeTestRule.onNodeWithText("Treasure Chests").assertExists()
+        composeTestRule.onNodeWithText("Achievements").assertExists()
+        composeTestRule.onNodeWithText("Reward History").assertExists()
+
+        // Expand XP & Shield Level and verify empty state
+        composeTestRule.onNodeWithText("XP & Shield Level").performClick()
+        composeTestRule.onNodeWithText("No XP records").assertExists()
+
+        // Expand Current Streak and verify empty state
+        composeTestRule.onNodeWithText("Current Streak").performClick()
+        composeTestRule.onNodeWithText("No streak records").assertExists()
+
+        // Expand Treasure Chests and verify empty state
+        composeTestRule.onNodeWithText("Treasure Chests").performClick()
+        composeTestRule.onNodeWithText("No collectibles recorded").assertExists()
+
+        // Expand Achievements and verify empty state
+        composeTestRule.onNodeWithText("Achievements").performClick()
+        composeTestRule.onNodeWithText("No achievements recorded").assertExists()
+
+        // Expand Reward History and verify empty state
+        composeTestRule.onNodeWithText("Reward History").performClick()
+        composeTestRule.onNodeWithText("No reward history").assertExists()
+    }
+
+    @Test
+    fun treasureContainsNoBillElements() {
+        // Complete Setup Quest
+        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+
+        // Navigate to Treasure
+        composeTestRule.onNodeWithText("Treasure").performClick()
+        composeTestRule.onNodeWithText("Treasure Vault").assertExists()
+
+        // Verify Treasure does NOT contain bill-related elements
+        // These should NOT be in Treasure (they are in Bills)
+        composeTestRule.onNodeWithText("Add Bill").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Pay Bill").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Protected Money").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Your Bills").assertDoesNotExist()
+    }
+
+    @Test
     fun allFourteenDestinationsVerified() {
         // This test verifies all 14 destinations:
         // 1. SetupQuest (initial), 2. Home, 3. Treasure, 4. Bills, 5. Stats, 6. Goals
