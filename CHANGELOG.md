@@ -2,6 +2,40 @@
 
 ## [Unreleased]
 
+### Treasure Screen Correction — Remove Fake Rewards (2026-07-18)
+**Commit:** this correction commit
+**Status:** CORRECTION — Remove fabricated reward content and obsolete duplicate ViewModel
+
+**Rejected Work:**
+- Commit dc77324abdef537f720080fcf9339e2d4b9d052a retained fake content:
+  - TreasureViewModel.kt still existed with duplicate bill state
+  - Badge "3" displayed without data source
+  - Bronze/Silver/Gold locked chest previews fabricated
+  - Named achievements (Bill Protector, Savings Starter, Streak Keeper) with fake 0/1, 0/7 progress
+  - "Coming Soon" placeholder for XP
+  - Emoji as primary artwork (💎, 🎁, 🏆, 📜, 🔥, 🔒, 🛡️, 💰)
+
+**Corrections Made:**
+1. Deleted TreasureViewModel.kt — BillsViewModel.kt is now sole bill-management ViewModel
+2. Rebuilt TreasureScreen.kt with honest empty states:
+   - XP & Shield Level: "No XP records" (was "Coming Soon")
+   - Current Streak: "No streak records"
+   - Treasure Chests: "No collectibles recorded" (removed Bronze/Silver/Gold previews)
+   - Achievements: "No achievements recorded" (removed named examples)
+   - Reward History: "No reward history"
+3. Replaced emoji artwork with Canvas-drawn shapes (chest, shield, flame, icons)
+
+**Verification:**
+- Build: ./gradlew clean assembleDebug — SUCCESS
+- Tests: ./gradlew testDebugUnitTest — PASSING
+- Lint: ./gradlew lintDebug — SUCCESS
+- HomeScreen.kt: UNCHANGED
+- BillsScreen.kt: UNCHANGED
+- BillsViewModel.kt: UNCHANGED
+- Treasure has zero bill dependencies
+
+---
+
 ### Treasure Persistence Correction — Verified Implementation (2026-07-18)
 **Commit:** this verification commit
 **Status:** CORRECTION — Addresses 8 verified defects from rejected commits 5b5699c/824ac83

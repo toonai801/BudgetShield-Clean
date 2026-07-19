@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,10 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -68,7 +64,7 @@ private val TextMuted = Color(0xFFA6B1BF)
 private val TextDim = Color(0xFF6B7B8C)
 
 // Section expansion states
-data class TreasureSections(
+private data class TreasureSections(
     val chestsExpanded: Boolean = true,
     val achievementsExpanded: Boolean = false,
     val xpExpanded: Boolean = false,
@@ -81,7 +77,7 @@ fun TreasureScreen(
     onNavigateToHome: () -> Unit = {}
 ) {
     var sections by remember { mutableStateOf(TreasureSections()) }
-    
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -138,8 +134,6 @@ fun TreasureScreen(
                 // Expandable: Treasure Chests
                 ExpandableTreasureSection(
                     title = "Treasure Chests",
-                    icon = "🎁",
-                    badge = "3",
                     isExpanded = sections.chestsExpanded,
                     onToggle = { sections = sections.copy(chestsExpanded = !sections.chestsExpanded) }
                 ) {
@@ -149,8 +143,6 @@ fun TreasureScreen(
                 // Expandable: Achievements
                 ExpandableTreasureSection(
                     title = "Achievements",
-                    icon = "🏆",
-                    badge = null,
                     isExpanded = sections.achievementsExpanded,
                     onToggle = { sections = sections.copy(achievementsExpanded = !sections.achievementsExpanded) }
                 ) {
@@ -160,8 +152,6 @@ fun TreasureScreen(
                 // Expandable: Reward History
                 ExpandableTreasureSection(
                     title = "Reward History",
-                    icon = "📜",
-                    badge = null,
                     isExpanded = sections.historyExpanded,
                     onToggle = { sections = sections.copy(historyExpanded = !sections.historyExpanded) }
                 ) {
@@ -185,15 +175,10 @@ private fun TreasureHeader(onNavigateToHome: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Animated treasure chest icon
+            // Treasure chest icon - Canvas drawn
             Box(
                 modifier = Modifier
                     .size(56.dp)
-                    .shadow(
-                        elevation = 20.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        spotColor = GoldAccent
-                    )
                     .clip(RoundedCornerShape(16.dp))
                     .background(
                         Brush.radialGradient(
@@ -203,12 +188,39 @@ private fun TreasureHeader(onNavigateToHome: () -> Unit) {
                                 Color.Transparent
                             )
                         )
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = GoldAccent.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(16.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "💎",
-                    fontSize = 32.sp
+                // Simple chest shape drawn with Canvas
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .drawBehind {
+                            // Chest base
+                            drawRoundRect(
+                                color = GoldAccent.copy(alpha = 0.8f),
+                                size = size,
+                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx())
+                            )
+                            // Chest lid line
+                            drawLine(
+                                color = GoldDark,
+                                start = Offset(0f, size.height * 0.35f),
+                                end = Offset(size.width, size.height * 0.35f),
+                                strokeWidth = 2.dp.toPx()
+                            )
+                            // Lock
+                            drawCircle(
+                                color = GoldGlow,
+                                radius = 4.dp.toPx(),
+                                center = Offset(size.width / 2, size.height * 0.55f)
+                            )
+                        }
                 )
             }
 
@@ -235,9 +247,10 @@ private fun TreasureHeader(onNavigateToHome: () -> Unit) {
             contentPadding = PaddingValues(8.dp)
         ) {
             Text(
-                text = "✕",
+                text = "<",
                 color = TextMuted,
-                fontSize = 20.sp
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -293,7 +306,7 @@ private fun XpAndLevelCard() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Level badge
+                        // Level badge - Canvas drawn shield
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
@@ -313,22 +326,31 @@ private fun XpAndLevelCard() {
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "LVL",
-                                    color = CyanAccent.copy(alpha = 0.7f),
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "—",
-                                    color = CyanAccent,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                            }
+                            // Shield shape
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .drawBehind {
+                                        val path = androidx.compose.ui.graphics.Path().apply {
+                                            val width = size.width
+                                            val height = size.height
+                                            moveTo(width / 2, 0f)
+                                            lineTo(width, height * 0.25f)
+                                            lineTo(width, height * 0.6f)
+                                            quadraticBezierTo(
+                                                width * 0.5f, height,
+                                                0f, height * 0.6f
+                                            )
+                                            lineTo(0f, height * 0.25f)
+                                            close()
+                                        }
+                                        drawPath(
+                                            path = path,
+                                            color = CyanAccent.copy(alpha = 0.6f),
+                                            style = Stroke(width = 2.dp.toPx())
+                                        )
+                                    }
+                            )
                         }
 
                         Column {
@@ -339,7 +361,7 @@ private fun XpAndLevelCard() {
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "Coming Soon",
+                                text = "No XP records",
                                 color = TextMuted,
                                 fontSize = 11.sp
                             )
@@ -374,33 +396,17 @@ private fun XpAndLevelCard() {
                         fontSize = 12.sp
                     )
 
-                    // XP progress bar
+                    // XP progress bar - empty state
                     Box(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Background track
+                        // Background track only
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(10.dp)
                                 .clip(RoundedCornerShape(5.dp))
                                 .background(Color(0xFF14364A))
-                        )
-                        // Glowing progress fill
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.0f)
-                                .height(10.dp)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            CyanAccent.copy(alpha = 0.6f),
-                                            CyanGlow.copy(alpha = 0.8f),
-                                            CyanAccent
-                                        )
-                                    )
-                                )
                         )
                     }
 
@@ -453,7 +459,7 @@ private fun StreakCard() {
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Streak flame
+                    // Streak flame - Canvas drawn
                     Box(
                         modifier = Modifier
                             .size(56.dp)
@@ -479,9 +485,29 @@ private fun StreakCard() {
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "🔥",
-                            fontSize = 28.sp
+                        // Simple flame shape
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .drawBehind {
+                                    val flamePath = androidx.compose.ui.graphics.Path().apply {
+                                        val w = size.width
+                                        val h = size.height
+                                        moveTo(w / 2, 0f)
+                                        // Left curve
+                                        quadraticBezierTo(w * 0.2f, h * 0.4f, w * 0.3f, h * 0.8f)
+                                        // Bottom
+                                        lineTo(w * 0.7f, h * 0.8f)
+                                        // Right curve
+                                        quadraticBezierTo(w * 0.8f, h * 0.4f, w / 2, 0f)
+                                        close()
+                                    }
+                                    drawPath(
+                                        path = flamePath,
+                                        color = GoldAccent.copy(alpha = 0.7f),
+                                        style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+                                    )
+                                }
                         )
                     }
 
@@ -493,7 +519,7 @@ private fun StreakCard() {
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "No active streak",
+                            text = "No streak records",
                             color = TextMuted,
                             fontSize = 12.sp
                         )
@@ -529,8 +555,6 @@ private fun StreakCard() {
 @Composable
 private fun ExpandableTreasureSection(
     title: String,
-    icon: String,
-    badge: String?,
     isExpanded: Boolean,
     onToggle: () -> Unit,
     content: @Composable () -> Unit
@@ -555,6 +579,7 @@ private fun ExpandableTreasureSection(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Section icon placeholder - simple circle
                     Box(
                         modifier = Modifier
                             .size(40.dp)
@@ -562,41 +587,52 @@ private fun ExpandableTreasureSection(
                             .background(Color(0xFF0D1B26)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = icon,
-                            fontSize = 20.sp
+                        // Simple indicator based on section title
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .drawBehind {
+                                    when (title) {
+                                        "Treasure Chests" -> {
+                                            // Small chest indicator
+                                            drawRoundRect(
+                                                color = GoldAccent.copy(alpha = 0.6f),
+                                                size = size,
+                                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx())
+                                            )
+                                        }
+                                        "Achievements" -> {
+                                            // Trophy/star shape
+                                            drawCircle(
+                                                color = GoldAccent.copy(alpha = 0.6f),
+                                                radius = size.minDimension / 2 - 2.dp.toPx()
+                                            )
+                                        }
+                                        "Reward History" -> {
+                                            // Scroll indicator
+                                            drawRoundRect(
+                                                color = CyanAccent.copy(alpha = 0.6f),
+                                                size = size.copy(height = size.height * 0.8f),
+                                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx())
+                                            )
+                                        }
+                                        else -> {
+                                            drawCircle(
+                                                color = TextMuted.copy(alpha = 0.4f),
+                                                radius = size.minDimension / 3
+                                            )
+                                        }
+                                    }
+                                }
                         )
                     }
 
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = title,
-                                color = TextPrimary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-
-                            badge?.let {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(GoldAccent.copy(alpha = 0.2f))
-                                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = it,
-                                        color = GoldAccent,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    Text(
+                        text = title,
+                        color = TextPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
 
                 // Expand/collapse indicator
@@ -627,7 +663,7 @@ private fun TreasureChestsContent() {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Empty state - no treasures unlocked yet
+        // Honest empty state - no collectibles recorded
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -640,64 +676,28 @@ private fun TreasureChestsContent() {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "🎁",
-                    fontSize = 32.sp
+                // Chest icon
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .drawBehind {
+                            drawRoundRect(
+                                color = GoldAccent.copy(alpha = 0.4f),
+                                size = size,
+                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx())
+                            )
+                            drawLine(
+                                color = GoldDark,
+                                start = Offset(0f, size.height * 0.35f),
+                                end = Offset(size.width, size.height * 0.35f),
+                                strokeWidth = 2.dp.toPx()
+                            )
+                        }
                 )
                 Text(
-                    text = "No treasures unlocked yet",
+                    text = "No collectibles recorded",
                     color = TextMuted,
                     fontSize = 13.sp
-                )
-                Text(
-                    text = "Pay bills and reach savings goals to unlock chests",
-                    color = TextDim,
-                    fontSize = 11.sp
-                )
-            }
-        }
-
-        // Locked chest preview
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            LockedChestPreview("Bronze", GoldDark, Modifier.weight(1f))
-            LockedChestPreview("Silver", Color(0xFFC0C0C0), Modifier.weight(1f))
-            LockedChestPreview("Gold", GoldAccent, Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun LockedChestPreview(name: String, color: Color, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF0D1B26))
-                .border(
-                    width = 1.dp,
-                    color = color.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(10.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "🔒",
-                    fontSize = 20.sp
-                )
-                Text(
-                    text = name,
-                    color = color.copy(alpha = 0.6f),
-                    fontSize = 9.sp
                 )
             }
         }
@@ -707,135 +707,39 @@ private fun LockedChestPreview(name: String, color: Color, modifier: Modifier = 
 @Composable
 private fun AchievementsContent() {
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Achievement empty state
-        AchievementItem(
-            icon = "🛡️",
-            name = "Bill Protector",
-            description = "Protect your first bill",
-            progress = 0,
-            total = 1,
-            color = GreenAccent
-        )
-        
-        AchievementItem(
-            icon = "💰",
-            name = "Savings Starter",
-            description = "Make your first savings contribution",
-            progress = 0,
-            total = 1,
-            color = GoldAccent
-        )
-        
-        AchievementItem(
-            icon = "🔥",
-            name = "Streak Keeper",
-            description = "Maintain a 7-day savings streak",
-            progress = 0,
-            total = 7,
-            color = RedAccent
-        )
-    }
-}
-
-@Composable
-private fun AchievementItem(
-    icon: String,
-    name: String,
-    description: String,
-    progress: Int,
-    total: Int,
-    color: Color
-) {
-    val isCompleted = progress >= total
-    
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xFF0D1B26))
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Achievement icon
+        // Honest empty state - no achievements recorded
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(
-                    if (isCompleted) color.copy(alpha = 0.2f)
-                    else Color(0xFF14364A)
-                ),
+                .fillMaxWidth()
+                .height(100.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF0A1620)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = icon,
-                fontSize = 20.sp,
-                modifier = Modifier.alpha(if (isCompleted) 1f else 0.5f)
-            )
-        }
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = name,
-                    color = if (isCompleted) TextPrimary else TextMuted,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                
-                if (isCompleted) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(color.copy(alpha = 0.2f))
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    ) {
-                        Text(
-                            text = "✓",
-                            color = color,
-                            fontSize = 9.sp
-                        )
-                    }
-                }
-            }
-            
-            Text(
-                text = description,
-                color = TextDim,
-                fontSize = 11.sp
-            )
-
-            // Progress bar
-            if (!isCompleted && total > 1) {
-                LinearProgressIndicator(
-                    progress = { progress.toFloat() / total },
+                // Achievement icon
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp)),
-                    color = color,
-                    trackColor = Color(0xFF14364A),
-                    strokeCap = StrokeCap.Round
+                        .size(32.dp)
+                        .drawBehind {
+                            drawCircle(
+                                color = GoldAccent.copy(alpha = 0.4f),
+                                radius = size.minDimension / 2 - 2.dp.toPx()
+                            )
+                        }
+                )
+                Text(
+                    text = "No achievements recorded",
+                    color = TextMuted,
+                    fontSize = 13.sp
                 )
             }
         }
-
-        // Progress count
-        Text(
-            text = "$progress/$total",
-            color = if (isCompleted) color else TextDim,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
-        )
     }
 }
 
@@ -853,19 +757,22 @@ private fun RewardHistoryContent() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "📜",
-                fontSize = 24.sp
+            // History icon
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .drawBehind {
+                        drawRoundRect(
+                            color = CyanAccent.copy(alpha = 0.4f),
+                            size = size.copy(height = size.height * 0.8f),
+                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx())
+                        )
+                    }
             )
             Text(
-                text = "No rewards earned yet",
+                text = "No reward history",
                 color = TextMuted,
                 fontSize = 13.sp
-            )
-            Text(
-                text = "Your reward history will appear here",
-                color = TextDim,
-                fontSize = 11.sp
             )
         }
     }

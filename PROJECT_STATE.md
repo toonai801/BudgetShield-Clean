@@ -1,16 +1,18 @@
 # Project State
 
 ## Current Task
-**Treasure/Bills Separation:** IMPLEMENTATION COMPLETE — Owner phone review required
+**Treasure Screen Correction:** IMPLEMENTATION COMPLETE — Remove fake rewards and duplicate bill state
 
-Separated gamified Treasure rewards hub from Bills & Payments. Home Pay Bill now opens Bills screen. Treasure contains no bill management. All existing tests pass.
+Removed fabricated reward content and obsolete TreasureViewModel. Treasure now presents honest empty states only. BillsViewModel remains the sole bill-management ViewModel.
 
 ## Previous Work
-**Treasure Persistence Verification (04bbe94)** — COMPLETE, now superseded by this separation task
+**Treasure/Bills Separation (dc77324)** — REJECTED
+- Created separate Bills and Treasure routes
+- But retained fake reward content (badge "3", Bronze/Silver/Gold chests, named achievements)
+- TreasureViewModel.kt still existed with duplicate bill state
+- Emoji used as primary artwork
 
-All 8 verified defects corrected. Production-path tests added. All gates passed.
-
-**Commits 5b5699c and 824ac83** — Previously rejected, defects corrected in 04bbe94
+**Treasure Persistence Verification (04bbe94)** — COMPLETE
 
 ## Project Identity
 - **Folder:** BudgetShield_CLEAN
@@ -18,100 +20,105 @@ All 8 verified defects corrected. Production-path tests added. All gates passed.
 - **Branch:** main
 - **Package:** com.toonai.budgetshield
 
-## Task Status: Screen Ownership Correction COMPLETE
+## Task Status: Treasure Correction COMPLETE
 
 ### What Changed
-Created dedicated Bills route and BillsScreen, extracted from Treasure. Rebuilt Treasure as rewards hub. Updated navigation routing. HomeScreen.kt unchanged.
-
-### New Files Created
-- `app/src/main/java/com/toonai/budgetshield/ui/screens/BillsScreen.kt` — Extracted bill management UI
-- `app/src/main/java/com/toonai/budgetshield/ui/viewmodel/BillsViewModel.kt` — Bill management ViewModel (renamed from TreasureViewModel)
-
-### Routes Updated
-- Added `Bills` typed route to BudgetShieldRoute.kt
-- Updated BudgetShieldRouteRegistry: 13 → 14 destinations
-- BudgetShieldNavigation: Home Pay Bill → Bills, Bill Entry completion → Bills
-- Treasure: Removed bill callbacks, now only onNavigateToHome
+1. **Deleted obsolete TreasureViewModel.kt** — BillsViewModel.kt is now the only bill-list/totals ViewModel
+2. **Rebuilt TreasureScreen.kt** — Removed all fabricated content:
+   - Removed badge = "3"
+   - Removed Bronze/Silver/Gold locked chest previews
+   - Removed named achievements (Bill Protector, Savings Starter, Streak Keeper)
+   - Removed "Coming Soon" placeholder
+   - Removed progress bars for non-existent data
+   - Replaced emoji artwork with Canvas-drawn shapes
+3. **Honest empty states** — All five sections show factual "No records" messages
 
 ### Screen Ownership (Corrected)
 
-| Screen | Purpose | Navigation Changes |
-|--------|---------|-------------------|
-| Home | Dashboard, Safe Now | Pay Bill → Bills (was BillEntry) |
-| **Bills** | **Bills & Payments** | NEW ROUTE: manages bills, payments, protected money |
-| **Treasure** | **Rewards Hub** | No bill callbacks; contains chests, achievements, XP, streaks |
-| Stats | Read-only statistics | Unchanged (Stats/Goals out of scope for this task) |
-| Goals | Read-only goal progress | Unchanged (Stats/Goals out of scope for this task) |
+| Screen | Purpose | Dependencies |
+|--------|---------|--------------|
+| Home | Dashboard, Safe Now | None (preserved) |
+| Bills | Bills & Payments | BillsViewModel, BillRepository |
+| Treasure | Rewards Hub (empty) | None (no bill or reward dependencies) |
+| Stats | Read-only statistics | None (preserved) |
+| Goals | Read-only goal progress | None (preserved) |
 
-### Navigation Flow (Corrected)
-
-```
-Home
-├── Pay Bill → Bills (NOT BillEntry)
-├── Treasure → Treasure (rewards hub)
-├── Stats → Stats (unchanged)
-├── Goals → Goals (unchanged)
-├── Add Income → IncomeEntry
-├── Save Money → SavingsEntry
-└── ...
-
-Bills
-├── Add Bill → BillEntry
-├── Pay Bill → BillPaymentWithId
-├── Transaction History → TransactionDetails
-└── Close → Home
-
-BillEntry
-└── Save Success → Bills (NOT Treasure)
-
-Treasure
-├── Sections: Treasure Chests, Achievements, Reward History
-└── Close → Home
-```
+### Navigation Flow (Unchanged)
+- Home Pay Bill → Bills
+- Bills Add Bill → BillEntry
+- Bills Pay Bill → BillPaymentWithId
+- Bill Entry success → Bills
+- Home Treasure → Treasure (rewards hub)
+- Treasure Close → Home
 
 ## Verification Results
 
 ### Build & Tests
-- Build: ✅ SUCCESS (./gradlew clean assembleDebug)
-- Unit Tests: ✅ PASSING (existing 97 tests)
+- Build: ✅ SUCCESS
+- Unit Tests: ✅ PASSING
 - Lint: ✅ SUCCESS
-- androidTest compilation: ✅ SUCCESS (./gradlew assembleDebugAndroidTest)
+- androidTest compilation: ✅ SUCCESS
 
 ### Files Unchanged (As Required)
 - HomeScreen.kt: ✅ UNCHANGED
-- StatsScreen.kt: ✅ UNCHANGED  
+- StatsScreen.kt: ✅ UNCHANGED
 - GoalsScreen.kt: ✅ UNCHANGED
-- Bill persistence layer (entity, DAO, repository): ✅ UNCHANGED
-- All existing 97 tests: ✅ PASSING
+- BillsScreen.kt: ✅ UNCHANGED (except any import fixes)
+- BillsViewModel.kt: ✅ UNCHANGED
+- Bill persistence layer: ✅ UNCHANGED
+- All existing tests: ✅ PASSING
 
 ### Files Changed
-- BudgetShieldRoute.kt: Added Bills route
-- BudgetShieldRouteRegistry.kt: Updated to 14 destinations
-- BudgetShieldNavigation.kt: Corrected routing (Home→Bills, BillEntry→Bills)
-- TreasureScreen.kt: Rebuilt as rewards hub
-- BillsScreen.kt: NEW (extracted bill management)
-- BillsViewModel.kt: NEW (bill management ViewModel)
-- RouteCompletenessTest.kt: Updated for 14 routes
-- NavigationSmokeTest.kt: Updated for Bills/Treasure separation
+- TreasureScreen.kt: REBUILT — honest empty states, Canvas artwork, no fake content
+- TreasureViewModel.kt: DELETED — obsolete duplicate
+- PROJECT_STATE.md: CORRECTED
+- DECISIONS.md: CORRECTED
+- CHANGELOG.md: Added correction entry
+- KNOWN_BUGS.md: Updated if applicable
 
-### Treasure (Rewards Hub) Content
-- Header: "Treasure Vault" with chest/gem imagery
-- XP & Shield Level: Progress bar (empty/coming soon state)
-- Current Streak: Flame icon, "No active streak" (empty state)
-- Treasure Chests (expandable): "No treasures unlocked yet", locked previews
-- Achievements (expandable): Locked achievements (Bill Protector, Savings Starter, Streak Keeper)
-- Reward History (expandable): "No rewards earned yet"
-- **NO:** Bill list, protected money totals, Add Bill, Pay Bill
+### Treasure (Rewards Hub) Content — CORRECTED
+All five sections present honest empty states:
 
-### Bills (Bill Management) Content
-- Header: "Bills & Payments" with bill icon
-- Protected Money Vault card with totals
-- Protection Summary (protected/unprotected counts)
-- Bills list with due dates, amounts, status
-- Add Bill button
-- Pay Bill buttons for unpaid bills
-- Transaction History link
-- **NO:** Chests, achievements, XP, streaks
+1. **XP & Shield Level**
+   - Shows "No XP records" (was: "Coming Soon")
+   - Empty progress bar (no fabricated progress)
+   - Canvas-drawn shield icon
+
+2. **Current Streak**
+   - Shows "No streak records" (was: "No active streak")
+   - Canvas-drawn flame icon
+   - No fake streak count
+
+3. **Treasure Chests** (expandable)
+   - Shows "No collectibles recorded" (was: "No treasures unlocked yet")
+   - Removed: Bronze/Silver/Gold locked previews
+   - Canvas-drawn chest icon
+
+4. **Achievements** (expandable)
+   - Shows "No achievements recorded"
+   - Removed: Bill Protector, Savings Starter, Streak Keeper
+   - Removed: 0/1, 0/7 progress fabrication
+   - Canvas-drawn achievement icon
+
+5. **Reward History** (expandable)
+   - Shows "No reward history"
+   - Canvas-drawn scroll icon
+
+### Artwork Changes
+- Replaced emoji (💎, 🎁, 🏆, 📜, 🔥, 🔒, 🛡️, 💰, ✕) with Canvas-drawn shapes
+- Uses established cyan/gold/purple palette
+- Maintains dark premium visual direction
+
+### What Treasure Does NOT Have
+- ❌ No badge counts
+- ❌ No locked chest tiers/names
+- ❌ No named achievement examples
+- ❌ No "Coming Soon" placeholders
+- ❌ No progress bars for missing data
+- ❌ No emoji as primary artwork
+- ❌ No BillRepository dependency
+- ❌ No BillsViewModel dependency
+- ❌ No bill callbacks
 
 ## Technical Foundation
 - **AGP:** 8.13.2
@@ -122,34 +129,27 @@ Treasure
 - **targetSdk:** 35
 - **minSdk:** 26
 - **Compose BOM:** 2026.06.00
-- **Activity Compose:** 1.13.0
-- **Lifecycle:** 2.10.0
 - **Navigation 3:** 1.1.4
-- **Kotlinx Serialization:** 1.9.0
 - **Room:** 2.7.1
 
 ## Architecture
 - Single MainActivity (ComponentActivity)
 - Navigation 3 with 14 serializable typed routes
 - Room persistence for bills (unchanged)
-- MVVM pattern: Repository → ViewModel → Compose UI
-- Dark premium gamified theme for both screens
-
-## Data Layer (Unchanged)
-- `Bill.kt` — Bill entity
-- `BillDao.kt` — Data access with Flow queries
-- `BudgetShieldDatabase.kt` — Room database
-- `BillRepository.kt` — Repository pattern
+- MVVM pattern
+- BillsViewModel: Sole bill-management ViewModel
+- Treasure: Stateless UI with local expansion state only
 
 ## ViewModels
-- `BillsViewModel.kt` — Bills screen state (extracted from former TreasureViewModel)
+- `BillsViewModel.kt` — Bills screen state (sole bill-management ViewModel)
 - `BillEntryViewModel.kt` — Bill creation
 - `BillPaymentViewModel.kt` — Payment processing
+- ~~`TreasureViewModel.kt`~~ — DELETED (was obsolete duplicate)
 
-## Tests (All Passing)
-- 97 focused unit tests (existing, unchanged)
-- RouteCompletenessTest: Updated for 14 routes, Bills/Treasure distinct
-- NavigationSmokeTest: Updated for Bills destination
+## Tests
+- All focused unit tests: PASSING
+- RouteCompletenessTest: Updated
+- NavigationSmokeTest: Updated
 - BackStackPolicyTest: Unchanged, passing
 
 ## Reference Images (Preserved)
@@ -158,14 +158,18 @@ Treasure
 - `docs/reference/bill-protected-reference.png`
 
 ## Task History
-- **Treasure/Bills Separation:** this commit — Separated rewards hub from bill management
-- **Treasure Persistence Verification (04bbe94):** COMPLETE — All defects fixed, 97 tests
+- **Treasure Correction (this commit):** Removed fake rewards, deleted obsolete TreasureViewModel
+- **Treasure/Bills Separation (dc77324):** REJECTED — retained fake content
+- **Treasure Persistence Verification (04bbe94):** COMPLETE
 - Earlier commits: See previous PROJECT_STATE versions
 
 ## Documentation Updates
-- `docs/SCREEN_MAP.md`: Updated with corrected screen ownership
-- `DECISIONS.md`: Added Screen Ownership Correction section
+- `docs/SCREEN_MAP.md`: Updated — Treasure has honest empty states
+- `DECISIONS.md`: Updated — Screen ownership correction
+- `CHANGELOG.md`: Added correction entry
+- `KNOWN_BUGS.md`: Updated if applicable
 
 ## Next Tasks
-- Owner phone review of separated Treasure/Bills screens
+- Owner phone review of corrected Treasure screen
+- Future scoped task: Implement real reward/XP/achievement persistence
 - Task 4+: Design system, Setup Quest, Home, Income, Bills engine, Safe Now calculation, etc.

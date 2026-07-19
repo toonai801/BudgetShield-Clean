@@ -149,3 +149,40 @@ Treasure is now exclusively the **gamified rewards hub** containing:
 - `NavigationSmokeTest`: Updated to verify Bills destination reachable via Pay Bill, Treasure shows rewards hub
 
 This decision was made to correct the architectural confusion between game rewards (Treasure) and financial obligations (Bills), enabling each screen to have a clear, single responsibility.
+
+---
+
+## Treasure Screen Correction (2026-07-18)
+
+### Problem: Fabricated Reward Content
+The initial Treasure/Bills separation (dc77324) retained fake reward data:
+- TreasureViewModel.kt still existed with duplicate bill state
+- TreasureScreen displayed badge "3" with no data source
+- Bronze/Silver/Gold locked chest previews were fabricated
+- Named achievements (Bill Protector, Savings Starter, Streak Keeper) with fake 0/1, 0/7 progress
+- "Coming Soon" placeholder for XP
+- Emoji used as primary artwork (💎, 🎁, 🏆, 📜, 🔥, 🔒, 🛡️, 💰)
+
+### Decision: Honest Empty States Only
+
+**Deleted:**
+- TreasureViewModel.kt (obsolete duplicate — BillsViewModel is sole bill ViewModel)
+
+**TreasureScreen Requirements:**
+- Five functional sections: XP & Shield Level, Current Streak, Treasure Chests, Achievements, Reward History
+- Each section shows honest empty state: "No [records/collectibles/achievements/history]"
+- No fabricated counts, tiers, named examples, or progress bars for missing data
+- Canvas-drawn icons using cyan/gold/purple palette (no emoji as primary artwork)
+- Close button returns to Home
+- No bill dependencies (BillRepository, BillsViewModel, LocalBillRepository)
+
+**What Treasure Does NOT Show:**
+- No badge counts without real data
+- No locked chest tier names (Bronze/Silver/Gold)
+- No named achievement examples
+- No "Coming Soon" placeholders
+- No fake progress requirements (0/1, 0/7)
+
+**Future Work:**
+- Real reward/XP/achievement/streak persistence will be implemented in a future scoped task
+- Treasure UI is prepared to display real data when models are available
