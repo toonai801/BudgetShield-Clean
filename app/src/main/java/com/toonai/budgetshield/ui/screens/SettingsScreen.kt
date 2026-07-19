@@ -34,9 +34,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.toonai.budgetshield.BuildConfig
 
 // Premium gamified dark theme colors (matching Home)
 private val BackgroundDark = Color(0xFF02070D)
@@ -56,7 +58,9 @@ fun SettingsScreen(
     onNavigateToSetupQuest: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("settings_scroll_content"),
         color = BackgroundDark
     ) {
         Column(
@@ -125,9 +129,10 @@ private fun HeaderSection() {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Beta build 1.1.0-beta-footer",
+                    text = "Beta build ${BuildConfig.VERSION_NAME}",
                     color = CyanAccent,
-                    fontSize = 11.sp
+                    fontSize = 11.sp,
+                    modifier = Modifier.testTag("settings_beta_version_marker")
                 )
             }
         }

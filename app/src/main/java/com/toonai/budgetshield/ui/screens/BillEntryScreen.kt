@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.toonai.budgetshield.ui.viewmodel.BillEntryViewModel
 import com.toonai.budgetshield.util.DateParser
@@ -75,7 +76,9 @@ fun BillEntryScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("bill_entry_screen"),
         color = BackgroundDark
     ) {
         Column(

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.ui.viewmodel.BillsUiState
@@ -70,7 +71,9 @@ fun BillsScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("bills_screen")
     ) {
         // Background gradient
         Box(
@@ -484,7 +487,8 @@ private fun EmptyBillsState(onAddBill: () -> Unit) {
                     containerColor = CyanAccent,
                     contentColor = Color.Black
                 ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+                modifier = Modifier.testTag("bills_add_bill")
             ) {
                 Text(
                     text = "+ Add Your First Bill",
@@ -541,7 +545,8 @@ private fun BillsListSection(
                         containerColor = CyanAccent.copy(alpha = 0.15f),
                         contentColor = CyanAccent
                     ),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.testTag("bills_add_bill")
                 ) {
                     Text(
                         text = "+ Add Bill",

@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.ui.platform.testTag
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -620,7 +621,9 @@ private fun DailyActionsSection(
                 )
 
                 ActionButton(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("home_action_pay_bill"),
                     icon = "\uD83D\uDCC4",
                     iconBg = Brush.verticalGradient(
                         colors = listOf(Color(0xFF4A90D9), Color(0xFF1E3A5F))
