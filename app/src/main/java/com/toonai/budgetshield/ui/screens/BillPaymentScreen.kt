@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.ui.viewmodel.BillPaymentViewModel
+import com.toonai.budgetshield.util.MoneyParser
 import kotlinx.coroutines.launch
 
 // Premium gamified dark theme colors (matching Home)
@@ -65,14 +67,14 @@ fun BillPaymentScreen(
 ) {
     val scope = rememberCoroutineScope()
     val bill by viewModel.getBill(billId).collectAsState(initial = null)
-    
+
     var amount by remember { mutableStateOf("") }
     var isProcessing by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Set default amount when bill loads
+    // Set default amount when bill loads - use exact cents parsing
     if (bill != null && amount.isEmpty()) {
-        amount = bill!!.formattedRemainingDue.removePrefix("$")
+        amount = MoneyParser.formatCents(bill!!.remainingDueCents).removePrefix("$")
     }
 
     Surface(
@@ -106,7 +108,11 @@ fun BillPaymentScreen(
                     // No bill selected - generic pay screen
                     GenericPaymentState(
                         amount = amount,
-                        onAmountChange = { amount = it },
+                        onAmountChange = {
+                            if (MoneyParser.isValidInputPattern(it) || it.isEmpty()) {
+                                amount = it
+                            }
+                        },
                         onConfirm = onPaymentComplete,
                         onCancel = onCancel
                     )
@@ -117,9 +123,8 @@ fun BillPaymentScreen(
                     PaymentAmountSection(
                         bill = bill!!,
                         amount = amount,
-                        onAmountChange = { 
-                            // Only allow valid decimal input
-                            if (it.matches(Regex("^\\d*\\.?\\d{0,2}$")) || it.isEmpty()) {
+                        onAmountChange = {
+                            if (MoneyParser.isValidInputPattern(it) || it.isEmpty()) {
                                 amount = it
                             }
                         },
@@ -131,35 +136,45 @@ fun BillPaymentScreen(
                     XPRewardCard(bill = bill!!)
 
                     ActionButtons(
-                        isEnabled = amount.isNotBlank() && amount.toDoubleOrNull() != null,
+                        isEnabled = amount.isNotBlank() && !isProcessing,
                         isProcessing = isProcessing,
                         onConfirm = {
                             scope.launch {
                                 isProcessing = true
                                 errorMessage = null
-                                
-                                val paymentCents = (amount.toDouble() * 100).toLong()
-                                
+
+                                // Parse payment amount using exact money parser
+                                val paymentResult = MoneyParser.parseToCents(amount)
+                                if (paymentResult.isFailure) {
+                                    errorMessage = paymentResult.exceptionOrNull()?.message ?: "Invalid amount"
+                                    isProcessing = false
+                                    return@launch
+                                }
+
+                                val paymentCents = paymentResult.getOrNull()!!
+
+                                // Validate payment amount
                                 if (paymentCents <= 0) {
                                     errorMessage = "Payment amount must be greater than $0.00"
                                     isProcessing = false
                                     return@launch
                                 }
-                                
+
                                 if (paymentCents > bill!!.remainingDueCents) {
                                     errorMessage = "Payment cannot exceed remaining due amount"
                                     isProcessing = false
                                     return@launch
                                 }
-                                
+
+                                // Process payment
                                 val success = viewModel.payBill(bill!!.id, paymentCents)
-                                
+
                                 if (success) {
                                     onPaymentComplete()
                                 } else {
                                     errorMessage = "Payment failed. Please try again."
                                 }
-                                
+
                                 isProcessing = false
                             }
                         },
@@ -200,54 +215,120 @@ private fun ErrorBanner(message: String) {
 }
 
 @Composable
-private fun BillNotFoundState(onCancel: () -> Unit) {
-    Column(
+private fun HeaderSection() {
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(DangerColor.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("❓", fontSize = 40.sp)
-        }
-        
-        Text(
-            text = "Bill Not Found",
-            color = TextPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-        
-        Text(
-            text = "The bill you're trying to pay could not be found.",
-            color = TextMuted,
-            fontSize = 14.sp
-        )
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = PanelDark
-            ),
-            onClick = onCancel
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                GreenAccent.copy(alpha = 0.3f),
+                                GreenAccent.copy(alpha = 0.1f)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "← Go Back",
-                    color = TextPrimary,
-                    fontSize = 16.sp
+                    text = "💳",
+                    fontSize = 24.sp
                 )
+            }
+
+            Column {
+                Text(
+                    text = "Pay Bill",
+                    color = TextPrimary,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Make a payment",
+                    color = TextMuted,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BillNotFoundState(onCancel: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(DangerColor.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "❓",
+                    fontSize = 32.sp
+                )
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Bill Not Found",
+                    color = TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "The bill you're trying to pay doesn't exist",
+                    color = TextMuted,
+                    fontSize = 13.sp
+                )
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = CyanAccent
+                ),
+                onClick = onCancel
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "← Go Back",
+                        color = BackgroundDark,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -260,94 +341,99 @@ private fun GenericPaymentState(
     onConfirm: () -> Unit,
     onCancel: () -> Unit
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "Make a Payment",
-            color = TextPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-        
-        Text(
-            text = "Enter payment amount:",
-            color = TextMuted,
-            fontSize = 14.sp
-        )
-        
-        TextField(
-            value = amount,
-            onValueChange = onAmountChange,
-            placeholder = { Text("0.00") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFF0D1B26),
-                unfocusedContainerColor = Color(0xFF0D1B26),
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary,
-                focusedIndicatorColor = CyanAccent,
-                unfocusedIndicatorColor = PanelBorder,
-                focusedPlaceholderColor = TextMuted,
-                unfocusedPlaceholderColor = TextMuted
-            ),
-            singleLine = true,
-            leadingIcon = {
-                Text(
-                    text = "$",
-                    color = CyanAccent,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        )
-        
-        ActionButtons(
-            isEnabled = amount.isNotBlank() && amount.toDoubleOrNull() != null,
-            isProcessing = false,
-            onConfirm = onConfirm,
-            onCancel = onCancel
-        )
-    }
-}
-
-@Composable
-private fun HeaderSection() {
-    Row(
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(BlueAccent.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "💳",
-                    fontSize = 20.sp
-                )
-            }
+            Text(
+                text = "Payment Amount",
+                color = TextPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
 
-            Column {
-                Text(
-                    text = "Pay Bill",
-                    color = TextPrimary,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Secure payment",
-                    color = TextMuted,
-                    fontSize = 12.sp
-                )
+            TextField(
+                value = amount,
+                onValueChange = onAmountChange,
+                placeholder = { Text("0.00") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFF0D1B26),
+                    unfocusedContainerColor = Color(0xFF0D1B26),
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary,
+                    focusedIndicatorColor = CyanAccent,
+                    unfocusedIndicatorColor = PanelBorder,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted
+                ),
+                singleLine = true,
+                leadingIcon = {
+                    Text(
+                        text = "$",
+                        color = CyanAccent,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Card(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = CyanAccent
+                    ),
+                    onClick = onConfirm
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "✓ Confirm",
+                            color = BackgroundDark,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = PanelDark
+                    ),
+                    onClick = onCancel
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "← Cancel",
+                            color = TextPrimary,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
             }
         }
     }
@@ -362,142 +448,59 @@ private fun BillSummaryCard(bill: Bill) {
             containerColor = PanelDark
         )
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Bill Details",
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Bill info
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(BlueAccent.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(BlueAccent.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = bill.icon,
-                            fontSize = 24.sp
-                        )
-                    }
-
-                    Column {
-                        Text(
-                            text = bill.name,
-                            color = TextPrimary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "Due ${bill.dueDate}",
-                            color = TextMuted,
-                            fontSize = 12.sp
-                        )
-                    }
+                    Text(
+                        text = bill.icon,
+                        fontSize = 28.sp
+                    )
                 }
 
-                Column(horizontalAlignment = Alignment.End) {
+                Column {
                     Text(
-                        text = bill.formattedRemainingDue,
+                        text = bill.name,
                         color = TextPrimary,
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = if (bill.isProtected) "🛡️" else "⚠️",
-                            fontSize = 12.sp
-                        )
-                        Text(
-                            text = if (bill.isProtected) "Protected" else "Unprotected",
-                            color = if (bill.isProtected) CyanAccent else GoldAccent,
-                            fontSize = 12.sp
-                        )
-                    }
+                    Text(
+                        text = "Due: ${bill.dueDate}",
+                        color = TextMuted,
+                        fontSize = 13.sp
+                    )
                 }
             }
 
-            // Progress bar showing paid amount
-            if (bill.paidAmountCents > 0) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Paid: ${Bill.formatCents(bill.paidAmountCents)}",
-                            color = GreenAccent,
-                            fontSize = 12.sp
-                        )
-                        Text(
-                            text = "Remaining: ${bill.formattedRemainingDue}",
-                            color = TextPrimary,
-                            fontSize = 12.sp
-                        )
-                    }
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(Color(0xFF14364A))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(bill.paymentProgress / 100f)
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(GreenAccent)
-                        )
-                    }
-                }
-            }
-
-            // Protected notice
-            if (bill.isProtected) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = CyanAccent.copy(alpha = 0.1f)
-                    ),
-                    border = BorderStroke(1.dp, CyanAccent.copy(alpha = 0.3f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "🛡️",
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = "This bill is protected. Paying on time earns XP!",
-                            color = TextPrimary,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = bill.formattedRemainingDue,
+                    color = if (bill.remainingDueCents == bill.amountCents) CyanAccent else GreenAccent,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "remaining",
+                    color = TextMuted,
+                    fontSize = 11.sp
+                )
             }
         }
     }
@@ -524,14 +527,14 @@ private fun PaymentAmountSection(
             Text(
                 text = "Payment Amount",
                 color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
             )
 
             TextField(
                 value = amount,
                 onValueChange = onAmountChange,
-                placeholder = { Text(bill.formattedRemainingDue) },
+                placeholder = { Text("0.00") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 colors = TextFieldDefaults.colors(
@@ -555,38 +558,74 @@ private fun PaymentAmountSection(
                 }
             )
 
-            // Quick select buttons
+            // Quick amount buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val remainingFormatted = bill.formattedRemainingDue.removePrefix("$")
-                QuickAmountChip("Full: $$remainingFormatted") { onQuickAmount(remainingFormatted) }
-                
-                val halfAmount = (bill.remainingDueCents / 200.0)
-                val halfFormatted = String.format("%.2f", halfAmount)
-                QuickAmountChip("Half: $$halfFormatted") { onQuickAmount(halfFormatted) }
+                val remainingFormatted = MoneyParser.formatCents(bill.remainingDueCents).removePrefix("$")
+                val halfCents = bill.remainingDueCents / 2
+                val halfFormatted = MoneyParser.formatCents(halfCents).removePrefix("$")
+
+                QuickAmountButton(
+                    modifier = Modifier.weight(1f),
+                    label = "Full",
+                    amount = remainingFormatted,
+                    onClick = { onQuickAmount(remainingFormatted) }
+                )
+
+                QuickAmountButton(
+                    modifier = Modifier.weight(1f),
+                    label = "Half",
+                    amount = halfFormatted,
+                    onClick = { onQuickAmount(halfFormatted) }
+                )
+
+                QuickAmountButton(
+                    modifier = Modifier.weight(1f),
+                    label = "$25",
+                    amount = "25.00",
+                    onClick = { onQuickAmount("25.00") }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun QuickAmountChip(label: String, onClick: () -> Unit) {
+private fun QuickAmountButton(
+    modifier: Modifier = Modifier,
+    label: String,
+    amount: String,
+    onClick: () -> Unit
+) {
     Card(
-        shape = RoundedCornerShape(20.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF0D1B26)
         ),
         border = BorderStroke(1.dp, PanelBorder),
         onClick = onClick
     ) {
-        Text(
-            text = label,
-            color = TextMuted,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = label,
+                color = TextMuted,
+                fontSize = 11.sp
+            )
+            Text(
+                text = "$$amount",
+                color = CyanAccent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -594,57 +633,11 @@ private fun QuickAmountChip(label: String, onClick: () -> Unit) {
 private fun PaymentMethodSection() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = PanelDark
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "Payment Method",
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Payment method options
-            PaymentMethodOption(
-                icon = "🏦",
-                name = "Bank Account",
-                details = "**** 4567",
-                selected = true
-            )
-
-            PaymentMethodOption(
-                icon = "💳",
-                name = "Credit Card",
-                details = "**** 8901",
-                selected = false
-            )
-        }
-    }
-}
-
-@Composable
-private fun PaymentMethodOption(
-    icon: String,
-    name: String,
-    details: String,
-    selected: Boolean
-) {
-    val borderColor = if (selected) CyanAccent else PanelBorder
-    val bgColor = if (selected) CyanAccent.copy(alpha = 0.1f) else Color(0xFF0D1B26)
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = bgColor
+            containerColor = Color.Transparent
         ),
-        border = BorderStroke(1.dp, borderColor)
+        border = BorderStroke(1.dp, PanelBorder)
     ) {
         Row(
             modifier = Modifier
@@ -660,54 +653,43 @@ private fun PaymentMethodOption(
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (selected) CyanAccent.copy(alpha = 0.2f) else PanelBorder.copy(alpha = 0.5f)
-                        ),
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(GoldAccent.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = icon,
-                        fontSize = 20.sp
+                        text = "💰",
+                        fontSize = 18.sp
                     )
                 }
 
                 Column {
                     Text(
-                        text = name,
+                        text = "From Safe Now",
                         color = TextPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = details,
+                        text = "Protected funds",
                         color = TextMuted,
                         fontSize = 12.sp
                     )
                 }
             }
 
-            if (selected) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(CyanAccent),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "✓",
-                        color = BackgroundDark,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(PanelBorder)
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(CyanAccent),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "✓",
+                    color = BackgroundDark,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -716,13 +698,15 @@ private fun PaymentMethodOption(
 
 @Composable
 private fun XPRewardCard(bill: Bill) {
+    val xpAmount = if (bill.isProtected) 50 else 25
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (bill.isProtected) GoldAccent.copy(alpha = 0.1f) else PanelDark
+            containerColor = GoldAccent.copy(alpha = 0.1f)
         ),
-        border = if (bill.isProtected) BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f)) else null
+        border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -737,28 +721,26 @@ private fun XPRewardCard(bill: Bill) {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (bill.isProtected) GoldAccent.copy(alpha = 0.2f) else PanelBorder.copy(alpha = 0.5f)
-                        ),
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(GoldAccent.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (bill.isProtected) "⭐" else "🪙",
-                        fontSize = 24.sp
+                        text = "⭐",
+                        fontSize = 18.sp
                     )
                 }
 
                 Column {
                     Text(
-                        text = if (bill.isProtected) "XP Reward" else "Payment",
-                        color = if (bill.isProtected) GoldAccent else TextPrimary,
+                        text = "XP Reward",
+                        color = GoldAccent,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = if (bill.isProtected) "+50 XP for protected payment" else "Mark bill as paid",
+                        text = "+${xpAmount} XP for paying",
                         color = TextMuted,
                         fontSize = 12.sp
                     )
@@ -766,12 +748,19 @@ private fun XPRewardCard(bill: Bill) {
             }
 
             if (bill.isProtected) {
-                Text(
-                    text = "+50 XP",
-                    color = GoldAccent,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(GoldAccent.copy(alpha = 0.2f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "🛡️ Protected bonus!",
+                        color = GoldAccent,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }
@@ -787,12 +776,12 @@ private fun ActionButtons(
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Confirm Button
+        // Confirm Payment Button
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isEnabled) CyanAccent else CyanAccent.copy(alpha = 0.3f)
+                containerColor = if (isEnabled && !isProcessing) GreenAccent else GreenAccent.copy(alpha = 0.3f)
             ),
             onClick = { if (isEnabled && !isProcessing) onConfirm() }
         ) {
@@ -803,7 +792,7 @@ private fun ActionButtons(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isProcessing) "Processing..." else "🛡️ Confirm Payment",
+                    text = if (isProcessing) "Processing..." else "✓ Confirm Payment",
                     color = BackgroundDark,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -827,8 +816,8 @@ private fun ActionButtons(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Cancel",
-                    color = DangerColor,
+                    text = "← Cancel",
+                    color = TextPrimary,
                     fontSize = 14.sp
                 )
             }

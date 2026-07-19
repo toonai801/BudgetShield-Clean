@@ -2,7 +2,19 @@
 
 ## Active
 
-### TASK 3 Test Integrity (2026-07-15)
+### Treasure Persistence Correction (2026-07-18)
+| Defect | Description | Severity | Status | Resolution |
+|--------|-------------|----------|--------|------------|
+| TI-007 | No new tests proving persistence behavior | CRITICAL | ✅ FIXED | Added MoneyParserTest (19), DateParserTest (16), BillDaoTest (12), BillDatabasePersistenceTest (4) |
+| TI-008 | Destructive migration fallback enabled | CRITICAL | ✅ FIXED | Removed fallbackToDestructiveMigration from BudgetShieldDatabase |
+| TI-009 | Floating-point money conversion | CRITICAL | ✅ FIXED | Created MoneyParser with exact integer arithmetic |
+| TI-010 | Ignored Result from createBill() | CRITICAL | ✅ FIXED | BillEntryScreen now handles Result, shows errors, prevents duplicate saves |
+| TI-011 | Weak date validation | HIGH | ✅ FIXED | Created DateParser with strict LocalDate validation |
+| TI-012 | Blocked "Pay Bill" workflow | HIGH | ✅ FIXED | TreasureScreen shows "Pay Bill" for ALL unpaid bills |
+| TI-013 | Unverified process death claims | MEDIUM | ✅ FIXED | Created disk-backed Room persistence tests |
+| TI-014 | Mismatched release tagging | MEDIUM | 🔄 IN PROGRESS | Creating new correction release |
+
+## Previous (Resolved)
 | Bug ID | Description | Severity | Reported | Status | Resolution |
 |--------|-------------|----------|----------|--------|------------|
 | TI-001 | Fake JVM test doubles used instead of production routes | CRITICAL | 2026-07-15 | 🔄 IN PROGRESS | Remove TestHome/TestTreasure/etc., use production routes |

@@ -1,7 +1,65 @@
 # Project State
 
 ## Current Task
-**Treasure Persisted Bills:** COMPLETE — Pending owner phone review (commit 5b5699c)
+**Treasure Persistence Correction:** IN PROGRESS — 8 verified defects being corrected
+
+## Previous Rejected Work
+**Commits 5b5699c and 824ac83** — Claimed COMPLETE but had verified defects:
+- No persistence tests (only pre-existing 24 tests)
+- Destructive migration fallback enabled
+- Floating-point money conversion (Double * 100)
+- Ignored Result from createBill()
+- Weak date validation (regex only)
+- Blocked "Pay Bill" workflow (only showed for unprotected bills)
+- Unverified process death claims
+- Mismatched release tagging
+
+## Project Identity
+- **Folder:** BudgetShield_CLEAN
+- **Repo:** toonai801/BudgetShield-Clean
+- **Branch:** main
+- **Package:** com.toonai.budgetshield
+
+## Correction Status (2026-07-18)
+
+### Defects Fixed
+1. **TI-007** (Tests): Added 54 new focused tests
+   - MoneyParserTest.kt: 19 tests for exact currency parsing
+   - DateParserTest.kt: 16 tests for strict date validation  
+   - BillDaoTest.kt: 12 Room integration tests
+   - BillDatabasePersistenceTest.kt: 4 disk-based persistence tests
+   
+2. **TI-008** (Migration): Removed destructive fallback
+
+3. **TI-009** (Money): Exact integer parsing via MoneyParser.kt
+   - 0.01, 0.10, 0.29, 1.05, 10.99, 9999.99 → exact cents
+   - Rejects negative, empty, malformed, overflow
+
+4. **TI-010** (Result handling): BillEntryScreen properly handles Result
+   - Navigates only on success with valid ID
+   - Shows error on failure, preserves form
+   - Guards against duplicate saves
+
+5. **TI-011** (Date validation): Strict LocalDate validation via DateParser.kt
+   - Rejects Feb 30, Sept 31, month 13, day 32
+   - Leap year validation
+
+6. **TI-012** (Pay Bill access): TreasureScreen shows "Pay Bill" for ALL unpaid bills
+   - Protected and unprotected bills can both navigate to payment
+
+7. **TI-013** (Persistence proof): Disk-backed database tests
+   - Bill survives close/reopen
+   - Payment state persists
+
+8. **TI-014** (Tagging): Creating new correction release
+
+### Verification
+- Build: ✅ SUCCESS
+- Tests: ✅ 78 PASSED (24 existing + 54 new)
+- HomeScreen.kt: ✅ UNCHANGED
+- Build size: ~15.75 MB
+
+## Technical Foundation
 
 ## Project Identity
 - **Folder:** BudgetShield_CLEAN

@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.toonai.budgetshield.ui.viewmodel.BillEntryViewModel
+import com.toonai.budgetshield.util.DateParser
+import com.toonai.budgetshield.util.MoneyParser
 import kotlinx.coroutines.launch
 
 // Premium gamified dark theme colors (matching Home)
@@ -63,7 +65,7 @@ fun BillEntryScreen(
     onNavigateToSetupQuest: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    
+
     var name by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var dueDate by remember { mutableStateOf("") }
@@ -99,12 +101,12 @@ fun BillEntryScreen(
                 // Form Card
                 FormCard(
                     name = name,
-                    onNameChange = { 
+                    onNameChange = {
                         name = it
                         // Auto-select icon based on name
                         selectedIcon = when {
                             it.contains("rent", ignoreCase = true) -> "🏠"
-                            it.contains("electric", ignoreCase = true) || 
+                            it.contains("electric", ignoreCase = true) ||
                             it.contains("gas", ignoreCase = true) ||
                             it.contains("water", ignoreCase = true) ||
                             it.contains("utility", ignoreCase = true) -> "⚡"
@@ -125,9 +127,9 @@ fun BillEntryScreen(
                         }
                     },
                     amount = amount,
-                    onAmountChange = { 
-                        // Only allow valid decimal input
-                        if (it.matches(Regex("^\\d*\\.?\\d{0,2}$")) || it.isEmpty()) {
+                    onAmountChange = {
+                        // Only allow valid decimal input patterns
+                        if (MoneyParser.isValidInputPattern(it) || it.isEmpty()) {
                             amount = it
                         }
                     },
@@ -149,48 +151,66 @@ fun BillEntryScreen(
 
                 // Action Buttons
                 ActionButtons(
-                    isEnabled = name.isNotBlank() && amount.isNotBlank() && amount.toDoubleOrNull() != null && dueDate.isNotBlank(),
+                    isEnabled = name.isNotBlank() && amount.isNotBlank() && dueDate.isNotBlank() && !isSaving,
                     isSaving = isSaving,
                     onSave = {
                         scope.launch {
                             isSaving = true
                             errorMessage = null
-                            
-                            try {
-                                val amountCents = (amount.toDouble() * 100).toLong()
-                                
-                                // Validate
-                                if (amountCents <= 0) {
-                                    errorMessage = "Amount must be greater than $0.00"
-                                    isSaving = false
-                                    return@launch
-                                }
-                                
-                                // Parse and format due date
-                                val formattedDueDate = parseDueDate(dueDate)
-                                if (formattedDueDate == null) {
-                                    errorMessage = "Invalid date format. Use MM/DD/YYYY or YYYY-MM-DD"
-                                    isSaving = false
-                                    return@launch
-                                }
-                                
-                                val icon = selectedIcon.ifEmpty { "📄" }
-                                
-                                viewModel.createBill(
-                                    name = name.trim(),
-                                    icon = icon,
-                                    amountCents = amountCents,
-                                    dueDate = formattedDueDate,
-                                    isProtected = isProtected
-                                )
-                                
-                                // Navigate back on success
-                                onNavigateToTreasure()
-                            } catch (e: Exception) {
-                                errorMessage = "Failed to save bill: ${e.message}"
-                            } finally {
+
+                            // Parse amount using exact money parser
+                            val amountResult = MoneyParser.parseToCents(amount)
+                            if (amountResult.isFailure) {
+                                errorMessage = amountResult.exceptionOrNull()?.message ?: "Invalid amount"
                                 isSaving = false
+                                return@launch
                             }
+
+                            val amountCents = amountResult.getOrNull()!!
+
+                            // Validate amount is positive
+                            if (amountCents <= 0) {
+                                errorMessage = "Amount must be greater than $0.00"
+                                isSaving = false
+                                return@launch
+                            }
+
+                            // Parse date using strict date parser
+                            val dateResult = DateParser.parseToIsoDate(dueDate)
+                            if (dateResult.isFailure) {
+                                errorMessage = dateResult.exceptionOrNull()?.message ?: "Invalid date"
+                                isSaving = false
+                                return@launch
+                            }
+
+                            val formattedDueDate = dateResult.getOrNull()!!
+                            val icon = selectedIcon.ifEmpty { "📄" }
+
+                            // Create bill and check result
+                            val createResult = viewModel.createBill(
+                                name = name.trim(),
+                                icon = icon,
+                                amountCents = amountCents,
+                                dueDate = formattedDueDate,
+                                isProtected = isProtected
+                            )
+
+                            // Only navigate on success
+                            createResult.fold(
+                                onSuccess = { billId ->
+                                    if (billId > 0) {
+                                        // Success: navigate to Treasure
+                                        onNavigateToTreasure()
+                                    } else {
+                                        errorMessage = "Failed to save bill: invalid ID"
+                                        isSaving = false
+                                    }
+                                },
+                                onFailure = { error ->
+                                    errorMessage = "Failed to save bill: ${error.message}"
+                                    isSaving = false
+                                }
+                            )
                         }
                     },
                     onBackHome = onNavigateToHome,
@@ -198,34 +218,6 @@ fun BillEntryScreen(
                 )
             }
         }
-    }
-}
-
-private fun parseDueDate(input: String): String? {
-    return try {
-        when {
-            // Already in YYYY-MM-DD format
-            input.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> input
-            // MM/DD/YYYY format
-            input.matches(Regex("^\\d{1,2}/\\d{1,2}/\\d{4}$")) -> {
-                val parts = input.split("/")
-                val month = parts[0].padStart(2, '0')
-                val day = parts[1].padStart(2, '0')
-                val year = parts[2]
-                "$year-$month-$day"
-            }
-            // M-D-YY format
-            input.matches(Regex("^\\d{1,2}-\\d{1,2}-\\d{2,4}$")) -> {
-                val parts = input.split("-")
-                val month = parts[0].padStart(2, '0')
-                val day = parts[1].padStart(2, '0')
-                val year = if (parts[2].length == 2) "20${parts[2]}" else parts[2]
-                "$year-$month-$day"
-            }
-            else -> null
-        }
-    } catch (e: Exception) {
-        null
     }
 }
 
@@ -304,7 +296,7 @@ private fun IconSelector(
     onIconSelected: (String) -> Unit
 ) {
     val icons = listOf("🏠", "⚡", "🌐", "📱", "🛡️", "🚗", "🛒", "📺", "📄")
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -322,7 +314,7 @@ private fun IconSelector(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -333,10 +325,10 @@ private fun IconSelector(
                         modifier = Modifier.size(48.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) CyanAccent.copy(alpha = 0.3f) 
+                            containerColor = if (isSelected) CyanAccent.copy(alpha = 0.3f)
                                             else Color(0xFF0D1B26)
                         ),
-                        border = if (isSelected) BorderStroke(2.dp, CyanAccent) 
+                        border = if (isSelected) BorderStroke(2.dp, CyanAccent)
                                 else BorderStroke(1.dp, PanelBorder),
                         onClick = { onIconSelected(icon) }
                     ) {
@@ -566,7 +558,7 @@ private fun ActionButtons(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isEnabled) CyanAccent else CyanAccent.copy(alpha = 0.3f)
+                containerColor = if (isEnabled && !isSaving) CyanAccent else CyanAccent.copy(alpha = 0.3f)
             ),
             onClick = { if (isEnabled && !isSaving) onSave() }
         ) {

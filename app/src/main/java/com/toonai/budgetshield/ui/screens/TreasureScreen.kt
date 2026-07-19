@@ -671,7 +671,8 @@ private fun VaultBillCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                if (!bill.isProtected && !bill.isPaid) {
+                if (!bill.isPaid) {
+                    // Every unpaid bill shows Pay Bill button
                     Button(
                         onClick = onPay,
                         colors = ButtonDefaults.buttonColors(
@@ -681,21 +682,15 @@ private fun VaultBillCard(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "Protect",
+                            text = "Pay Bill",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
-                } else if (bill.isPaid) {
+                } else {
+                    // Fully paid bills show paid status
                     Text(
                         text = "✓ Paid",
-                        color = ProtectedGreen,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                } else {
-                    Text(
-                        text = "✓ Secured",
                         color = ProtectedGreen,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium

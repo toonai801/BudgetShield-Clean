@@ -29,9 +29,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                     context.applicationContext,
                     BudgetShieldDatabase::class.java,
                     "budget_shield_database"
-                )
-                    .fallbackToDestructiveMigration(false)
-                    .build()
+                ).build()
                 INSTANCE = instance
                 instance
             }
