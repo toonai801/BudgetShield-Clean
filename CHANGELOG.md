@@ -1,5 +1,40 @@
 # Changelog
 
+## [Unreleased]
+
+### Treasure Persisted Bills — Real Persistence Implementation (2026-07-18)
+**Commit:** 5b5699c113cb7ab66b55a8ffebca7ce3d26abcb4
+**Status:** COMPLETE — Pending owner phone review
+
+**Implementation:**
+- Room database with Bill entity, DAO, and Repository for bill persistence
+- TreasureViewModel with reactive Flow combining repository data
+- BillEntryViewModel for creating bills with validation
+- BillPaymentViewModel for loading bills and processing payments
+- LocalBillRepository CompositionLocal for dependency injection in Compose
+- Navigation wiring: BillPaymentWithId route passes billId from Treasure to Payment
+- BillEntryScreen saves real bills to database with auto-icon selection
+- BillPaymentScreen loads selected bill, validates payment amounts, processes payments
+- TreasureScreen displays real persisted bills, empty state when none exist
+- Protected totals calculated from remaining unpaid amounts (not hardcoded)
+
+**Verification:**
+- Build: ./gradlew clean assembleDebug — SUCCESS
+- Tests: ./gradlew testDebugUnitTest — 24 tests PASSED
+- APK: BudgetShield-treasure-5b5699c-debug.apk (16,535,684 bytes)
+- SHA-256: f04f25a0bb3eb54061bb35483cee304da4caa51c5e799ea989f182c27af5c397
+- GitHub Release: treasure-persisted-5b5699c
+- APK URL: https://github.com/toonai801/BudgetShield-Clean/releases/download/treasure-persisted-5b5699c/BudgetShield-treasure-5b5699c-debug.apk
+
+**Data Safety:**
+- Database version 1 (no migration needed for fresh install)
+- No destructive migration fallback
+- No fake seed data created
+
+**Home Untouched:**
+- HomeScreen.kt unchanged
+- All Home navigation preserved
+
 ### TASK 3 — Test Integrity Correction (2026-07-15)
 **Status:** 🔄 IN PROGRESS — Removing fake test doubles, restoring real production coverage
 
