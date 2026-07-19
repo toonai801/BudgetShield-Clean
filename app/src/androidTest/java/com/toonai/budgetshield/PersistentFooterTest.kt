@@ -1,16 +1,21 @@
 package com.toonai.budgetshield
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.unit.DpRect
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -285,8 +290,8 @@ class PersistentFooterTest {
         composeTestRule.onNodeWithTag("bottom_nav_stats").performClick()
         composeTestRule.waitForIdle()
 
-        // Verify footer is displayed before scroll
-        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
+        // Capture footer bounds before scrolling
+        val boundsBefore = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
 
         // Scroll the content
         composeTestRule.onNodeWithTag("stats_scroll_content").performTouchInput {
@@ -294,8 +299,11 @@ class PersistentFooterTest {
         }
         composeTestRule.waitForIdle()
 
-        // Verify footer still visible after scroll
-        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
+        // Capture footer bounds after scrolling
+        val boundsAfter = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
+
+        // Assert bounds remain equal within 1dp tolerance
+        assertBoundsEqual(boundsBefore, boundsAfter, "Stats footer bounds changed after scrolling")
     }
 
     @Test
@@ -304,8 +312,8 @@ class PersistentFooterTest {
         composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
         composeTestRule.waitForIdle()
 
-        // Verify footer is displayed before scroll
-        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
+        // Capture footer bounds before scrolling
+        val boundsBefore = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
 
         // Scroll the content
         composeTestRule.onNodeWithTag("settings_scroll_content").performTouchInput {
@@ -313,8 +321,11 @@ class PersistentFooterTest {
         }
         composeTestRule.waitForIdle()
 
-        // Verify footer still visible after scroll
-        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
+        // Capture footer bounds after scrolling
+        val boundsAfter = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
+
+        // Assert bounds remain equal within 1dp tolerance
+        assertBoundsEqual(boundsBefore, boundsAfter, "Settings footer bounds changed after scrolling")
     }
 
     @Test
@@ -325,8 +336,39 @@ class PersistentFooterTest {
 
         // Verify footer is displayed
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
-        
-        // Verify settings content is displayed
-        composeTestRule.onNodeWithTag("settings_scroll_content").assertIsDisplayed()
+
+        // Get footer bounds
+        val footerBounds = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
+
+        // Scroll the content multiple times to reach the final element
+        repeat(5) {
+            composeTestRule.onNodeWithTag("settings_scroll_content").performTouchInput {
+                swipeUp(startY = height * 0.8f, endY = height * 0.1f)
+            }
+            composeTestRule.waitForIdle()
+        }
+
+        // Find and capture the final content element (Danger Zone section)
+        // The final element should be visible and above the footer
+        val finalContentBounds = composeTestRule.onNodeWithTag("settings_danger_zone_restart").getBoundsInRoot()
+
+        // Assert that the final content's bottom is at or above the footer's top
+        // (with small tolerance for floating point comparison)
+        assertTrue(
+            "Final content (bottom=${finalContentBounds.bottom}) is hidden behind footer (top=${footerBounds.top})",
+            finalContentBounds.bottom.value <= footerBounds.top.value + 1f
+        )
+    }
+
+    /**
+     * Assert that two DpRect bounds are equal within 1dp tolerance
+     */
+    private fun assertBoundsEqual(expected: DpRect, actual: DpRect, message: String) {
+        val tolerance = 1f.dp
+
+        assertTrue("$message - left", kotlin.math.abs((expected.left - actual.left).value) <= tolerance.value)
+        assertTrue("$message - top", kotlin.math.abs((expected.top - actual.top).value) <= tolerance.value)
+        assertTrue("$message - right", kotlin.math.abs((expected.right - actual.right).value) <= tolerance.value)
+        assertTrue("$message - bottom", kotlin.math.abs((expected.bottom - actual.bottom).value) <= tolerance.value)
     }
 }

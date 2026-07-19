@@ -403,7 +403,9 @@ private fun DangerZoneSection(onRestartSetup: () -> Unit) {
             )
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("settings_danger_zone_restart"),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = DangerColor.copy(alpha = 0.15f)
