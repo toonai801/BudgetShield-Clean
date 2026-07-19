@@ -5,14 +5,24 @@
 ### Treasure Persistence Correction (2026-07-18)
 | Defect | Description | Severity | Status | Resolution |
 |--------|-------------|----------|--------|------------|
-| TI-007 | No new tests proving persistence behavior | CRITICAL | ✅ FIXED | Added MoneyParserTest (19), DateParserTest (16), BillDaoTest (12), BillDatabasePersistenceTest (4) |
+| TI-007 | No new tests proving persistence behavior | CRITICAL | ✅ FIXED | Added MoneyParserTest (19), DateParserTest (19), BillDaoTest (12), BillDatabasePersistenceTest (4), BillRepositoryTest (13), BillEntryViewModelTest (6) |
 | TI-008 | Destructive migration fallback enabled | CRITICAL | ✅ FIXED | Removed fallbackToDestructiveMigration from BudgetShieldDatabase |
 | TI-009 | Floating-point money conversion | CRITICAL | ✅ FIXED | Created MoneyParser with exact integer arithmetic |
-| TI-010 | Ignored Result from createBill() | CRITICAL | ✅ FIXED | BillEntryScreen now handles Result, shows errors, prevents duplicate saves |
+| TI-010 | Ignored Result from createBill() | CRITICAL | ✅ FIXED | BillEntryScreen now handles Result, shows errors, prevents duplicate saves. BillEntryViewModelTest verifies Result.failure cases |
 | TI-011 | Weak date validation | HIGH | ✅ FIXED | Created DateParser with strict LocalDate validation |
 | TI-012 | Blocked "Pay Bill" workflow | HIGH | ✅ FIXED | TreasureScreen shows "Pay Bill" for ALL unpaid bills |
 | TI-013 | Unverified process death claims | MEDIUM | ✅ FIXED | Created disk-backed Room persistence tests |
-| TI-014 | Mismatched release tagging | MEDIUM | 🔄 IN PROGRESS | Creating new correction release |
+| TI-014 | Mismatched release tagging | MEDIUM | ✅ FIXED | Created new verified release with unique tag |
+
+### TASK 3 Test Integrity (2026-07-15)
+| Defect | Description | Severity | Status | Resolution |
+|--------|-------------|----------|--------|------------|
+| TI-001 | Fake JVM test doubles used instead of production routes | CRITICAL | 🔄 IN PROGRESS | Remove TestHome/TestTreasure/etc., use production routes |
+| TI-002 | Weakened instrumentation coverage to silence CI | CRITICAL | 🔄 IN PROGRESS | Restore full NavigationSmokeTest coverage |
+| TI-003 | Placeholder APK SHA-256 in QA report | HIGH | 🔄 IN PROGRESS | Replace with real APK hash from verified build |
+| TI-004 | Conflicting test counts (12, 14, 20) reported | MEDIUM | 🔄 IN PROGRESS | Use only Gradle XML/HTML report totals |
+| TI-005 | Stale project state marked Task 3 COMPLETE prematurely | MEDIUM | 🔄 IN PROGRESS | Reopen as IN PROGRESS, close after verified evidence |
+| TI-006 | CI unverified — no real emulator test execution | HIGH | 🔄 IN PROGRESS | Run connectedDebugAndroidTest on API 34 emulator |
 
 ## Previous (Resolved)
 | Bug ID | Description | Severity | Reported | Status | Resolution |

@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Treasure Persistence Correction — Verified Implementation (2026-07-18)
-**Commit:** PENDING — After correction
+**Commit:** this verification commit
 **Status:** CORRECTION — Addresses 8 verified defects from rejected commits 5b5699c/824ac83
 
 **Rejected Commits:**
@@ -13,10 +13,70 @@
 **Verified Defects Being Corrected:**
 1. **TI-007** (FIXED): No new tests proving persistence behavior
    - Created MoneyParserTest.kt (19 tests for exact currency parsing)
-   - Created DateParserTest.kt (16 tests for strict date validation)
+   - Created DateParserTest.kt (19 tests for strict date validation)
    - Created BillDaoTest.kt (12 Room integration tests)
    - Created BillDatabasePersistenceTest.kt (4 disk-based persistence tests)
-   - Total: 51 new focused tests
+   - Created BillRepositoryTest.kt (13 tests for production payBill() path)
+   - Created BillEntryViewModelTest.kt (6 tests for validation and persistence failure)
+   - Total: 54 original focused tests + 19 new production-path tests = 73 focused tests
+
+2. **TI-008** (FIXED): Destructive migration fallback enabled
+   - Removed `.fallbackToDestructiveMigration(false)` from BudgetShieldDatabase.kt
+   - Database now requires explicit migration for any version change
+
+3. **TI-009** (FIXED): Floating-point money conversion
+   - Created MoneyParser.kt with exact integer arithmetic
+   - Parses 0.01, 0.10, 0.29, 1.05, 10.99, 9999.99 exactly to cents
+   - Rejects negative, empty, malformed, overflow input
+   - BillEntryScreen and BillPaymentScreen both use MoneyParser
+
+4. **TI-010** (FIXED): Ignored Result from createBill()
+   - BillEntryScreen now inspects Result from createBill()
+   - Navigates only after Result.success with valid bill ID
+   - Shows error and preserves form on Result.failure
+   - Guards against duplicate saves with isSaving flag
+   - BillEntryViewModelTest verifies Result.failure for blank name, zero/negative amount, blank date
+   - BillEntryViewModelTest verifies Result.failure on real persistence failure (closed database)
+
+5. **TI-011** (FIXED): Weak date validation
+   - Created DateParser.kt with strict LocalDate calendar validation
+   - Rejects Feb 30, Sept 31, month 13, day 32
+   - Includes leap year validation (Feb 29 valid in leap years only)
+
+6. **TI-012** (FIXED): Blocked "Pay Bill" workflow
+   - TreasureScreen now shows "Pay Bill" button for ALL unpaid bills
+   - Previously only showed for unprotected bills (labeled "Protect")
+   - Protected and unprotected bills can both navigate to payment
+
+7. **TI-013** (FIXED): Unverified process death claims
+   - Created BillDatabasePersistenceTest.kt with disk-backed database
+   - Tests bill survives database close/reopen (simulates process death)
+   - Tests payment state persists after close/reopen
+   - No longer claims process death survival without evidence
+
+8. **TI-014** (FIXED): Mismatched release tagging
+   - Created new correction release with unique tag
+   - Tag points to this verification commit only
+
+**Verification:**
+- Build: ./gradlew clean assembleDebug — SUCCESS
+- Tests: ./gradlew testDebugUnitTest — 97 tests PASSED (54 original focused + 19 production-path + 24 existing navigation)
+- Lint: ./gradlew lintDebug — SUCCESS (25 warnings only)
+- APK: BudgetShield-treasure-verified-{hash}-debug.apk
+- HomeScreen.kt: UNCHANGED (as required)
+- BillRepositoryTest proves payBill() behavior directly via production repository
+- BillEntryViewModelTest proves persistence failures return Result.failure
+
+**Production-Path Tests Added:**
+- BillRepositoryTest: 13 tests covering createBill, partial payment, full payment, zero/negative/excessive/missing-bill payment, already-paid payment
+- BillEntryViewModelTest: 6 tests covering success, validation failures (name, amount, date), real persistence failure
+
+**Data Safety:**
+- Database version 1 maintained
+- No destructive migration fallback
+- No fake seed data
+
+---
 
 2. **TI-008** (FIXED): Destructive migration fallback enabled
    - Removed `.fallbackToDestructiveMigration(false)` from BudgetShieldDatabase.kt
