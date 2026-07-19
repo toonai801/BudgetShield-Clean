@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.DpRect
@@ -337,25 +338,36 @@ class PersistentFooterTest {
         // Verify footer is displayed
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
 
-        // Get footer bounds
+        // Scroll the content using performScrollTo to reach the final element
+        composeTestRule.onNodeWithTag("settings_danger_zone_restart").performScrollTo()
+        composeTestRule.waitForIdle()
+
+        // Verify the element is displayed after scrolling
+        composeTestRule.onNodeWithTag("settings_danger_zone_restart").assertIsDisplayed()
+
+        // Capture finalContent bounds and footer bounds after scrolling
+        val finalContentBounds = composeTestRule.onNodeWithTag("settings_danger_zone_restart").getBoundsInRoot()
         val footerBounds = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
 
-        // Scroll the content multiple times to reach the final element
-        repeat(5) {
-            composeTestRule.onNodeWithTag("settings_scroll_content").performTouchInput {
-                swipeUp(startY = height * 0.8f, endY = height * 0.1f)
-            }
-            composeTestRule.waitForIdle()
-        }
+        // Print measured bounds
+        println("[PERSISTENT_FOOTER_TEST] finalContent.top = ${finalContentBounds.top}")
+        println("[PERSISTENT_FOOTER_TEST] finalContent.bottom = ${finalContentBounds.bottom}")
+        println("[PERSISTENT_FOOTER_TEST] finalContent.left = ${finalContentBounds.left}")
+        println("[PERSISTENT_FOOTER_TEST] finalContent.right = ${finalContentBounds.right}")
+        println("[PERSISTENT_FOOTER_TEST] footer.top = ${footerBounds.top}")
+        println("[PERSISTENT_FOOTER_TEST] footer.bottom = ${footerBounds.bottom}")
+        println("[PERSISTENT_FOOTER_TEST] footer.left = ${footerBounds.left}")
+        println("[PERSISTENT_FOOTER_TEST] footer.right = ${footerBounds.right}")
 
-        // Find and capture the final content element (Danger Zone section)
-        // The final element should be visible and above the footer
-        val finalContentBounds = composeTestRule.onNodeWithTag("settings_danger_zone_restart").getBoundsInRoot()
-
-        // Assert that the final content's bottom is at or above the footer's top
-        // (with small tolerance for floating point comparison)
+        // Assert finalContent.top >= 0
         assertTrue(
-            "Final content (bottom=${finalContentBounds.bottom}) is hidden behind footer (top=${footerBounds.top})",
+            "Final content top (${finalContentBounds.top}) is less than 0",
+            finalContentBounds.top.value >= 0f
+        )
+
+        // Assert finalContent.bottom <= footer.top + 1dp tolerance
+        assertTrue(
+            "Final content bottom (${finalContentBounds.bottom}) is hidden behind footer top (${footerBounds.top})",
             finalContentBounds.bottom.value <= footerBounds.top.value + 1f
         )
     }
