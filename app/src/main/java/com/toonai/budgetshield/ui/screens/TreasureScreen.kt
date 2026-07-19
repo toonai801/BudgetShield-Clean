@@ -1,5 +1,6 @@
 package com.toonai.budgetshield.ui.screens
 
+import com.toonai.budgetshield.ui.LocalBillRepository
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +39,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.toonai.budgetshield.data.model.Bill
+import com.toonai.budgetshield.ui.viewmodel.TreasureUiState
+import com.toonai.budgetshield.ui.viewmodel.TreasureViewModel
 
 // Premium gamified dark theme - Treasure Vault Edition
 private val BackgroundDark = Color(0xFF02070D)
@@ -55,11 +62,14 @@ private val UnprotectedAmber = Color(0xFFFFB74D)
 
 @Composable
 fun TreasureScreen(
+    viewModel: TreasureViewModel = viewModel(factory = TreasureViewModel.Factory(LocalBillRepository.current)),
     onNavigateToBillEntry: () -> Unit,
-    onNavigateToBillPayment: () -> Unit,
+    onNavigateToBillPayment: (Long) -> Unit,
     onNavigateToTransactionDetails: () -> Unit,
     onNavigateToHome: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -94,21 +104,30 @@ fun TreasureScreen(
                 TreasureHeader(onNavigateToHome = onNavigateToHome)
 
                 // Protected Money Vault Card
-                VaultCard(protectedAmount = "$1,250.00", totalBills = "$1,240.49")
+                VaultCard(
+                    protectedAmount = uiState.formattedProtectedAmount,
+                    totalUnpaid = uiState.formattedTotalUnpaid,
+                    protectionPercentage = uiState.protectionPercentage
+                )
 
                 // Bills Protection Status
                 ProtectionSummary(
-                    protectedCount = 2,
-                    unprotectedCount = 2,
-                    protectedAmount = "$1,029.99",
-                    unprotectedAmount = "$210.50"
+                    protectedCount = uiState.protectedCount,
+                    unprotectedCount = uiState.unprotectedCount,
+                    protectedAmount = uiState.formattedProtectedAmount,
+                    unprotectedAmount = uiState.formattedUnprotectedAmount
                 )
 
-                // Bills List
-                BillsVaultSection(
-                    onPayBill = onNavigateToBillPayment,
-                    onAddBill = onNavigateToBillEntry
-                )
+                // Bills List or Empty State
+                if (uiState.hasBills) {
+                    BillsVaultSection(
+                        bills = uiState.bills,
+                        onPayBill = onNavigateToBillPayment,
+                        onAddBill = onNavigateToBillEntry
+                    )
+                } else {
+                    EmptyBillsState(onAddBill = onNavigateToBillEntry)
+                }
 
                 // Transaction History Link
                 HistorySection(onViewHistory = onNavigateToTransactionDetails)
@@ -180,7 +199,11 @@ private fun TreasureHeader(onNavigateToHome: () -> Unit) {
 }
 
 @Composable
-private fun VaultCard(protectedAmount: String, totalBills: String) {
+private fun VaultCard(
+    protectedAmount: String,
+    totalUnpaid: String,
+    protectionPercentage: Int
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -283,7 +306,7 @@ private fun VaultCard(protectedAmount: String, totalBills: String) {
 
                 // Total bills context
                 Text(
-                    text = "of $1,240.49 total bills",
+                    text = "of $totalUnpaid total bills",
                     color = TextMuted,
                     fontSize = 13.sp
                 )
@@ -302,10 +325,11 @@ private fun VaultCard(protectedAmount: String, totalBills: String) {
                             .clip(RoundedCornerShape(3.dp))
                             .background(Color(0xFF14364A))
                     )
-                    // Progress fill (101% protected)
+                    // Progress fill
+                    val progressWidth = (protectionPercentage.coerceIn(0, 100) / 100f)
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(1f)
+                            .fillMaxWidth(progressWidth)
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp))
                             .background(
@@ -393,7 +417,7 @@ private fun StatusPill(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "$count",
+                    text = count.toString(),
                     color = color,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
@@ -410,8 +434,73 @@ private fun StatusPill(
 }
 
 @Composable
+private fun EmptyBillsState(onAddBill: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(GoldAccent.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "📜",
+                    fontSize = 32.sp
+                )
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "No Bills Yet",
+                    color = TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Add your first bill to start protecting your money",
+                    color = TextMuted,
+                    fontSize = 13.sp
+                )
+            }
+
+            Button(
+                onClick = onAddBill,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CyanAccent,
+                    contentColor = Color.Black
+                ),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = "+ Add Your First Bill",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun BillsVaultSection(
-    onPayBill: () -> Unit,
+    bills: List<Bill>,
+    onPayBill: (Long) -> Unit,
     onAddBill: () -> Unit
 ) {
     Card(
@@ -464,62 +553,27 @@ private fun BillsVaultSection(
             }
 
             // Bill cards
-            VaultBillCard(
-                icon = "🏠",
-                name = "Rent",
-                amount = "$950.00",
-                dueDate = "Jul 30",
-                daysLeft = 12,
-                isProtected = true,
-                onPay = onPayBill
-            )
-
-            VaultBillCard(
-                icon = "⚡",
-                name = "Utilities",
-                amount = "$145.50",
-                dueDate = "Jul 25",
-                daysLeft = 7,
-                isProtected = false,
-                onPay = onPayBill
-            )
-
-            VaultBillCard(
-                icon = "🌐",
-                name = "Internet",
-                amount = "$79.99",
-                dueDate = "Jul 20",
-                daysLeft = 2,
-                isProtected = true,
-                onPay = onPayBill
-            )
-
-            VaultBillCard(
-                icon = "📱",
-                name = "Phone",
-                amount = "$65.00",
-                dueDate = "Jul 28",
-                daysLeft = 10,
-                isProtected = false,
-                onPay = onPayBill
-            )
+            bills.forEach { bill ->
+                VaultBillCard(
+                    bill = bill,
+                    onPay = { onPayBill(bill.id) }
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun VaultBillCard(
-    icon: String,
-    name: String,
-    amount: String,
-    dueDate: String,
-    daysLeft: Int,
-    isProtected: Boolean,
+    bill: Bill,
     onPay: () -> Unit
 ) {
-    val statusColor = if (isProtected) ProtectedGreen else UnprotectedAmber
-    val statusBg = if (isProtected) ProtectedGreen.copy(alpha = 0.1f) else UnprotectedAmber.copy(alpha = 0.1f)
-
+    val statusColor = if (bill.isProtected) ProtectedGreen else UnprotectedAmber
+    val statusBg = if (bill.isProtected) ProtectedGreen.copy(alpha = 0.1f) else UnprotectedAmber.copy(alpha = 0.1f)
+    
+    // Calculate days until due
+    val daysLeft = calculateDaysUntilDue(bill.dueDate)
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -547,7 +601,7 @@ private fun VaultBillCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = icon,
+                        text = bill.icon,
                         fontSize = 20.sp
                     )
                 }
@@ -559,7 +613,7 @@ private fun VaultBillCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = name,
+                            text = bill.name,
                             color = TextPrimary,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold
@@ -573,7 +627,7 @@ private fun VaultBillCard(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = if (isProtected) "🛡️ Protected" else "⚠️ Unprotected",
+                                text = if (bill.isProtected) "🛡️ Protected" else "⚠️ Unprotected",
                                 color = statusColor,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Medium
@@ -588,8 +642,16 @@ private fun VaultBillCard(
                         else -> TextMuted
                     }
 
+                    val dueText = if (daysLeft < 0) {
+                        "Overdue ${kotlin.math.abs(daysLeft)} days"
+                    } else if (daysLeft == 0) {
+                        "Due today"
+                    } else {
+                        "Due ${bill.dueDate} • $daysLeft days"
+                    }
+
                     Text(
-                        text = "$dueDate • $daysLeft days",
+                        text = dueText,
                         color = dateColor,
                         fontSize = 12.sp
                     )
@@ -601,7 +663,7 @@ private fun VaultBillCard(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = amount,
+                    text = bill.formattedRemainingDue,
                     color = TextPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -609,7 +671,7 @@ private fun VaultBillCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                if (!isProtected) {
+                if (!bill.isProtected && !bill.isPaid) {
                     Button(
                         onClick = onPay,
                         colors = ButtonDefaults.buttonColors(
@@ -624,6 +686,13 @@ private fun VaultBillCard(
                             fontWeight = FontWeight.Bold
                         )
                     }
+                } else if (bill.isPaid) {
+                    Text(
+                        text = "✓ Paid",
+                        color = ProtectedGreen,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 } else {
                     Text(
                         text = "✓ Secured",
@@ -692,5 +761,20 @@ private fun HistorySection(onViewHistory: () -> Unit) {
                 fontSize = 24.sp
             )
         }
+    }
+}
+
+// Helper function to calculate days until due date
+private fun calculateDaysUntilDue(dueDate: String): Int {
+    return try {
+        // Simple date parsing - expects "YYYY-MM-DD" format
+        val parts = dueDate.split("-")
+        if (parts.size == 3) {
+            val due = java.time.LocalDate.of(parts[0].toInt(), parts[1].toInt(), parts[2].toInt())
+            val today = java.time.LocalDate.now()
+            java.time.temporal.ChronoUnit.DAYS.between(today, due).toInt()
+        } else 30
+    } catch (e: Exception) {
+        30 // Default fallback
     }
 }

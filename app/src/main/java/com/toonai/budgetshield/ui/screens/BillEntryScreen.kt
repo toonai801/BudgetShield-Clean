@@ -1,7 +1,7 @@
 package com.toonai.budgetshield.ui.screens
 
+import com.toonai.budgetshield.ui.LocalBillRepository
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,13 +23,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +39,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.toonai.budgetshield.ui.viewmodel.BillEntryViewModel
+import kotlinx.coroutines.launch
 
 // Premium gamified dark theme colors (matching Home)
 private val BackgroundDark = Color(0xFF02070D)
@@ -50,16 +53,24 @@ private val GoldAccent = Color(0xFFFFC545)
 private val BlueAccent = Color(0xFF1678B9)
 private val TextPrimary = Color(0xFFF4F7FB)
 private val TextMuted = Color(0xFFA6B1BF)
+private val ErrorColor = Color(0xFFFF553D)
 
 @Composable
 fun BillEntryScreen(
+    viewModel: BillEntryViewModel = viewModel(factory = BillEntryViewModel.Factory(LocalBillRepository.current)),
     onNavigateToTreasure: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToSetupQuest: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+    
     var name by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var dueDate by remember { mutableStateOf("") }
+    var isProtected by remember { mutableStateOf(true) }
+    var selectedIcon by remember { mutableStateOf("") }
+    var isSaving by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -80,26 +91,168 @@ fun BillEntryScreen(
                 // Header
                 HeaderSection()
 
+                // Error message
+                if (errorMessage != null) {
+                    ErrorBanner(message = errorMessage!!)
+                }
+
                 // Form Card
                 FormCard(
                     name = name,
-                    onNameChange = { name = it },
+                    onNameChange = { 
+                        name = it
+                        // Auto-select icon based on name
+                        selectedIcon = when {
+                            it.contains("rent", ignoreCase = true) -> "🏠"
+                            it.contains("electric", ignoreCase = true) || 
+                            it.contains("gas", ignoreCase = true) ||
+                            it.contains("water", ignoreCase = true) ||
+                            it.contains("utility", ignoreCase = true) -> "⚡"
+                            it.contains("internet", ignoreCase = true) ||
+                            it.contains("wifi", ignoreCase = true) ||
+                            it.contains("cable", ignoreCase = true) -> "🌐"
+                            it.contains("phone", ignoreCase = true) ||
+                            it.contains("mobile", ignoreCase = true) -> "📱"
+                            it.contains("insurance", ignoreCase = true) -> "🛡️"
+                            it.contains("car", ignoreCase = true) ||
+                            it.contains("auto", ignoreCase = true) -> "🚗"
+                            it.contains("grocery", ignoreCase = true) ||
+                            it.contains("food", ignoreCase = true) -> "🛒"
+                            it.contains("subscription", ignoreCase = true) ||
+                            it.contains("netflix", ignoreCase = true) ||
+                            it.contains("spotify", ignoreCase = true) -> "📺"
+                            else -> "📄"
+                        }
+                    },
                     amount = amount,
-                    onAmountChange = { amount = it },
+                    onAmountChange = { 
+                        // Only allow valid decimal input
+                        if (it.matches(Regex("^\\d*\\.?\\d{0,2}$")) || it.isEmpty()) {
+                            amount = it
+                        }
+                    },
                     dueDate = dueDate,
                     onDueDateChange = { dueDate = it }
                 )
 
+                // Icon selector
+                IconSelector(
+                    selectedIcon = selectedIcon,
+                    onIconSelected = { selectedIcon = it }
+                )
+
                 // Protection Toggle
-                ProtectionToggleCard()
+                ProtectionToggleCard(
+                    isProtected = isProtected,
+                    onToggle = { isProtected = it }
+                )
 
                 // Action Buttons
                 ActionButtons(
-                    onSave = onNavigateToTreasure,
+                    isEnabled = name.isNotBlank() && amount.isNotBlank() && amount.toDoubleOrNull() != null && dueDate.isNotBlank(),
+                    isSaving = isSaving,
+                    onSave = {
+                        scope.launch {
+                            isSaving = true
+                            errorMessage = null
+                            
+                            try {
+                                val amountCents = (amount.toDouble() * 100).toLong()
+                                
+                                // Validate
+                                if (amountCents <= 0) {
+                                    errorMessage = "Amount must be greater than $0.00"
+                                    isSaving = false
+                                    return@launch
+                                }
+                                
+                                // Parse and format due date
+                                val formattedDueDate = parseDueDate(dueDate)
+                                if (formattedDueDate == null) {
+                                    errorMessage = "Invalid date format. Use MM/DD/YYYY or YYYY-MM-DD"
+                                    isSaving = false
+                                    return@launch
+                                }
+                                
+                                val icon = selectedIcon.ifEmpty { "📄" }
+                                
+                                viewModel.createBill(
+                                    name = name.trim(),
+                                    icon = icon,
+                                    amountCents = amountCents,
+                                    dueDate = formattedDueDate,
+                                    isProtected = isProtected
+                                )
+                                
+                                // Navigate back on success
+                                onNavigateToTreasure()
+                            } catch (e: Exception) {
+                                errorMessage = "Failed to save bill: ${e.message}"
+                            } finally {
+                                isSaving = false
+                            }
+                        }
+                    },
                     onBackHome = onNavigateToHome,
                     onBackSetup = onNavigateToSetupQuest
                 )
             }
+        }
+    }
+}
+
+private fun parseDueDate(input: String): String? {
+    return try {
+        when {
+            // Already in YYYY-MM-DD format
+            input.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> input
+            // MM/DD/YYYY format
+            input.matches(Regex("^\\d{1,2}/\\d{1,2}/\\d{4}$")) -> {
+                val parts = input.split("/")
+                val month = parts[0].padStart(2, '0')
+                val day = parts[1].padStart(2, '0')
+                val year = parts[2]
+                "$year-$month-$day"
+            }
+            // M-D-YY format
+            input.matches(Regex("^\\d{1,2}-\\d{1,2}-\\d{2,4}$")) -> {
+                val parts = input.split("-")
+                val month = parts[0].padStart(2, '0')
+                val day = parts[1].padStart(2, '0')
+                val year = if (parts[2].length == 2) "20${parts[2]}" else parts[2]
+                "$year-$month-$day"
+            }
+            else -> null
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+@Composable
+private fun ErrorBanner(message: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = ErrorColor.copy(alpha = 0.15f)
+        ),
+        border = BorderStroke(1.dp, ErrorColor.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("⚠️", fontSize = 20.sp)
+            Text(
+                text = message,
+                color = ErrorColor,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
@@ -146,6 +299,61 @@ private fun HeaderSection() {
 }
 
 @Composable
+private fun IconSelector(
+    selectedIcon: String,
+    onIconSelected: (String) -> Unit
+) {
+    val icons = listOf("🏠", "⚡", "🌐", "📱", "🛡️", "🚗", "🛒", "📺", "📄")
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Choose Icon",
+                color = TextPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                icons.forEach { icon ->
+                    val isSelected = icon == selectedIcon
+                    Card(
+                        modifier = Modifier.size(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) CyanAccent.copy(alpha = 0.3f) 
+                                            else Color(0xFF0D1B26)
+                        ),
+                        border = if (isSelected) BorderStroke(2.dp, CyanAccent) 
+                                else BorderStroke(1.dp, PanelBorder),
+                        onClick = { onIconSelected(icon) }
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = icon, fontSize = 24.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun FormCard(
     name: String,
     onNameChange: (String) -> Unit,
@@ -168,7 +376,7 @@ private fun FormCard(
             // Bill Name
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "Bill Name",
+                    text = "Bill Name *",
                     color = TextPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -195,7 +403,7 @@ private fun FormCard(
             // Amount
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "Amount Due",
+                    text = "Amount Due *",
                     color = TextPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -203,7 +411,7 @@ private fun FormCard(
                 TextField(
                     value = amount,
                     onValueChange = onAmountChange,
-                    placeholder = { Text("$0.00") },
+                    placeholder = { Text("0.00") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors = TextFieldDefaults.colors(
@@ -220,8 +428,9 @@ private fun FormCard(
                     leadingIcon = {
                         Text(
                             text = "$",
-                            color = TextMuted,
-                            fontSize = 16.sp
+                            color = CyanAccent,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 )
@@ -230,7 +439,7 @@ private fun FormCard(
             // Due Date
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "Due Date",
+                    text = "Due Date *",
                     color = TextPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -259,101 +468,22 @@ private fun FormCard(
                     }
                 )
             }
-
-            // Category
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Category",
-                    color = TextPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    CategoryChip("Housing", true)
-                    CategoryChip("Utilities", false)
-                    CategoryChip("Other", false)
-                }
-            }
-
-            // Recurrence
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Recurrence",
-                    color = TextPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RecurrenceChip("Monthly", true)
-                    RecurrenceChip("Weekly", false)
-                    RecurrenceChip("One-time", false)
-                }
-            }
         }
     }
 }
 
 @Composable
-private fun CategoryChip(label: String, selected: Boolean) {
-    val bgColor = if (selected) CyanAccent.copy(alpha = 0.2f) else Color(0xFF0D1B26)
-    val textColor = if (selected) CyanAccent else TextMuted
-    val borderColor = if (selected) CyanAccent else PanelBorder
-
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = bgColor
-        ),
-        border = BorderStroke(1.dp, borderColor)
-    ) {
-        Text(
-            text = label,
-            color = textColor,
-            fontSize = 13.sp,
-            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-    }
-}
-
-@Composable
-private fun RecurrenceChip(label: String, selected: Boolean) {
-    val bgColor = if (selected) CyanAccent.copy(alpha = 0.2f) else Color(0xFF0D1B26)
-    val textColor = if (selected) CyanAccent else TextMuted
-    val borderColor = if (selected) CyanAccent else PanelBorder
-
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = bgColor
-        ),
-        border = BorderStroke(1.dp, borderColor)
-    ) {
-        Text(
-            text = label,
-            color = textColor,
-            fontSize = 13.sp,
-            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-    }
-}
-
-@Composable
-private fun ProtectionToggleCard() {
+private fun ProtectionToggleCard(
+    isProtected: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CyanAccent.copy(alpha = 0.1f)
+            containerColor = if (isProtected) CyanAccent.copy(alpha = 0.1f) else PanelDark
         ),
-        border = BorderStroke(1.dp, CyanAccent.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, if (isProtected) CyanAccent.copy(alpha = 0.3f) else PanelBorder)
     ) {
         Row(
             modifier = Modifier
@@ -370,7 +500,7 @@ private fun ProtectionToggleCard() {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(CyanAccent.copy(alpha = 0.2f)),
+                        .background(if (isProtected) CyanAccent.copy(alpha = 0.2f) else Color(0xFF0D1B26)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -387,28 +517,34 @@ private fun ProtectionToggleCard() {
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Earn XP when you pay on time",
+                        text = "Set money aside for this obligation",
                         color = TextMuted,
                         fontSize = 12.sp
                     )
                 }
             }
 
-            // Toggle (always on for demo)
-            Box(
-                modifier = Modifier
-                    .size(48.dp, 28.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(CyanAccent),
-                contentAlignment = Alignment.CenterEnd
+            // Toggle
+            Card(
+                modifier = Modifier.size(48.dp, 28.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isProtected) CyanAccent else Color(0xFF14364A)
+                ),
+                onClick = { onToggle(!isProtected) }
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .padding(end = 4.dp)
-                )
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .align(if (isProtected) Alignment.CenterEnd else Alignment.CenterStart)
+                            .padding(2.dp)
+                    )
+                }
             }
         }
     }
@@ -416,6 +552,8 @@ private fun ProtectionToggleCard() {
 
 @Composable
 private fun ActionButtons(
+    isEnabled: Boolean,
+    isSaving: Boolean,
     onSave: () -> Unit,
     onBackHome: () -> Unit,
     onBackSetup: () -> Unit
@@ -428,9 +566,9 @@ private fun ActionButtons(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = CyanAccent
+                containerColor = if (isEnabled) CyanAccent else CyanAccent.copy(alpha = 0.3f)
             ),
-            onClick = onSave
+            onClick = { if (isEnabled && !isSaving) onSave() }
         ) {
             Box(
                 modifier = Modifier
@@ -439,7 +577,7 @@ private fun ActionButtons(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "💾 Save Bill",
+                    text = if (isSaving) "💾 Saving..." else "💾 Save Bill",
                     color = BackgroundDark,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -467,7 +605,7 @@ private fun ActionButtons(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "← Home",
+                        text = "← Cancel",
                         color = TextPrimary,
                         fontSize = 14.sp
                     )

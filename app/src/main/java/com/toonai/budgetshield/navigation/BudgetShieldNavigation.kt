@@ -53,7 +53,7 @@ fun BudgetShieldEntry(
         is Treasure -> {
             TreasureScreen(
                 onNavigateToBillEntry = { onNavigate(BillEntry) },
-                onNavigateToBillPayment = { onNavigate(BillPayment) },
+                onNavigateToBillPayment = { billId -> onNavigate(BillPaymentWithId(billId)) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
                 onNavigateToHome = { onNavigate(Home) }
             )
@@ -93,6 +93,14 @@ fun BudgetShieldEntry(
         }
         is BillPayment -> {
             BillPaymentScreen(
+                billId = null,
+                onPaymentComplete = { onNavigate(BillProtected) },
+                onCancel = { onNavigateBack() }
+            )
+        }
+        is BillPaymentWithId -> {
+            BillPaymentScreen(
+                billId = key.billId,
                 onPaymentComplete = { onNavigate(BillProtected) },
                 onCancel = { onNavigateBack() }
             )

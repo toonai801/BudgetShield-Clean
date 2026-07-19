@@ -35,6 +35,9 @@ object BillEntry : NavKey
 object BillPayment : NavKey
 
 @Serializable
+data class BillPaymentWithId(val billId: Long) : NavKey
+
+@Serializable
 object SavingsEntry : NavKey
 
 @Serializable
