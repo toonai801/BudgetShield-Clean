@@ -53,8 +53,7 @@ private val DangerColor = Color(0xFFFF553D)
 
 @Composable
 fun SettingsScreen(
-    onNavigateToSetupQuest: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToSetupQuest: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -89,18 +88,6 @@ fun SettingsScreen(
 
                 // Danger Zone
                 DangerZoneSection(onRestartSetup = onNavigateToSetupQuest)
-
-                // Back to Home
-                TextButton(
-                    onClick = onNavigateToHome,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "← Back to Home",
-                        color = TextMuted,
-                        fontSize = 14.sp
-                    )
-                }
             }
         }
     }

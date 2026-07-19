@@ -1,8 +1,19 @@
 package com.toonai.budgetshield.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import com.toonai.budgetshield.ui.components.BudgetShieldBottomNav
+import com.toonai.budgetshield.ui.components.MainDestination
 import com.toonai.budgetshield.ui.screens.BillEntryScreen
 import com.toonai.budgetshield.ui.screens.BillPaymentScreen
 import com.toonai.budgetshield.ui.screens.BillProtectedScreen
@@ -18,12 +29,43 @@ import com.toonai.budgetshield.ui.screens.StatsScreen
 import com.toonai.budgetshield.ui.screens.TransactionDetailsScreen
 import com.toonai.budgetshield.ui.screens.TreasureScreen
 
+// Premium gamified dark theme - Background
+private val BackgroundDark = Color(0xFF02070D)
+
 /**
- * Creates a Navigation 3 entry for the given key.
- * This is used with NavDisplay and rememberNavBackStack.
+ * Determines the selected main destination based on the current navigation key.
+ * Secondary screens (BillEntry, BillPayment, etc.) map to their owning main destination.
+ */
+fun getMainDestinationForKey(key: NavKey): MainDestination? {
+    return when (key) {
+        is Home -> MainDestination.HOME
+        is Treasure -> MainDestination.TREASURE
+        is Stats -> MainDestination.STATS
+        is Goals -> MainDestination.GOALS
+        is Settings -> MainDestination.SETTINGS
+        // Secondary screens: Bills is Home-owned
+        is Bills -> MainDestination.HOME
+        // Other secondary screens also owned by Home
+        is IncomeEntry -> MainDestination.HOME
+        is BillEntry -> MainDestination.HOME
+        is BillPayment -> MainDestination.HOME
+        is BillPaymentWithId -> MainDestination.HOME
+        is SavingsEntry -> MainDestination.HOME
+        is TransactionDetails -> MainDestination.HOME
+        is BillProtected -> MainDestination.HOME
+        is ShieldProgression -> MainDestination.HOME
+        // SetupQuest has no footer
+        is SetupQuest -> null
+        else -> null
+    }
+}
+
+/**
+ * BudgetShield Screen Content Renderer
+ * Renders the actual screen content without the scaffold wrapper.
  */
 @Composable
-fun BudgetShieldEntry(
+private fun BudgetShieldScreenContent(
     key: NavKey,
     onNavigate: (NavKey) -> Unit,
     onNavigateBack: () -> Unit,
@@ -32,10 +74,7 @@ fun BudgetShieldEntry(
     when (key) {
         is SetupQuest -> {
             SetupQuestScreen(
-                onComplete = {
-                    // Replace stack so Back from Home doesn't return to Setup Quest
-                    onReplaceStack(Home)
-                }
+                onComplete = { onReplaceStack(Home) }
             )
         }
         is Home -> {
@@ -45,20 +84,18 @@ fun BudgetShieldEntry(
                 onNavigateToGoals = { onNavigate(Goals) },
                 onNavigateToSettings = { onNavigate(Settings) },
                 onNavigateToIncomeEntry = { onNavigate(IncomeEntry) },
-                onNavigateToBillEntry = { onNavigate(Bills) },  // Home Pay Bill -> Bills & Payments
+                onNavigateToBillEntry = { onNavigate(Bills) },
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
             )
         }
         is Treasure -> {
-            // Treasure is now the rewards hub, not the bills list
             TreasureScreen(
                 onNavigateToHome = { onNavigate(Home) }
             )
         }
         is Bills -> {
-            // Bills & Payments screen - manages persisted bills
             BillsScreen(
                 onNavigateToBillEntry = { onNavigate(BillEntry) },
                 onNavigateToBillPayment = { billId -> onNavigate(BillPaymentWithId(billId)) },
@@ -68,8 +105,6 @@ fun BudgetShieldEntry(
         }
         is Stats -> {
             StatsScreen(
-                onNavigateToGoals = { onNavigate(Goals) },
-                onNavigateToSettings = { onNavigate(Settings) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) }
             )
         }
@@ -82,8 +117,7 @@ fun BudgetShieldEntry(
         }
         is Settings -> {
             SettingsScreen(
-                onNavigateToSetupQuest = { onNavigate(SetupQuest) },
-                onNavigateToHome = { onNavigate(Home) }
+                onNavigateToSetupQuest = { onNavigate(SetupQuest) }
             )
         }
         is IncomeEntry -> {
@@ -93,7 +127,6 @@ fun BudgetShieldEntry(
             )
         }
         is BillEntry -> {
-            // Bill Entry returns to Bills, not Treasure
             BillEntryScreen(
                 onNavigateToTreasure = { onNavigate(Bills) },
                 onNavigateToHome = { onNavigate(Home) },
@@ -145,15 +178,15 @@ fun BudgetShieldEntry(
             )
         }
         else -> {
-            // Fallback for any unknown keys
             androidx.compose.material3.Text("Unknown screen: ${key::class.simpleName}")
         }
     }
 }
 
 /**
- * Creates the Navigation 3 entry provider for all 14 destinations.
- * Returns a function that creates NavEntry for a given key.
+ * Creates the Navigation 3 entry provider with shared scaffold wrapper.
+ * This wraps all main destinations (and Home-owned secondary destinations)
+ * with the fixed bottom navigation bar.
  */
 fun createBudgetShieldEntryProvider(
     onNavigate: (NavKey) -> Unit,
@@ -162,12 +195,71 @@ fun createBudgetShieldEntryProvider(
 ): (NavKey) -> NavEntry<NavKey> {
     return { key: NavKey ->
         NavEntry(key) {
-            BudgetShieldEntry(
-                key = key,
-                onNavigate = onNavigate,
-                onNavigateBack = onNavigateBack,
-                onReplaceStack = onReplaceStack
-            )
+            val selectedDestination = getMainDestinationForKey(key)
+
+            if (selectedDestination != null) {
+                // Wrap with shared scaffold for main destinations and Home-owned routes
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        BudgetShieldBottomNav(
+                            currentDestination = selectedDestination,
+                            onNavigateToHome = { onNavigate(Home) },
+                            onNavigateToTreasure = { onNavigate(Treasure) },
+                            onNavigateToStats = { onNavigate(Stats) },
+                            onNavigateToGoals = { onNavigate(Goals) },
+                            onNavigateToSettings = { onNavigate(Settings) }
+                        )
+                    }
+                ) { innerPadding ->
+                    // Apply background and content padding
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        BackgroundDark,
+                                        Color(0xFF06121D),
+                                        Color(0xFF0A1A2E)
+                                    )
+                                )
+                            )
+                            .padding(innerPadding)
+                    ) {
+                        // Render the actual screen content
+                        BudgetShieldScreenContent(
+                            key = key,
+                            onNavigate = onNavigate,
+                            onNavigateBack = onNavigateBack,
+                            onReplaceStack = onReplaceStack
+                        )
+                    }
+                }
+            } else {
+                // Setup Quest and unknown screens render without scaffold
+                // Apply background only
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    BackgroundDark,
+                                    Color(0xFF06121D),
+                                    Color(0xFF0A1A2E)
+                                )
+                            )
+                        )
+                ) {
+                    BudgetShieldScreenContent(
+                        key = key,
+                        onNavigate = onNavigate,
+                        onNavigateBack = onNavigateBack,
+                        onReplaceStack = onReplaceStack
+                    )
+                }
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,8 +52,6 @@ private val TextMuted = Color(0xFFA6B1BF)
 
 @Composable
 fun StatsScreen(
-    onNavigateToGoals: () -> Unit,
-    onNavigateToSettings: () -> Unit,
     onNavigateToTransactionDetails: () -> Unit
 ) {
     Surface(
@@ -86,9 +84,7 @@ fun StatsScreen(
 
                 // Bottom Actions
                 BottomActionsSection(
-                    onViewTransactions = onNavigateToTransactionDetails,
-                    onGoals = onNavigateToGoals,
-                    onSettings = onNavigateToSettings
+                    onViewTransactions = onNavigateToTransactionDetails
                 )
             }
         }
@@ -498,9 +494,7 @@ private fun StatCard(
 
 @Composable
 private fun BottomActionsSection(
-    onViewTransactions: () -> Unit,
-    onGoals: () -> Unit,
-    onSettings: () -> Unit
+    onViewTransactions: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -516,59 +510,7 @@ private fun BottomActionsSection(
                 fontSize = 14.sp
             )
         }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            ActionCardSmall(
-                modifier = Modifier.weight(1f),
-                icon = "🎯",
-                title = "Goals",
-                onClick = onGoals
-            )
-
-            ActionCardSmall(
-                modifier = Modifier.weight(1f),
-                icon = "⚙️",
-                title = "Settings",
-                onClick = onSettings
-            )
-        }
     }
 }
 
-@Composable
-private fun ActionCardSmall(
-    modifier: Modifier = Modifier,
-    icon: String,
-    title: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = PanelDark
-        ),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-        ) {
-            Text(
-                text = icon,
-                fontSize = 18.sp
-            )
-            Text(
-                text = title,
-                color = TextPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
-}
+

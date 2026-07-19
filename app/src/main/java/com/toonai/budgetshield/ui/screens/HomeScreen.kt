@@ -20,8 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Premium gamified dark theme colors
-private val BackgroundDark = Color(0xFF02070D)
 private val PanelDark = Color(0xFF06121D)
 private val PanelBorder = Color(0xFF14364A)
 private val CyanAccent = Color(0xFF17E8F2)
@@ -62,64 +59,46 @@ fun HomeScreen(
     onNavigateToTransactionDetails: () -> Unit,
     onNavigateToShieldProgression: () -> Unit
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = BackgroundDark
+        // Main content with padding
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(top = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                // Main content with padding
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 16.dp, bottom = 100.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Header
-                    HeaderSection()
+            // Header
+            HeaderSection()
 
-                    // Month selector
-                    MonthSelector()
+            // Month selector
+            MonthSelector()
 
-                    // Hero Safe Now card
-                    HeroCard(
-                        safeAmount = "$1,250",
-                        onNavigateToShieldProgression = onNavigateToShieldProgression
-                    )
+            // Hero Safe Now card
+            HeroCard(
+                safeAmount = "$1,250",
+                onNavigateToShieldProgression = onNavigateToShieldProgression
+            )
 
-                    // Stats cards row
-                    StatsCardsRow()
+            // Stats cards row
+            StatsCardsRow()
 
-                    // Daily Actions section
-                    DailyActionsSection(
-                        onAddIncome = onNavigateToIncomeEntry,
-                        onPayBill = onNavigateToBillEntry,
-                        onSaveMoney = onNavigateToSavingsEntry
-                    )
+            // Daily Actions section
+            DailyActionsSection(
+                onAddIncome = onNavigateToIncomeEntry,
+                onPayBill = onNavigateToBillEntry,
+                onSaveMoney = onNavigateToSavingsEntry
+            )
 
-                    // Recent Activity section
-                    RecentActivitySection(
-                        onViewAll = onNavigateToTransactionDetails
-                    )
-                }
-            }
+            // Recent Activity section
+            RecentActivitySection(
+                onViewAll = onNavigateToTransactionDetails
+            )
         }
-
-        // Bottom Navigation overlay
-        BottomNavigationBar(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            onNavigateToTreasure = onNavigateToTreasure,
-            onNavigateToStats = onNavigateToStats,
-            onNavigateToGoals = onNavigateToGoals,
-            onNavigateToSettings = onNavigateToSettings
-        )
     }
 }
 
@@ -144,139 +123,58 @@ private fun HeaderSection() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "\uD83D\uDEE1️",
+                    text = "🛡️",
                     fontSize = 18.sp
                 )
             }
 
-            // Logo text
-            Row {
-                Text(
-                    text = "Budget ",
-                    color = TextPrimary,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Buddy",
-                    color = CyanAccent,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Text(
+                text = "BudgetShield",
+                color = TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
-        // Right icons
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Reward coin with notification dot
-            Box(
-                contentAlignment = Alignment.TopEnd
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(GoldAccent.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "\uD83E\uDE99",
-                        fontSize = 18.sp
-                    )
-                }
-                // Notification dot
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(DangerDot)
-                        .padding(1.dp)
-                )
-            }
-
-            // Menu icon
-            IconButton(onClick = { }) {
-                Text(
-                    text = "\u2630",
-                    color = TextPrimary,
-                    fontSize = 20.sp
-                )
-            }
+        // Settings shortcut
+        IconButton(onClick = { }) {
+            Text(
+                text = "⚙️",
+                fontSize = 20.sp
+            )
         }
     }
 }
 
 @Composable
 private fun MonthSelector() {
-    Card(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = PanelDark
-        )
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Left chevron
-            IconButton(onClick = { }) {
-                Text(
-                    text = "\u2039",
-                    color = TextMuted,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+        TextButton(onClick = { }) {
+            Text(
+                text = "‹",
+                color = TextMuted,
+                fontSize = 20.sp
+            )
+        }
 
-            // Month with dropdown
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "July 2025",
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "\u25BC",
-                    color = TextMuted,
-                    fontSize = 12.sp
-                )
-            }
+        Text(
+            text = "July 2026",
+            color = TextPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
 
-            // Right chevron
-            IconButton(onClick = { }) {
-                Text(
-                    text = "\u203A",
-                    color = TextMuted,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            // Calendar button
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = PanelDark
-                )
-            ) {
-                IconButton(onClick = { }) {
-                    Text(
-                        text = "\uD83D\uDCC5",
-                        fontSize = 18.sp
-                    )
-                }
-            }
+        TextButton(onClick = { }) {
+            Text(
+                text = "›",
+                color = TextMuted,
+                fontSize = 20.sp
+            )
         }
     }
 }
@@ -287,102 +185,182 @@ private fun HeroCard(
     onNavigateToShieldProgression: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0A1F2C)
-        ),
-        onClick = onNavigateToShieldProgression
+            containerColor = Color.Transparent
+        )
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .drawBehind {
-                    // Cyan glow border effect
+                    // Animated gradient background effect
                     drawRect(
-                        color = CyanAccent.copy(alpha = 0.3f),
-                        style = Stroke(width = 1.dp.toPx())
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF0A1E2E),
+                                Color(0xFF06121D),
+                                Color(0xFF051018)
+                            ),
+                            start = Offset(0f, 0f),
+                            end = Offset(size.width, size.height)
+                        )
+                    )
+
+                    // Glowing border effect
+                    drawCircle(
+                        color = CyanAccent.copy(alpha = 0.08f),
+                        radius = size.width * 0.4f,
+                        center = Offset(size.width * 0.8f, size.height * 0.3f)
                     )
                 }
                 .padding(20.dp)
         ) {
-            // Background treasure illustration placeholder
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                CyanAccent.copy(alpha = 0.2f),
-                                CyanAccent.copy(alpha = 0.05f)
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "\uD83E\uDDF0",
-                    fontSize = 48.sp
-                )
-            }
-
-            // Content
             Column(
-                modifier = Modifier.align(Alignment.CenterStart),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Safe Now label
+                // Shield badge row
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Active Shield badge
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(
+                                            CyanAccent.copy(alpha = 0.3f),
+                                            CyanAccent.copy(alpha = 0.1f)
+                                        )
+                                    )
+                                )
+                                .drawBehind {
+                                    drawCircle(
+                                        color = CyanAccent,
+                                        radius = 18.dp.toPx(),
+                                        style = Stroke(width = 2.dp.toPx())
+                                    )
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🛡️",
+                                fontSize = 20.sp
+                            )
+                        }
+
+                        Column {
+                            Text(
+                                text = "Active Shield",
+                                color = CyanAccent,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Level 3 • 85% XP",
+                                color = TextMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+
+                    // Streak indicator
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "🔥",
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "12",
+                            color = GoldAccent,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Safe Now amount
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "\uD83D\uDEE1️",
+                        text = "Safe Now",
+                        color = TextMuted,
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "Safe Now",
+                        text = safeAmount,
                         color = CyanAccent,
-                        fontSize = 16.sp,
+                        fontSize = 42.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                // Amount
-                Text(
-                    text = safeAmount,
-                    color = TextPrimary,
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-
-                // Money Shield label
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                // XP Progress bar
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(
-                        text = "\uD83D\uDEE1️",
-                        fontSize = 12.sp
-                    )
-                    Text(
-                        text = "Money Shield",
-                        color = CyanAccent,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "XP to Level 4",
+                            color = TextMuted,
+                            fontSize = 11.sp
+                        )
+                        Text(
+                            text = "850 / 1000",
+                            color = CyanSoft,
+                            fontSize = 11.sp
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(PanelBorder)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.85f)
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(CyanSoft, CyanAccent)
+                                    )
+                                )
+                        )
+                    }
                 }
 
-                // Supporting text
-                Text(
-                    text = "You're protected and in control.",
-                    color = TextMuted,
-                    fontSize = 13.sp
-                )
+                // Tap to level up hint
+                TextButton(
+                    onClick = onNavigateToShieldProgression,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Tap to Level Up →",
+                        color = CyanAccent,
+                        fontSize = 13.sp
+                    )
+                }
             }
         }
     }
@@ -394,55 +372,42 @@ private fun StatsCardsRow() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Bills Protected card
-        StatsCard(
+        StatCard(
             modifier = Modifier.weight(1f),
-            icon = "\uD83D\uDEE1️",
-            title = "Bills Protected",
-            progressValue = "85%",
-            progressColor = CyanAccent,
-            subtitle = "$1,700 of $2,000",
-            progress = 0.85f
+            icon = "💰",
+            value = "$2,450",
+            label = "Earned",
+            color = GreenAccent
         )
 
-        // Savings Streak card
-        StatsCard(
+        StatCard(
             modifier = Modifier.weight(1f),
-            icon = "\u2B50",
-            title = "Savings Streak",
-            progressValue = "12",
-            progressColor = GoldAccent,
-            subtitle = "days",
-            subtitle2 = "Best: 18 days",
-            progress = 0.67f
+            icon = "🎯",
+            value = "$180",
+            label = "Saved",
+            color = GoldAccent
         )
 
-        // Wants Left card
-        StatsCard(
+        StatCard(
             modifier = Modifier.weight(1f),
-            icon = "\uD83C\uDF81",
-            title = "Wants Left",
-            progressValue = "40%",
-            progressColor = GreenAccent,
-            subtitle = "$120 of $300",
-            progress = 0.40f
+            icon = "✅",
+            value = "8",
+            label = "Bills Paid",
+            color = CyanAccent
         )
     }
 }
 
 @Composable
-private fun StatsCard(
+private fun StatCard(
     modifier: Modifier = Modifier,
     icon: String,
-    title: String,
-    progressValue: String,
-    progressColor: Color,
-    subtitle: String,
-    subtitle2: String? = null,
-    progress: Float
+    value: String,
+    label: String,
+    color: Color
 ) {
     Card(
-        modifier = modifier.height(140.dp),
+        modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = PanelDark
@@ -450,120 +415,28 @@ private fun StatsCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Title with icon
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(text = icon, fontSize = 10.sp)
-                Text(
-                    text = title,
-                    color = TextMuted,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            // Progress ring placeholder
-            Box(
-                modifier = Modifier.size(48.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // Background ring
-                CircularProgressIndicator(
-                    progress = 1f,
-                    color = PanelBorder,
-                    strokeWidth = 4.dp
-                )
-                // Progress ring
-                CircularProgressIndicator(
-                    progress = progress,
-                    color = progressColor,
-                    strokeWidth = 4.dp
-                )
-                // Center value
-                if (subtitle2 != null) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = progressValue,
-                            color = TextPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = subtitle,
-                            color = progressColor,
-                            fontSize = 8.sp
-                        )
-                    }
-                } else {
-                    Text(
-                        text = progressValue,
-                        color = TextPrimary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            // Subtitle
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = subtitle,
-                    color = TextMuted,
-                    fontSize = 10.sp
-                )
-                if (subtitle2 != null) {
-                    Text(
-                        text = subtitle2,
-                        color = TextMuted,
-                        fontSize = 9.sp
-                    )
-                }
-            }
-
-            // Chevron
             Text(
-                text = "\u203A",
+                text = icon,
+                fontSize = 20.sp
+            )
+            Text(
+                text = value,
+                color = color,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = label,
                 color = TextMuted,
-                fontSize = 16.sp
+                fontSize = 11.sp
             )
         }
     }
-}
-
-@Composable
-private fun CircularProgressIndicator(
-    progress: Float,
-    color: Color,
-    strokeWidth: androidx.compose.ui.unit.Dp
-) {
-    // Simple circular progress using Canvas would be ideal
-    // For now using a box representation
-    Box(
-        modifier = Modifier
-            .size(48.dp)
-            .drawBehind {
-                // Draw arc for progress
-                val sweepAngle = progress * 360f
-                drawArc(
-                    color = color,
-                    startAngle = -90f,
-                    sweepAngle = sweepAngle,
-                    useCenter = false,
-                    style = Stroke(width = strokeWidth.toPx())
-                )
-            }
-    )
 }
 
 @Composable
@@ -580,72 +453,44 @@ private fun DailyActionsSection(
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Daily Actions",
-                        color = TextPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(text = "\u2728", fontSize = 14.sp)
-                }
+            Text(
+                text = "Daily Actions",
+                color = TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-                TextButton(onClick = { }) {
-                    Text(
-                        text = "See All \u203A",
-                        color = CyanAccent,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
-            // Action buttons row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                ActionButton(
+                ActionCard(
                     modifier = Modifier.weight(1f),
-                    icon = "\u2B07\uFE0F",
-                    iconBg = Brush.verticalGradient(
-                        colors = listOf(Color(0xFF2A9D8F), Color(0xFF264653))
-                    ),
+                    icon = "💵",
                     title = "Add Income",
-                    subtitle = "Track money in",
+                    subtitle = "Get paid",
+                    color = GreenAccent,
                     onClick = onAddIncome
                 )
 
-                ActionButton(
+                ActionCard(
                     modifier = Modifier.weight(1f),
-                    icon = "\uD83D\uDCC4",
-                    iconBg = Brush.verticalGradient(
-                        colors = listOf(Color(0xFF4A90D9), Color(0xFF1E3A5F))
-                    ),
+                    icon = "🧾",
                     title = "Pay Bill",
                     subtitle = "Stay protected",
+                    color = CyanAccent,
                     onClick = onPayBill
                 )
 
-                ActionButton(
+                ActionCard(
                     modifier = Modifier.weight(1f),
-                    icon = "\uD83C\uDFFA",
-                    iconBg = Brush.verticalGradient(
-                        colors = listOf(Color(0xFF2FE6A7), Color(0xFF1A5F4A))
-                    ),
-                    title = "Save Money",
-                    subtitle = "Build your stash",
+                    icon = "🏦",
+                    title = "Save",
+                    subtitle = "Build stash",
+                    color = GoldAccent,
                     onClick = onSaveMoney
                 )
             }
@@ -654,12 +499,12 @@ private fun DailyActionsSection(
 }
 
 @Composable
-private fun ActionButton(
+private fun ActionCard(
     modifier: Modifier = Modifier,
     icon: String,
-    iconBg: Brush,
     title: String,
     subtitle: String,
+    color: Color,
     onClick: () -> Unit
 ) {
     Card(
@@ -673,25 +518,23 @@ private fun ActionButton(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Icon background
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
-                    .background(iconBg),
+                    .background(color.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = icon,
-                    fontSize = 24.sp
+                    fontSize = 22.sp
                 )
             }
 
-            // Title
             Text(
                 text = title,
                 color = TextPrimary,
@@ -699,7 +542,6 @@ private fun ActionButton(
                 fontWeight = FontWeight.SemiBold
             )
 
-            // Subtitle
             Text(
                 text = subtitle,
                 color = TextMuted,
@@ -721,10 +563,9 @@ private fun RecentActivitySection(
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -733,48 +574,43 @@ private fun RecentActivitySection(
                 Text(
                     text = "Recent Activity",
                     color = TextPrimary,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 TextButton(onClick = onViewAll) {
                     Text(
-                        text = "View All \u203A",
+                        text = "View All →",
                         color = CyanAccent,
-                        fontSize = 14.sp
+                        fontSize = 13.sp
                     )
                 }
             }
 
             // Activity items
             ActivityItem(
-                icon = "\uD83D\uDEE1️",
-                iconBg = BlueAccent,
-                title = "Rent Payment",
-                category = "Bills",
-                amount = "-$950.00",
-                amountColor = TextPrimary,
-                date = "Jul 6"
+                icon = "🎮",
+                title = "XP Earned",
+                subtitle = "Paid Rent Early",
+                amount = "+50 XP",
+                isPositive = true
             )
 
             ActivityItem(
-                icon = "\u2B07\uFE0F",
-                iconBg = GreenAccent,
-                title = "Paycheck",
-                category = "Income",
-                amount = "+$2,400.00",
-                amountColor = GreenAccent,
-                date = "Jul 5"
+                icon = "🛡️",
+                title = "Shield Activated",
+                subtitle = "All Bills Protected",
+                amount = "",
+                isPositive = true
             )
 
             ActivityItem(
-                icon = "\u2B50",
-                iconBg = GoldAccent,
-                title = "Streak Bonus",
-                category = "Savings",
-                amount = "+$10.00",
-                amountColor = GreenAccent,
-                date = "Jul 5"
+                icon = "⚠️",
+                title = "Payment Due",
+                subtitle = "Electric Bill in 2 Days",
+                amount = "$89.00",
+                isPositive = false,
+                showAlert = true
             )
         }
     }
@@ -783,12 +619,11 @@ private fun RecentActivitySection(
 @Composable
 private fun ActivityItem(
     icon: String,
-    iconBg: Color,
     title: String,
-    category: String,
+    subtitle: String,
     amount: String,
-    amountColor: Color,
-    date: String
+    isPositive: Boolean,
+    showAlert: Boolean = false
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -796,15 +631,17 @@ private fun ActivityItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape)
-                    .background(iconBg.copy(alpha = 0.2f)),
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        if (showAlert) DangerDot.copy(alpha = 0.15f)
+                        else PanelBorder.copy(alpha = 0.5f)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -813,148 +650,32 @@ private fun ActivityItem(
                 )
             }
 
-            // Title and category
             Column {
                 Text(
                     text = title,
                     color = TextPrimary,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = category,
+                    text = subtitle,
                     color = TextMuted,
                     fontSize = 12.sp
                 )
             }
         }
 
-        // Amount and date
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
+        if (amount.isNotEmpty()) {
             Text(
                 text = amount,
-                color = amountColor,
+                color = when {
+                    showAlert -> DangerDot
+                    isPositive -> GreenAccent
+                    else -> TextPrimary
+                },
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
-                text = date,
-                color = TextMuted,
-                fontSize = 12.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun BottomNavigationBar(
-    modifier: Modifier = Modifier,
-    onNavigateToTreasure: () -> Unit,
-    onNavigateToStats: () -> Unit,
-    onNavigateToGoals: () -> Unit,
-    onNavigateToSettings: () -> Unit
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        color = Color(0xFF06121D)
-    ) {
-        Column {
-            // Top border line
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(PanelBorder)
-            )
-
-            // Nav items
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Home (active)
-                NavItem(
-                    icon = "\uD83C\uDFE0",
-                    label = "Home",
-                    isActive = true,
-                    onClick = { }
-                )
-
-                // Treasure
-                NavItem(
-                    icon = "\uD83E\uDDF0",
-                    label = "Treasure",
-                    isActive = false,
-                    onClick = onNavigateToTreasure
-                )
-
-                // Stats
-                NavItem(
-                    icon = "\uD83D\uDCCA",
-                    label = "Stats",
-                    isActive = false,
-                    onClick = onNavigateToStats
-                )
-
-                // Goals
-                NavItem(
-                    icon = "\uD83C\uDFAF",
-                    label = "Goals",
-                    isActive = false,
-                    onClick = onNavigateToGoals
-                )
-
-                // Settings
-                NavItem(
-                    icon = "\u2699\uFE0F",
-                    label = "Settings",
-                    isActive = false,
-                    onClick = onNavigateToSettings
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun NavItem(
-    icon: String,
-    label: String,
-    isActive: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (isActive) CyanAccent else TextMuted
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        TextButton(
-            onClick = onClick,
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = icon,
-                    fontSize = 22.sp
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = label,
-                    color = color,
-                    fontSize = 11.sp,
-                    fontWeight = if (isActive) FontWeight.Medium else FontWeight.Normal
-                )
-            }
         }
     }
 }
