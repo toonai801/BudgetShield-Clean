@@ -18,3 +18,7 @@ out/
 *.iws
 .DS_Store
 Thumbs.db
+qa-evidence/
+runtime-evidence/
+releases/
+*_verification.png
