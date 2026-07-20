@@ -220,7 +220,7 @@ class PersistentFooterTest {
 
         // Verify beta version marker shows correct version (check for version number only, ignore "Beta build" prefix)
         composeTestRule.onNodeWithTag("settings_beta_version_marker").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.1", substring = true)
+        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.2", substring = true)
     }
 
     @Test

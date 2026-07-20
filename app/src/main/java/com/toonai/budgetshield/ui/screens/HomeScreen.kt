@@ -282,7 +282,7 @@ private fun HeroCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp),
+            .testTag("home_safe_now_card"),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF0A1F2C)
@@ -373,6 +373,7 @@ private fun HeroCard(
                 // Supporting text
                 Text(
                     text = "You're protected and in control.",
+                    modifier = Modifier.testTag("home_safe_now_description"),
                     color = TextMuted,
                     fontSize = 13.sp
                 )

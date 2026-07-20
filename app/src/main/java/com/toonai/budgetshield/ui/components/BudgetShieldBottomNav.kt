@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
@@ -51,7 +52,7 @@ fun BudgetShieldBottomNav(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .heightIn(min = 80.dp)
             .navigationBarsPadding()
             .testTag("budgetshield_bottom_nav"),
         color = Color(0xFF06121D)
@@ -78,6 +79,7 @@ fun BudgetShieldBottomNav(
                     icon = "🏠",
                     label = "Home",
                     testTag = "bottom_nav_home",
+                    labelTestTag = "bottom_nav_label_home",
                     isActive = currentDestination == MainDestination.HOME,
                     onClick = onNavigateToHome
                 )
@@ -87,6 +89,7 @@ fun BudgetShieldBottomNav(
                     icon = "🧰",
                     label = "Treasure",
                     testTag = "bottom_nav_treasure",
+                    labelTestTag = "bottom_nav_label_treasure",
                     isActive = currentDestination == MainDestination.TREASURE,
                     onClick = onNavigateToTreasure
                 )
@@ -96,6 +99,7 @@ fun BudgetShieldBottomNav(
                     icon = "📊",
                     label = "Stats",
                     testTag = "bottom_nav_stats",
+                    labelTestTag = "bottom_nav_label_stats",
                     isActive = currentDestination == MainDestination.STATS,
                     onClick = onNavigateToStats
                 )
@@ -105,6 +109,7 @@ fun BudgetShieldBottomNav(
                     icon = "🎯",
                     label = "Goals",
                     testTag = "bottom_nav_goals",
+                    labelTestTag = "bottom_nav_label_goals",
                     isActive = currentDestination == MainDestination.GOALS,
                     onClick = onNavigateToGoals
                 )
@@ -114,6 +119,7 @@ fun BudgetShieldBottomNav(
                     icon = "⚙️",
                     label = "Settings",
                     testTag = "bottom_nav_settings",
+                    labelTestTag = "bottom_nav_label_settings",
                     isActive = currentDestination == MainDestination.SETTINGS,
                     onClick = onNavigateToSettings
                 )
@@ -149,6 +155,7 @@ private fun NavItem(
     icon: String,
     label: String,
     testTag: String,
+    labelTestTag: String,
     isActive: Boolean,
     onClick: () -> Unit
 ) {
@@ -178,6 +185,7 @@ private fun NavItem(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = label,
+                    modifier = Modifier.testTag(labelTestTag),
                     color = color,
                     fontSize = 11.sp,
                     fontWeight = if (isActive) FontWeight.Medium else FontWeight.Normal
