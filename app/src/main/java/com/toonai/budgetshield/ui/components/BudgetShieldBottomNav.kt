@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,11 +33,17 @@ import kotlin.reflect.KClass
 private val PanelBorder = Color(0xFF14364A)
 private val CyanAccent = Color(0xFF17E8F2)
 private val TextMuted = Color(0xFFA6B1BF)
+private val FooterBackground = Color(0xFF06121D)
 
 /**
  * BudgetShield Shared Bottom Navigation Bar
  * Fixed footer visible across all screens with the five main destinations:
  * Home, Treasure, Stats, Goals, Settings
+ * 
+ * PHYSICAL PHONE FOOTER CLEARANCE FIX:
+ * - Wrap in outer Surface with wrapContentHeight to ensure background covers complete area
+ * - Inner container has navigationBarsPadding() PLUS explicit 8.dp bottom padding
+ * - This ensures labels are not clipped on devices with hidden/zero bottom gesture inset
  */
 @Composable
 fun BudgetShieldBottomNav(
@@ -52,12 +58,16 @@ fun BudgetShieldBottomNav(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 80.dp)
-            .navigationBarsPadding()
-            .testTag("budgetshield_bottom_nav"),
-        color = Color(0xFF06121D)
+            .wrapContentHeight(),
+        color = FooterBackground
     ) {
-        Column {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(bottom = 8.dp)  // explicit clearance for physical devices
+                .testTag("budgetshield_bottom_nav")
+        ) {
             // Top border line
             Box(
                 modifier = Modifier

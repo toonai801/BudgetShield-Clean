@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
                     )
 
                     // Navigation 3: NavDisplay renders the current entry
+                    // Root test tag added for footer clearance tests
                     NavDisplay(
                         backStack = backStack,
                         onBack = {
@@ -65,7 +67,7 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         entryProvider = entryProvider,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize().testTag("budgetshield_root")
                     )
                 }
             }
