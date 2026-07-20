@@ -171,11 +171,7 @@ private fun BudgetShieldScreenContent(
             )
         }
         is ShieldProgression -> {
-            ShieldProgressionScreen(
-                onNavigateToHome = { onNavigate(Home) },
-                onNavigateToGoals = { onNavigate(Goals) },
-                onNavigateToSettings = { onNavigate(Settings) }
-            )
+            ShieldProgressionScreen()
         }
         else -> {
             androidx.compose.material3.Text("Unknown screen: ${key::class.simpleName}")

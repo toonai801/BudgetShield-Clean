@@ -245,7 +245,7 @@ class PersistentFooterTest {
         composeTestRule.onNodeWithTag("bottom_nav_settings").assertIsSelected()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
         composeTestRule.onNodeWithTag("settings_beta_version_marker").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.3", substring = true)
+        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.4", substring = true)
     }
 
     @Test
@@ -308,7 +308,7 @@ class PersistentFooterTest {
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
         composeTestRule.onNodeWithTag("bottom_nav_settings").assertIsSelected()
         composeTestRule.onNodeWithTag("settings_beta_version_marker").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.3", substring = true)
+        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.4", substring = true)
     }
 
     @Test

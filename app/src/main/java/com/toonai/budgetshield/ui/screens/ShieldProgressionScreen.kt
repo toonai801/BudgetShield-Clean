@@ -1,17 +1,14 @@
 package com.toonai.budgetshield.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,7 +20,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,11 +43,7 @@ private val TextPrimary = Color(0xFFF4F7FB)
 private val TextMuted = Color(0xFFA6B1BF)
 
 @Composable
-fun ShieldProgressionScreen(
-    onNavigateToHome: () -> Unit,
-    onNavigateToGoals: () -> Unit,
-    onNavigateToSettings: () -> Unit
-) {
+fun ShieldProgressionScreen() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = BackgroundDark
@@ -82,13 +74,6 @@ fun ShieldProgressionScreen(
 
                 // XP History
                 XPHistorySection()
-
-                // Quick Navigation
-                QuickNavSection(
-                    onHome = onNavigateToHome,
-                    onGoals = onNavigateToGoals,
-                    onSettings = onNavigateToSettings
-                )
             }
         }
     }
@@ -573,74 +558,5 @@ private fun XPHistoryItem(
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
-    }
-}
-
-@Composable
-private fun QuickNavSection(
-    onHome: () -> Unit,
-    onGoals: () -> Unit,
-    onSettings: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        NavCard(
-            modifier = Modifier.weight(1f),
-            icon = "🏠",
-            label = "Home",
-            onClick = onHome
-        )
-
-        NavCard(
-            modifier = Modifier.weight(1f),
-            icon = "🎯",
-            label = "Goals",
-            onClick = onGoals
-        )
-
-        NavCard(
-            modifier = Modifier.weight(1f),
-            icon = "⚙️",
-            label = "Settings",
-            onClick = onSettings
-        )
-    }
-}
-
-@Composable
-private fun NavCard(
-    modifier: Modifier = Modifier,
-    icon: String,
-    label: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = PanelDark
-        ),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = icon,
-                fontSize = 24.sp
-            )
-            Text(
-                text = label,
-                color = TextPrimary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
     }
 }
