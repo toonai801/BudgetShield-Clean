@@ -46,7 +46,7 @@ Complete Functional Beta with non-bypassable 6-step Setup Quest, real first-run 
 - Unit Tests: ./gradlew testDebugUnitTest — 97 tests PASSED
 - Lint: ./gradlew lintDebug — SUCCESS
 - APK: app-debug.apk (22,015,224 bytes)
-- SHA-256: 3029d1224686a81a6ac571d4206bab8fe76263bd5d83f13f91ea036548f0f85d
+- SHA-256: f10a9c416ff01c99c500f88552a5a890c2a40957453f1e7fb4a124d60b5ba84c
 
 **Files Added:**
 - data/model/Account.kt, IncomeSchedule.kt, SavingsBalance.kt, BudgetCategory.kt, SetupDraft.kt, UserSettings.kt
