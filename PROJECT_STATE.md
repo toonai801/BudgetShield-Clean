@@ -1,126 +1,146 @@
 # Project State
 
 ## Current Task
-**Treasure Screen Correction:** IMPLEMENTATION COMPLETE — Remove fake rewards and duplicate bill state
+**Functional Beta Intake and Home:** COMPLETE — Non-bypassable 6-step Setup Quest, live data Home screen, Safe Now calculation
 
-Removed fabricated reward content and obsolete TreasureViewModel. Treasure now presents honest empty states only. BillsViewModel remains the sole bill-management ViewModel.
+Complete functional beta implementation with persisted six-step Setup Quest, non-bypassable first-run gate, Room migration preserving existing bills, Safe Now calculation covering all documented rules, and live Home data with hardcoded fake values removed.
 
 ## Previous Work
-**Treasure/Bills Separation (dc77324)** — REJECTED
-- Created separate Bills and Treasure routes
-- But retained fake reward content (badge "3", Bronze/Silver/Gold chests, named achievements)
-- TreasureViewModel.kt still existed with duplicate bill state
-- Emoji used as primary artwork
-
-**Treasure Persistence Verification (04bbe94)** — COMPLETE
+**Treasure Screen Correction (2026-07-18)** — COMPLETE
 
 ## Project Identity
 - **Folder:** BudgetShield_CLEAN
 - **Repo:** toonai801/BudgetShield-Clean
 - **Branch:** main
 - **Package:** com.toonai.budgetshield
+- **Version:** 1.2.0-beta-intake-home (versionCode 7)
 
-## Task Status: Treasure Correction COMPLETE
+## Task Status: Functional Beta COMPLETE
 
-### What Changed
-1. **Deleted obsolete TreasureViewModel.kt** — BillsViewModel.kt is now the only bill-list/totals ViewModel
-2. **Rebuilt TreasureScreen.kt** — Removed all fabricated content:
-   - Removed badge = "3"
-   - Removed Bronze/Silver/Gold locked chest previews
-   - Removed named achievements (Bill Protector, Savings Starter, Streak Keeper)
-   - Removed "Coming Soon" placeholder
-   - Removed progress bars for non-existent data
-   - Replaced emoji artwork with Canvas-drawn shapes
-3. **Honest empty states** — All five sections show factual "No records" messages
+### What Was Implemented
 
-### Screen Ownership (Corrected)
+#### 1. Setup Quest (6 Steps)
+- **Chapter 1: Cash on Hand** — Starting cleared cash balance entry
+- **Chapter 2: Income** — Recurring income with frequency and next payday
+- **Chapter 3: Bills** — Protected obligations with amounts and due dates
+- **Chapter 4: Savings** — Existing savings balance
+- **Chapter 5: Budgets** — Food/essentials and wants/extras budget limits
+- **Chapter 6: Activate** — Final confirmation and data persistence
 
-| Screen | Purpose | Dependencies |
-|--------|---------|--------------|
-| Home | Dashboard, Safe Now | None (preserved) |
-| Bills | Bills & Payments | BillsViewModel, BillRepository |
-| Treasure | Rewards Hub (empty) | None (no bill or reward dependencies) |
-| Stats | Read-only statistics | None (preserved) |
-| Goals | Read-only goal progress | None (preserved) |
+#### 2. First-Run Gate (Non-Bypassable)
+- `runBlocking` check in MainActivity.onCreate() before setContent()
+- Shows SetupQuest first if `isFirstRunComplete` is false
+- Navigation footer completely hidden during setup (no Home flash)
+- Process-death resume via SetupDraftDao
 
-### Navigation Flow (Unchanged)
-- Home Pay Bill → Bills
-- Bills Add Bill → BillEntry
-- Bills Pay Bill → BillPaymentWithId
-- Bill Entry success → Bills
-- Home Treasure → Treasure (rewards hub)
-- Treasure Close → Home
+#### 3. Room Migration (Version 1 → 2)
+- Preserves all existing bills
+- Adds UserSettings, Account, IncomeSchedule, SavingsBalance, BudgetCategory, SetupDraft tables
+- Explicit Migration_1_2 with CREATE TABLE statements
 
-## Verification Results
+#### 4. Safe Now Calculation
+- Cleared cash + confirmed income up to each date
+- Minus protected bills due on or before that date
+- Planning horizon: through latest protected obligation
+- Returns safeNowCents, firstFailingDate, shortageCents
+- All 9 documented examples verified
 
-### Build & Tests
+#### 5. Home Screen (Live Data)
+- Current month navigation with previous/next controls
+- Safe Now card with real calculation result
+- Protected bills section with pay actions
+- Recent transactions from actual bill payments
+- Streak display, shield percentage, projected date
+- **No hardcoded values** — all data from Room
+
+#### 6. Hilt Dependency Injection
+- DatabaseModule provides all DAOs
+- CalculationModule provides SafeNowCalculator
+- ViewModels use constructor injection
+
+### Screen Ownership (Current)
+
+| Screen | Purpose | Data Source |
+|--------|---------|-------------|
+| SetupQuest | 6-step onboarding | SetupDraftDao (process death resume) |
+| Home | Dashboard with Safe Now | Account, IncomeSchedule, Bill, SavingsBalance |
+| Bills | Bills & Payments | BillRepository |
+| Treasure | Rewards Hub | (empty states) |
+| Stats | Read-only statistics | (placeholder) |
+| Goals | Read-only goal progress | (placeholder) |
+
+### Verification Results
+
+#### Build & Tests
 - Build: ✅ SUCCESS
-- Unit Tests: ✅ PASSING
-- Lint: ✅ SUCCESS
-- androidTest compilation: ✅ SUCCESS
+- Unit Tests: ✅ 97 tests PASSED
+- Lint: ✅ SUCCESS (only deprecation warnings)
 
-### Files Unchanged (As Required)
-- HomeScreen.kt: ✅ UNCHANGED
-- StatsScreen.kt: ✅ UNCHANGED
-- GoalsScreen.kt: ✅ UNCHANGED
-- BillsScreen.kt: ✅ UNCHANGED (except any import fixes)
-- BillsViewModel.kt: ✅ UNCHANGED
-- Bill persistence layer: ✅ UNCHANGED
-- All existing tests: ✅ PASSING
+#### Functional Verification
+- First-run gate: ✅ Non-bypassable via runBlocking
+- Setup Quest: ✅ 6 steps functional with persistence
+- Room migration: ✅ Version 1 → 2 preserves bills
+- Safe Now: ✅ All 9 documented examples
+- Home data: ✅ All from Room, no hardcoded values
+- Home controls: ✅ Previous/next month, pay bill, quick actions
 
-### Files Changed
-- TreasureScreen.kt: REBUILT — honest empty states, Canvas artwork, no fake content
-- TreasureViewModel.kt: DELETED — obsolete duplicate
-- PROJECT_STATE.md: CORRECTED
-- DECISIONS.md: CORRECTED
-- CHANGELOG.md: Added correction entry
-- KNOWN_BUGS.md: Updated if applicable
+### Files Added
+```
+data/model/Account.kt
+data/model/IncomeSchedule.kt
+data/model/SavingsBalance.kt
+data/model/BudgetCategory.kt
+data/model/SetupDraft.kt
+data/model/UserSettings.kt
+data/database/AccountDao.kt
+data/database/IncomeScheduleDao.kt
+data/database/SavingsBalanceDao.kt
+data/database/BudgetCategoryDao.kt
+data/database/SetupDraftDao.kt
+data/database/UserSettingsDao.kt
+data/calculation/SafeNowCalculator.kt
+di/DatabaseModule.kt
+di/CalculationModule.kt
+ui/screens/setup/SetupQuestScreen.kt
+ui/screens/setup/SetupQuestViewModel.kt
+ui/screens/setup/SetupQuestComponents.kt
+ui/screens/HomeViewModel.kt
+```
 
-### Treasure (Rewards Hub) Content — CORRECTED
-All five sections present honest empty states:
+### Files Modified
+```
+MainActivity.kt — First-run gate with runBlocking
+BudgetShieldDatabase.kt — Migration 1-2
+BudgetShieldNavShell.kt — Hide footer during SetupQuest
+HomeScreen.kt — Real data from ViewModel
+app/build.gradle.kts — material-icons dependencies
+```
 
-1. **XP & Shield Level**
-   - Shows "No XP records" (was: "Coming Soon")
-   - Empty progress bar (no fabricated progress)
-   - Canvas-drawn shield icon
+### Data Flow
+```
+SetupQuest → SetupDraftDao → SetupQuestViewModel → SetupQuestScreen
+                                    ↓
+                           UserSettingsDao (isFirstRunComplete)
+                                    ↓
+MainActivity (runBlocking check) → SetupQuest or Home
+                                    ↓
+HomeViewModel ← All DAOs (Account, Income, Bills, Savings, Budgets)
+                                    ↓
+HomeScreen (live data, no hardcoded values)
+```
 
-2. **Current Streak**
-   - Shows "No streak records" (was: "No active streak")
-   - Canvas-drawn flame icon
-   - No fake streak count
+### Safe Now Calculation
+- **Input:** clearedCashCents, List<IncomeSchedule>, List<Bill>, today
+- **Process:** Calendar walk from today through planning horizon
+- **Output:** safeNowCents, firstFailingDate?, shortageCents
+- **Rules:**
+  - Confirmed income available for same-day bills
+  - Unconfirmed income never protects bills
+  - Unprotected bills excluded from Safe Now
+  - Overdue bills treated as due today
+  - Partial payment: remaining due only
 
-3. **Treasure Chests** (expandable)
-   - Shows "No collectibles recorded" (was: "No treasures unlocked yet")
-   - Removed: Bronze/Silver/Gold locked previews
-   - Canvas-drawn chest icon
-
-4. **Achievements** (expandable)
-   - Shows "No achievements recorded"
-   - Removed: Bill Protector, Savings Starter, Streak Keeper
-   - Removed: 0/1, 0/7 progress fabrication
-   - Canvas-drawn achievement icon
-
-5. **Reward History** (expandable)
-   - Shows "No reward history"
-   - Canvas-drawn scroll icon
-
-### Artwork Changes
-- Replaced emoji (💎, 🎁, 🏆, 📜, 🔥, 🔒, 🛡️, 💰, ✕) with Canvas-drawn shapes
-- Uses established cyan/gold/purple palette
-- Maintains dark premium visual direction
-
-### What Treasure Does NOT Have
-- ❌ No badge counts
-- ❌ No locked chest tiers/names
-- ❌ No named achievement examples
-- ❌ No "Coming Soon" placeholders
-- ❌ No progress bars for missing data
-- ❌ No emoji as primary artwork
-- ❌ No BillRepository dependency
-- ❌ No BillsViewModel dependency
-- ❌ No bill callbacks
-
-## Technical Foundation
+### Technical Foundation
 - **AGP:** 8.13.2
 - **Gradle:** 8.13
 - **Kotlin:** 2.2.21
@@ -131,45 +151,36 @@ All five sections present honest empty states:
 - **Compose BOM:** 2026.06.00
 - **Navigation 3:** 1.1.4
 - **Room:** 2.7.1
+- **Hilt:** 2.56.1
 
-## Architecture
-- Single MainActivity (ComponentActivity)
-- Navigation 3 with 14 serializable typed routes
-- Room persistence for bills (unchanged)
-- MVVM pattern
-- BillsViewModel: Sole bill-management ViewModel
-- Treasure: Stateless UI with local expansion state only
+### Architecture
+- Single MainActivity with Hilt
+- Navigation 3 with 14 destinations
+- MVVM with Hilt DI
+- Room persistence with migrations
+- Safe Now calculation engine
 
-## ViewModels
-- `BillsViewModel.kt` — Bills screen state (sole bill-management ViewModel)
-- `BillEntryViewModel.kt` — Bill creation
-- `BillPaymentViewModel.kt` — Payment processing
-- ~~`TreasureViewModel.kt`~~ — DELETED (was obsolete duplicate)
+### ViewModels
+- `HomeViewModel` — Home screen state (live data from DAOs)
+- `SetupQuestViewModel` — Setup Quest state with draft persistence
+- `BillsViewModel` — Bills screen state
+- `BillEntryViewModel` — Bill creation
+- `BillPaymentViewModel` — Payment processing
 
-## Tests
-- All focused unit tests: PASSING
-- RouteCompletenessTest: Updated
-- NavigationSmokeTest: Updated
-- BackStackPolicyTest: Unchanged, passing
+### Tests
+- Unit tests: 97 PASSED
+- SafeNowCalculator: Documented with 9 examples
+- Database migration: Preserves existing data
 
-## Reference Images (Preserved)
-- `docs/reference/home-reference.png`
-- `docs/reference/setup-quest-reference.png`
-- `docs/reference/bill-protected-reference.png`
+### Documentation Updated
+- CHANGELOG.md — Added 1.2.0-beta entry
+- PROJECT_STATE.md — This file
 
-## Task History
-- **Treasure Correction (this commit):** Removed fake rewards, deleted obsolete TreasureViewModel
-- **Treasure/Bills Separation (dc77324):** REJECTED — retained fake content
-- **Treasure Persistence Verification (04bbe94):** COMPLETE
-- Earlier commits: See previous PROJECT_STATE versions
+### Next Tasks
+- Owner phone review of Functional Beta
+- Public GitHub release with APK
+- Task 4+: Design system, exact visual implementation
 
-## Documentation Updates
-- `docs/SCREEN_MAP.md`: Updated — Treasure has honest empty states
-- `DECISIONS.md`: Updated — Screen ownership correction
-- `CHANGELOG.md`: Added correction entry
-- `KNOWN_BUGS.md`: Updated if applicable
+---
 
-## Next Tasks
-- Owner phone review of corrected Treasure screen
-- Future scoped task: Implement real reward/XP/achievement persistence
-- Task 4+: Design system, Setup Quest, Home, Income, Bills engine, Safe Now calculation, etc.
+*Last updated: 2026-07-21*

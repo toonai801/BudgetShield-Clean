@@ -1,5 +1,70 @@
 # Changelog
 
+## [1.2.0-beta-intake-home] — Functional Beta Intake and Home (2026-07-21)
+**Version:** 1.2.0-beta-intake-home (versionCode 7)
+**Status:** COMPLETE — Pending owner phone review
+
+### Implementation Summary
+Complete Functional Beta with non-bypassable 6-step Setup Quest, real first-run gate, live data-driven Home screen, and Safe Now calculation engine.
+
+**Setup Quest (6 Steps):**
+1. Cash on Hand — Starting cleared cash balance
+2. Income — Recurring income with frequency and next payday
+3. Bills — Protected obligations with amounts and due dates
+4. Savings — Existing savings balance
+5. Budgets — Food/essentials and wants/extras budget limits
+6. Activate — Final confirmation and data persistence
+
+**First-Run Gate:**
+- Non-bypassable via `runBlocking` check in MainActivity.onCreate()
+- SetupQuest shown first if `isFirstRunComplete` is false
+- Navigation footer completely hidden during setup
+- Process-death resume via SetupDraftDao
+
+**Home Screen (Live Data):**
+- Current month navigation (previous/next)
+- Safe Now card with real calculation from SetupQuest data
+- Protected bills section with pay actions
+- Recent transactions from actual bill payments
+- All data from Room database, no hardcoded values
+
+**Safe Now Calculation:**
+- Cleared cash + confirmed income up to each date
+- Minus protected bills due on or before that date
+- Planning horizon: through latest protected obligation
+- Returns safeNowCents, firstFailingDate, shortageCents
+- 9 worked examples documented in SAFE_NOW_RULES.md
+
+**Data Layer:**
+- Room migration from version 1 to 2
+- New tables: UserSettings, Account, IncomeSchedule, SavingsBalance, BudgetCategory, SetupDraft
+- Existing bills table preserved
+- Hilt DI with DatabaseModule and CalculationModule
+
+**Verification:**
+- Build: ./gradlew clean assembleDebug — SUCCESS
+- Unit Tests: ./gradlew testDebugUnitTest — 97 tests PASSED
+- Lint: ./gradlew lintDebug — SUCCESS
+- APK: app-debug.apk (22,015,224 bytes)
+- SHA-256: 3029d1224686a81a6ac571d4206bab8fe76263bd5d83f13f91ea036548f0f85d
+
+**Files Added:**
+- data/model/Account.kt, IncomeSchedule.kt, SavingsBalance.kt, BudgetCategory.kt, SetupDraft.kt, UserSettings.kt
+- data/database/AccountDao.kt, IncomeScheduleDao.kt, SavingsBalanceDao.kt, BudgetCategoryDao.kt, SetupDraftDao.kt, UserSettingsDao.kt
+- data/calculation/SafeNowCalculator.kt
+- di/DatabaseModule.kt, CalculationModule.kt
+- ui/screens/setup/SetupQuestScreen.kt, SetupQuestViewModel.kt, SetupQuestComponents.kt
+- ui/screens/HomeViewModel.kt (rebuilt with live data)
+
+**Files Modified:**
+- MainActivity.kt — First-run gate with runBlocking
+- BudgetShieldDatabase.kt — Migration 1-2 with new tables
+- BudgetShieldNavShell.kt — Hide footer during SetupQuest
+- HomeScreen.kt — Real data, removed hardcoded values
+- app/build.gradle.kts — Added material-icons dependencies
+
+---
+
 ## [Unreleased]
 
 ### Treasure Screen Correction — Remove Fake Rewards (2026-07-18)

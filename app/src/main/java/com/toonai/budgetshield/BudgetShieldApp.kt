@@ -1,11 +1,15 @@
 package com.toonai.budgetshield
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
+/**
+ * BudgetShield Application with Hilt DI.
+ */
+@HiltAndroidApp
 class BudgetShieldApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        // Architecture Foundation - Application-level initialization
-        // Task 3: No persistence yet. Data layer to be added in future tasks.
+        // Application-level initialization
     }
 }

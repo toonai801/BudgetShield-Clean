@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.navigation3.runtime.NavKey
@@ -20,18 +22,30 @@ import com.toonai.budgetshield.navigation.SetupQuest
 import com.toonai.budgetshield.navigation.createBudgetShieldEntryProvider
 import com.toonai.budgetshield.theme.BudgetShieldTheme
 import com.toonai.budgetshield.ui.LocalBillRepository
+import kotlinx.coroutines.runBlocking
 
+/**
+ * MainActivity with non-bypassable first-run gate.
+ * Shows SetupQuest on first launch until user completes setup.
+ * Footer is completely hidden during setup - no Home flash.
+ */
 class MainActivity : ComponentActivity() {
     
     private lateinit var billRepository: BillRepository
+    private lateinit var database: BudgetShieldDatabase
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Initialize repository
-        val database = BudgetShieldDatabase.getDatabase(this)
+        // Initialize database and repository
+        database = BudgetShieldDatabase.getDatabase(this)
         billRepository = BillRepository(database.billDao())
+        
+        // Check first-run status synchronously before setting content
+        val isFirstRunComplete = runBlocking {
+            checkFirstRunComplete()
+        }
         
         setContent {
             CompositionLocalProvider(
@@ -39,7 +53,9 @@ class MainActivity : ComponentActivity() {
             ) {
                 BudgetShieldTheme {
                     // Navigation 3: Use rememberNavBackStack for state management
-                    val backStack: NavBackStack<NavKey> = rememberNavBackStack(SetupQuest)
+                    // Start with SetupQuest if first run not complete, otherwise Home
+                    val startDestination = if (isFirstRunComplete) Home else SetupQuest
+                    val backStack: NavBackStack<NavKey> = rememberNavBackStack(startDestination)
 
                     // Create the entry provider with navigation callbacks using production policy
                     val entryProvider = createBudgetShieldEntryProvider(
@@ -71,6 +87,20 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+    
+    /**
+     * Check if user has completed first-run setup.
+     * Returns true if setup is complete, false otherwise.
+     */
+    private suspend fun checkFirstRunComplete(): Boolean {
+        return try {
+            val settings = database.userSettingsDao().getSettings()
+            settings?.isFirstRunComplete == true
+        } catch (e: Exception) {
+            // If any error, treat as first run (safe default)
+            false
         }
     }
 }

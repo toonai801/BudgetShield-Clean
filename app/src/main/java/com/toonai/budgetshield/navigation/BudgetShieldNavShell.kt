@@ -23,7 +23,7 @@ import com.toonai.budgetshield.ui.screens.HomeScreen
 import com.toonai.budgetshield.ui.screens.IncomeEntryScreen
 import com.toonai.budgetshield.ui.screens.SavingsEntryScreen
 import com.toonai.budgetshield.ui.screens.SettingsScreen
-import com.toonai.budgetshield.ui.screens.SetupQuestScreen
+import com.toonai.budgetshield.ui.screens.setup.SetupQuestScreen
 import com.toonai.budgetshield.ui.screens.ShieldProgressionScreen
 import com.toonai.budgetshield.ui.screens.StatsScreen
 import com.toonai.budgetshield.ui.screens.TransactionDetailsScreen
@@ -55,7 +55,7 @@ fun getMainDestinationForKey(key: NavKey): MainDestination? {
         is BillProtected -> MainDestination.HOME
         is ShieldProgression -> MainDestination.HOME
         // SetupQuest has no selected tab but still shows footer
-        is SetupQuest -> null
+        is SetupQuest -> null  // SetupQuest has no footer
         else -> null
     }
 }
@@ -193,11 +193,10 @@ fun createBudgetShieldEntryProvider(
         NavEntry(key) {
             val selectedDestination = getMainDestinationForKey(key)
 
-            // All registered routes show the shared footer
-            // SetupQuest shows no selected tab (null), but footer still appears
-            val isRegisteredRoute = BudgetShieldRouteRegistry.isValidDestination(key)
+            // SetupQuest hides the footer entirely - it's a first-run gate
+            val showFooter = key !is SetupQuest && BudgetShieldRouteRegistry.isValidDestination(key)
 
-            if (isRegisteredRoute) {
+            if (showFooter) {
                 // Wrap with shared scaffold for all registered routes
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -236,6 +235,15 @@ fun createBudgetShieldEntryProvider(
                         )
                     }
                 }
+            } else if (key is SetupQuest) {
+                // SetupQuest renders full-screen without footer or scaffold wrapper
+                // User cannot navigate away until setup is complete
+                BudgetShieldScreenContent(
+                    key = key,
+                    onNavigate = onNavigate,
+                    onNavigateBack = onNavigateBack,
+                    onReplaceStack = onReplaceStack
+                )
             } else {
                 // Unknown screens render without scaffold
                 // Apply background only
