@@ -1,22 +1,15 @@
 package com.toonai.budgetshield.di
 
-import com.toonai.budgetshield.data.calculation.SafeNowCalculator
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 
 /**
- * Hilt module for providing calculation engine dependencies.
+ * Hilt module for calculation engine.
+ * SafeNowCalculator is a Kotlin object (singleton) and does not need DI provision.
  */
 @Module
 @InstallIn(SingletonComponent::class)
 object CalculationModule {
-
-    @Provides
-    @Singleton
-    fun provideSafeNowCalculator(): SafeNowCalculator {
-        return SafeNowCalculator()
-    }
+    // SafeNowCalculator is a Kotlin object, accessed directly via SafeNowCalculator.calculate()
 }

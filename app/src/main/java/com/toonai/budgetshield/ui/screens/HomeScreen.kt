@@ -1,693 +1,635 @@
 package com.toonai.budgetshield.ui.screens
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.toonai.budgetshield.data.model.Bill
-import java.time.format.DateTimeFormatter
+import com.toonai.budgetshield.ui.viewmodel.HomeViewModel
+import com.toonai.budgetshield.util.DateParser
+import com.toonai.budgetshield.util.MoneyParser
+import java.time.YearMonth
 
 // Premium gamified dark theme colors
 private val BackgroundDark = Color(0xFF02070D)
-private val PanelBackground = Color(0xFF0A1A2E)
+private val PanelDark = Color(0xFF06121D)
 private val PanelBorder = Color(0xFF14364A)
 private val CyanAccent = Color(0xFF17E8F2)
-private val GoldAccent = Color(0xFFE8B923)
-private val GreenAccent = Color(0xFF17F253)
+private val CyanSoft = Color(0xFF10CDD9)
+private val GreenAccent = Color(0xFF2FE6A7)
+private val GoldAccent = Color(0xFFFFC545)
+private val BlueAccent = Color(0xFF1678B9)
+private val TextPrimary = Color(0xFFF4F7FB)
 private val TextMuted = Color(0xFFA6B1BF)
-private val TextBright = Color(0xFFFFFFFF)
-private val PositiveGreen = Color(0xFF17F253)
-private val NegativeRed = Color(0xFFFF6B6B)
-private val YellowWarning = Color(0xFFE8B923)
+private val DangerDot = Color(0xFFFF553D)
 
-/**
- * HomeScreen - Live data from SetupQuest and real calculation engine.
- * No hardcoded values - all data comes from HomeViewModel.
- */
 @Composable
 fun HomeScreen(
-    onNavigateToTreasure: () -> Unit = {},
-    onNavigateToStats: () -> Unit = {},
-    onNavigateToGoals: () -> Unit = {},
-    onNavigateToSettings: () -> Unit = {},
-    onNavigateToIncomeEntry: () -> Unit = {},
-    onNavigateToBillEntry: () -> Unit = {},
-    onNavigateToSavingsEntry: () -> Unit = {},
-    onNavigateToTransactionDetails: () -> Unit = {},
-    onNavigateToShieldProgression: () -> Unit = {},
+    onNavigateToTreasure: () -> Unit,
+    onNavigateToStats: () -> Unit,
+    onNavigateToGoals: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToIncomeEntry: () -> Unit,
+    onNavigateToBillEntry: () -> Unit,
+    onNavigateToSavingsEntry: () -> Unit,
+    onNavigateToTransactionDetails: () -> Unit,
+    onNavigateToShieldProgression: () -> Unit,
+    onNavigateToRewardScreen: () -> Unit,
+    onNavigateToMenu: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    // Load data on first composition
+    
     LaunchedEffect(Unit) {
-        viewModel.refreshData()
+        viewModel.loadHomeData()
     }
+    
+    Box(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = BackgroundDark
+        ) {
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = CyanAccent)
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 16.dp, bottom = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        HeaderSection(
+                            onRewardClick = onNavigateToRewardScreen,
+                            onMenuClick = onNavigateToMenu,
+                            hasUnreadRewards = uiState.hasUnreadRewards
+                        )
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .testTag("home_screen"),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
-    ) {
-        // Header
-        item {
-            HomeHeader(
-                selectedMonth = uiState.currentMonth,
-                onPreviousMonth = { viewModel.previousMonth() },
-                onNextMonth = { viewModel.nextMonth() },
-                onOpenMenu = { /* Menu action */ }
-            )
-        }
+                        MonthSelector(
+                            selectedMonth = uiState.selectedMonth,
+                            onPreviousMonth = viewModel::goToPreviousMonth,
+                            onNextMonth = viewModel::goToNextMonth,
+                            onMonthPickerClick = onNavigateToSettings,
+                            onCalendarClick = onNavigateToCalendar
+                        )
 
-        // Safe Now Card (Primary CTA)
-        item {
-            SafeNowCard(
-                safeNowAmount = uiState.safeNowAmount,
-                status = uiState.safeNowStatus,
-                projectedDate = uiState.projectedDate,
-                shieldPercentage = uiState.shieldPercentage,
-                streakDays = uiState.streakDays,
-                onClick = onNavigateToShieldProgression,
-                onIncomeClick = onNavigateToIncomeEntry,
-                onBillsClick = onNavigateToBillEntry,
-                onSavingsClick = onNavigateToSavingsEntry
-            )
-        }
+                        HeroCard(
+                            safeAmountCents = uiState.safeNowCents,
+                            onNavigateToShieldProgression = onNavigateToShieldProgression
+                        )
 
-        // Protected Bills Section
-        item {
-            ProtectedBillsSection(
-                bills = uiState.protectedBills,
-                totalProtected = uiState.totalProtectedAmount,
-                onPayBill = { billId -> viewModel.payBill(billId) },
-                onViewAll = onNavigateToBillEntry,
-                onAddBill = onNavigateToBillEntry
-            )
-        }
+                        StatsCardsRow(
+                            streakCount = uiState.currentStreak,
+                            shieldPower = uiState.shieldPower,
+                            totalShielded = uiState.totalShieldedCents
+                        )
 
-        // Recent Activity
-        if (uiState.recentTransactions.isNotEmpty()) {
-            item {
-                RecentActivitySection(
-                    transactions = uiState.recentTransactions,
-                    onViewAll = onNavigateToTransactionDetails
-                )
+                        DailyActionsSection(
+                            onAddIncome = onNavigateToIncomeEntry,
+                            onPayBill = onNavigateToBillEntry,
+                            onSaveMoney = onNavigateToSavingsEntry
+                        )
+
+                        RecentActivitySection(
+                            recentTransactions = uiState.recentTransactions,
+                            onViewAll = onNavigateToTransactionDetails
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun HomeHeader(
-    selectedMonth: String,
-    onPreviousMonth: () -> Unit,
-    onNextMonth: () -> Unit,
-    onOpenMenu: () -> Unit
+private fun HeaderSection(
+    onRewardClick: () -> Unit,
+    onMenuClick: () -> Unit,
+    hasUnreadRewards: Boolean
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("home_header"),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Month Navigation
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            IconButton(
-                onClick = onPreviousMonth,
-                modifier = Modifier.size(32.dp)
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(CyanAccent.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = "Previous month",
-                    tint = TextMuted,
-                    modifier = Modifier.rotate(180f)
-                )
-            }
-
-            Text(
-                text = selectedMonth,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = TextBright,
-                modifier = Modifier.testTag("home_month_display")
-            )
-
-            IconButton(
-                onClick = onNextMonth,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = "Next month",
-                    tint = TextMuted
-                )
-            }
-        }
-
-        // Menu
-        IconButton(onClick = onOpenMenu) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "Menu",
-                tint = TextMuted
-            )
-        }
-    }
-}
-
-@Composable
-private fun SafeNowCard(
-    safeNowAmount: Long,
-    status: SafeNowStatus,
-    projectedDate: String?,
-    shieldPercentage: Int,
-    streakDays: Int,
-    onClick: () -> Unit,
-    onIncomeClick: () -> Unit,
-    onBillsClick: () -> Unit,
-    onSavingsClick: () -> Unit
-) {
-    val cardGradient = when (status) {
-        SafeNowStatus.SECURE -> Brush.verticalGradient(
-            colors = listOf(Color(0xFF0A3D2A), Color(0xFF061A12))
-        )
-        SafeNowStatus.WARNING -> Brush.verticalGradient(
-            colors = listOf(Color(0xFF3D3A0A), Color(0xFF1A1806))
-        )
-        SafeNowStatus.CRITICAL -> Brush.verticalGradient(
-            colors = listOf(Color(0xFF3D0A0A), Color(0xFF1A0606))
-        )
-    }
-
-    val accentColor = when (status) {
-        SafeNowStatus.SECURE -> GreenAccent
-        SafeNowStatus.WARNING -> YellowWarning
-        SafeNowStatus.CRITICAL -> NegativeRed
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .testTag("safe_now_card"),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-        Box(
-            modifier = Modifier
-                .background(cardGradient)
-                .border(1.dp, PanelBorder, RoundedCornerShape(20.dp))
-                .padding(20.dp)
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                // Header with status
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Status indicator
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(accentColor)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Safe to Spend",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = TextBright
-                        )
-                    }
-
-                    // Streak badge
-                    if (streakDays > 0) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(PanelBackground)
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text("🔥", fontSize = 14.sp)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "$streakDays",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Medium,
-                                color = GoldAccent
-                            )
-                        }
-                    }
-                }
-
-                // Amount display
-                Column {
-                    val dollars = safeNowAmount / 100
-                    val cents = kotlin.math.abs(safeNowAmount % 100)
-                    Text(
-                        text = buildAnnotatedString {
-                            append("$")
-                            withStyle(SpanStyle(fontSize = 48.sp, fontWeight = FontWeight.Bold)) {
-                                append("$dollars")
-                            }
-                            withStyle(SpanStyle(fontSize = 24.sp)) {
-                                append(String.format(".%02d", cents))
-                            }
-                        },
-                        color = if (safeNowAmount >= 0) accentColor else NegativeRed,
-                        modifier = Modifier.testTag("safe_now_amount")
-                    )
-
-                    if (projectedDate != null && safeNowAmount >= 0) {
-                        Text(
-                            text = "Projected through $projectedDate",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextMuted
-                        )
-                    }
-                }
-
-                // Quick actions
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    QuickActionButton(
-                        icon = "💰",
-                        label = "Income",
-                        onClick = onIncomeClick,
-                        testTag = "quick_action_income"
-                    )
-                    QuickActionButton(
-                        icon = "📄",
-                        label = "Bills",
-                        onClick = onBillsClick,
-                        testTag = "quick_action_bills"
-                    )
-                    QuickActionButton(
-                        icon = "🐷",
-                        label = "Savings",
-                        onClick = onSavingsClick,
-                        testTag = "quick_action_savings"
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuickActionButton(
-    icon: String,
-    label: String,
-    onClick: () -> Unit,
-    testTag: String
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(8.dp)
-            .testTag(testTag)
-    ) {
-        Text(text = icon, fontSize = 24.sp)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = TextMuted
-        )
-    }
-}
-
-@Composable
-private fun ProtectedBillsSection(
-    bills: List<Bill>,
-    totalProtected: Long,
-    onPayBill: (Long) -> Unit,
-    onViewAll: () -> Unit,
-    onAddBill: () -> Unit
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.testTag("protected_bills_section")
-    ) {
-        // Section header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "🛡️",
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Column {
-                    Text(
-                        text = "Protected Bills",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextBright
-                    )
-                    Text(
-                        text = formatCents(totalProtected) + " set aside",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
-                    )
-                }
+                Text(text = "🛡️", fontSize = 18.sp)
             }
 
             Row {
-                TextButton(onClick = onViewAll) {
-                    Text("View All", color = CyanAccent)
-                }
-                IconButton(onClick = onAddBill) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add bill",
-                        tint = CyanAccent
-                    )
-                }
+                Text(
+                    text = "Budget ",
+                    color = TextPrimary,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Buddy",
+                    color = CyanAccent,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
-        if (bills.isEmpty()) {
-            // Empty state
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = PanelBackground)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(contentAlignment = Alignment.TopEnd) {
+                IconButton(
+                    onClick = onRewardClick,
+                    modifier = Modifier.testTag("home_reward_button")
                 ) {
-                    Text(
-                        text = "📄",
-                        fontSize = 32.sp,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Text(
-                        text = "No protected bills yet",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextMuted
-                    )
-                    TextButton(onClick = onAddBill) {
-                        Text("Add your first bill", color = CyanAccent)
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(GoldAccent.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🪙", fontSize = 18.sp)
                     }
                 }
-            }
-        } else {
-            // Bill list (max 3 visible)
-            bills.take(3).forEach { bill ->
-                BillItem(
-                    bill = bill,
-                    onPay = { onPayBill(bill.id) }
-                )
+                if (hasUnreadRewards) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(DangerDot)
+                    )
+                }
             }
 
-            if (bills.size > 3) {
-                TextButton(
-                    onClick = onViewAll,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text("+${bills.size - 3} more", color = TextMuted)
-                }
+            IconButton(
+                onClick = onMenuClick,
+                modifier = Modifier.testTag("home_menu_button")
+            ) {
+                Text(text = "☰", color = TextPrimary, fontSize = 20.sp)
             }
         }
     }
 }
 
 @Composable
-private fun BillItem(
-    bill: Bill,
-    onPay: () -> Unit
+private fun MonthSelector(
+    selectedMonth: YearMonth,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
+    onMonthPickerClick: () -> Unit,
+    onCalendarClick: () -> Unit
 ) {
-    val isPaid = bill.isPaid
-    val alpha = if (isPaid) 0.6f else 1f
-
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(alpha),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = PanelBackground)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PanelDark)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 8.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick = onPreviousMonth,
+                modifier = Modifier.testTag("home_month_previous")
+            ) {
                 Text(
-                    text = bill.icon,
+                    text = "‹",
+                    color = TextMuted,
                     fontSize = 24.sp,
-                    modifier = Modifier.padding(end = 12.dp)
+                    fontWeight = FontWeight.Bold
                 )
-                Column {
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                TextButton(onClick = onMonthPickerClick) {
                     Text(
-                        text = bill.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = TextBright
+                        text = DateParser.formatMonthYear(selectedMonth),
+                        color = TextPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Due ${formatDate(bill.dueDate)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
+                        text = " ▼",
+                        color = TextMuted,
+                        fontSize = 12.sp
                     )
                 }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(horizontalAlignment = Alignment.End) {
-                    if (isPaid) {
-                        Text(
-                            text = "PAID",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = PositiveGreen,
-                            fontWeight = FontWeight.Bold
-                        )
-                    } else {
-                        Text(
-                            text = bill.formattedRemainingDue,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (bill.remainingDueCents < bill.amountCents) YellowWarning else TextBright
-                        )
-                        if (bill.paidAmountCents > 0) {
-                            Text(
-                                text = "of ${bill.formattedAmount}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextMuted
-                            )
-                        }
-                    }
-                }
+            IconButton(
+                onClick = onNextMonth,
+                modifier = Modifier.testTag("home_month_next")
+            ) {
+                Text(
+                    text = "›",
+                    color = TextMuted,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-                if (!isPaid) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = onPay,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CyanAccent.copy(alpha = 0.2f),
-                            contentColor = CyanAccent
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Pay", fontSize = 12.sp)
-                    }
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = PanelDark)
+            ) {
+                IconButton(
+                    onClick = onCalendarClick,
+                    modifier = Modifier.testTag("home_calendar_button")
+                ) {
+                    Text(text = "📅", fontSize = 18.sp)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun HeroCard(
+    safeAmountCents: Long,
+    onNavigateToShieldProgression: () -> Unit
+) {
+    val hasShortage = safeAmountCents < 0
+    val displayAmount = MoneyParser.formatCents(if (hasShortage) 0 else safeAmountCents)
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("home_safe_now_card"),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0A1F2C)),
+        onClick = onNavigateToShieldProgression
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    drawRect(
+                        color = if (hasShortage) DangerDot else CyanAccent,
+                        style = Stroke(width = 1.dp.toPx()),
+                        alpha = 0.3f
+                    )
+                }
+                .padding(20.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                CyanAccent.copy(alpha = 0.2f),
+                                CyanAccent.copy(alpha = 0.05f)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "🗡️", fontSize = 48.sp)
+            }
+
+            Column(
+                modifier = Modifier.align(Alignment.CenterStart),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(text = "🛡️", fontSize = 14.sp)
+                    Text(
+                        text = if (hasShortage) "SHORTAGE" else "Safe Now",
+                        color = if (hasShortage) DangerDot else CyanAccent,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = displayAmount,
+                    color = if (hasShortage) DangerDot else TextPrimary,
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                Text(
+                    text = if (hasShortage) "Tap to see options" else "Safe to spend right now",
+                    color = TextMuted,
+                    fontSize = 13.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatsCardsRow(
+    streakCount: Int,
+    shieldPower: Int,
+    totalShielded: Long
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        StatCard(
+            icon = "🔥",
+            value = if (streakCount > 0) streakCount.toString() else "—",
+            label = "Day Streak",
+            accentColor = GoldAccent,
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            icon = "⚔️",
+            value = "$shieldPower%",
+            label = "Shield Power",
+            accentColor = CyanAccent,
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            icon = "🛡️",
+            value = MoneyParser.formatCompactCents(totalShielded),
+            label = "Shielded",
+            accentColor = GreenAccent,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun StatCard(
+    icon: String,
+    value: String,
+    label: String,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PanelDark)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = icon, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = value,
+                color = TextPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = label,
+                color = TextMuted,
+                fontSize = 11.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun DailyActionsSection(
+    onAddIncome: () -> Unit,
+    onPayBill: () -> Unit,
+    onSaveMoney: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PanelDark)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Daily Actions",
+                color = TextPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                ActionButton(icon = "💰", label = "Add Income", onClick = onAddIncome)
+                ActionButton(icon = "💳", label = "Pay Bill", onClick = onPayBill)
+                ActionButton(icon = "💎", label = "Save Money", onClick = onSaveMoney)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionButton(icon: String, label: String, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(CyanAccent.copy(alpha = 0.15f))
+        ) {
+            Text(text = icon, fontSize = 24.sp)
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            color = TextMuted,
+            fontSize = 12.sp
+        )
     }
 }
 
 @Composable
 private fun RecentActivitySection(
-    transactions: List<RecentTransaction>,
+    recentTransactions: List<TransactionUiModel>,
     onViewAll: () -> Unit
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.testTag("recent_activity_section")
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PanelDark)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "📝",
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Recent Activity",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextBright
+                    color = TextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
+                TextButton(onClick = onViewAll) {
+                    Text(
+                        text = "View All",
+                        color = CyanAccent,
+                        fontSize = 14.sp
+                    )
+                }
             }
 
-            TextButton(onClick = onViewAll) {
-                Text("View All", color = CyanAccent)
-            }
-        }
+            Spacer(modifier = Modifier.height(8.dp))
 
-        transactions.take(5).forEach { transaction ->
-            TransactionItem(transaction = transaction)
+            if (recentTransactions.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No activity yet",
+                        color = TextMuted,
+                        fontSize = 14.sp
+                    )
+                }
+            } else {
+                recentTransactions.forEach { transaction ->
+                    ActivityItem(transaction = transaction)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun TransactionItem(
-    transaction: RecentTransaction
-) {
-    val amountColor = when (transaction.type) {
-        TransactionType.INCOME -> PositiveGreen
-        TransactionType.EXPENSE -> NegativeRed
-        TransactionType.TRANSFER -> CyanAccent
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = PanelBackground)
+private fun ActivityItem(transaction: TransactionUiModel) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(
+                    when (transaction.type) {
+                        TransactionType.INCOME -> GreenAccent.copy(alpha = 0.2f)
+                        TransactionType.BILL_PAYMENT -> DangerDot.copy(alpha = 0.2f)
+                        TransactionType.SAVINGS -> GoldAccent.copy(alpha = 0.2f)
+                    }
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(transaction.categoryColor.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = transaction.icon,
-                        fontSize = 20.sp
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = transaction.description,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = TextBright
-                    )
-                    Text(
-                        text = transaction.date,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
-                    )
-                }
-            }
+            Text(text = transaction.icon, fontSize = 18.sp)
+        }
 
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = transaction.formattedAmount,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = amountColor
+                text = transaction.name,
+                color = TextPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = transaction.date,
+                color = TextMuted,
+                fontSize = 12.sp
             )
         }
+
+        Text(
+            text = transaction.amountDisplay,
+            color = when (transaction.type) {
+                TransactionType.INCOME -> GreenAccent
+                TransactionType.BILL_PAYMENT -> DangerDot
+                TransactionType.SAVINGS -> GoldAccent
+            },
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
-// Data classes for UI
-enum class SafeNowStatus {
-    SECURE,    // Green - bills covered with buffer
-    WARNING,   // Yellow - tight but covered
-    CRITICAL   // Red - shortage detected
-}
-
-data class RecentTransaction(
+// UI Models
+data class TransactionUiModel(
     val id: Long,
-    val description: String,
-    val amountCents: Long,
-    val type: TransactionType,
+    val name: String,
+    val amountDisplay: String,
     val date: String,
-    val icon: String,
-    val categoryColor: Color
-) {
-    val formattedAmount: String
-        get() {
-            val prefix = if (amountCents >= 0) "+" else ""
-            return prefix + formatCents(amountCents)
-        }
-}
+    val type: TransactionType,
+    val icon: String
+)
 
 enum class TransactionType {
-    INCOME, EXPENSE, TRANSFER
-}
-
-// Helper functions
-private fun formatCents(cents: Long): String {
-    val dollars = cents / 100
-    val remainder = kotlin.math.abs(cents % 100)
-    return String.format("$%d.%02d", dollars, remainder)
-}
-
-private fun formatDate(dateString: String): String {
-    return try {
-        val date = java.time.LocalDate.parse(dateString)
-        val formatter = DateTimeFormatter.ofPattern("MMM d")
-        date.format(formatter)
-    } catch (e: Exception) {
-        dateString
-    }
+    INCOME, BILL_PAYMENT, SAVINGS
 }

@@ -23,7 +23,7 @@ import com.toonai.budgetshield.ui.screens.HomeScreen
 import com.toonai.budgetshield.ui.screens.IncomeEntryScreen
 import com.toonai.budgetshield.ui.screens.SavingsEntryScreen
 import com.toonai.budgetshield.ui.screens.SettingsScreen
-import com.toonai.budgetshield.ui.screens.setup.SetupQuestScreen
+import com.toonai.budgetshield.ui.screens.SetupQuestScreen
 import com.toonai.budgetshield.ui.screens.ShieldProgressionScreen
 import com.toonai.budgetshield.ui.screens.StatsScreen
 import com.toonai.budgetshield.ui.screens.TransactionDetailsScreen
@@ -87,7 +87,10 @@ private fun BudgetShieldScreenContent(
                 onNavigateToBillEntry = { onNavigate(Bills) },
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
-                onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
+                onNavigateToShieldProgression = { onNavigate(ShieldProgression) },
+                onNavigateToRewardScreen = { /* TODO: implement rewards */ },
+                onNavigateToMenu = { onNavigate(Settings) },
+                onNavigateToCalendar = { onNavigate(Settings) }
             )
         }
         is Treasure -> {

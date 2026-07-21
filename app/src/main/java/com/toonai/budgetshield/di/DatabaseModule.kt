@@ -2,6 +2,10 @@ package com.toonai.budgetshield.di
 
 import android.content.Context
 import com.toonai.budgetshield.data.database.*
+import com.toonai.budgetshield.data.repository.BillRepository
+import com.toonai.budgetshield.data.repository.BudgetRepository
+import com.toonai.budgetshield.data.repository.IncomeRepository
+import com.toonai.budgetshield.data.repository.UserSettingsRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,7 +14,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * Hilt module for providing database and DAO dependencies.
+ * Hilt module for providing database, DAO, and repository dependencies.
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -33,18 +37,8 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideAccountDao(database: BudgetShieldDatabase): AccountDao {
-        return database.accountDao()
-    }
-
-    @Provides
     fun provideIncomeScheduleDao(database: BudgetShieldDatabase): IncomeScheduleDao {
         return database.incomeScheduleDao()
-    }
-
-    @Provides
-    fun provideSavingsBalanceDao(database: BudgetShieldDatabase): SavingsBalanceDao {
-        return database.savingsBalanceDao()
     }
 
     @Provides
@@ -52,8 +46,28 @@ object DatabaseModule {
         return database.budgetCategoryDao()
     }
 
+    // Repository providers
     @Provides
-    fun provideSetupDraftDao(database: BudgetShieldDatabase): SetupDraftDao {
-        return database.setupDraftDao()
+    @Singleton
+    fun provideBillRepository(billDao: BillDao): BillRepository {
+        return BillRepository(billDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserSettingsRepository(userSettingsDao: UserSettingsDao): UserSettingsRepository {
+        return UserSettingsRepository(userSettingsDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideIncomeRepository(incomeScheduleDao: IncomeScheduleDao): IncomeRepository {
+        return IncomeRepository(incomeScheduleDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBudgetRepository(budgetCategoryDao: BudgetCategoryDao): BudgetRepository {
+        return BudgetRepository(budgetCategoryDao)
     }
 }

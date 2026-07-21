@@ -83,6 +83,18 @@ object MoneyParser {
     }
 
     /**
+     * Format cents to compact display: "$1.2K" for thousands, "$1.5M" for millions
+     */
+    fun formatCompactCents(cents: Long): String {
+        val dollars = cents / 100
+        return when {
+            dollars >= 1_000_000 -> String.format("$%.1fM", dollars / 1_000_000.0)
+            dollars >= 1_000 -> String.format("$%.1fK", dollars / 1_000.0)
+            else -> formatCents(cents)
+        }
+    }
+
+    /**
      * Format cents to display string: "$X.YY"
      */
     fun formatCents(cents: Long): String {
