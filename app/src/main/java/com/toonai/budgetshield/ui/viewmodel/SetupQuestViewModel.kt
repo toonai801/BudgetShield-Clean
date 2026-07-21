@@ -9,6 +9,7 @@ import com.toonai.budgetshield.data.model.UserSettings
 import com.toonai.budgetshield.data.repository.BudgetRepository
 import com.toonai.budgetshield.data.repository.IncomeRepository
 import com.toonai.budgetshield.data.repository.UserSettingsRepository
+import com.toonai.budgetshield.ui.screens.DraftBill
 import com.toonai.budgetshield.util.DateParser
 import com.toonai.budgetshield.util.MoneyParser
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,10 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel for the six-chapter Setup Quest.
- * Manages draft persistence and validation.
- */
 class SetupQuestViewModel(
     private val userSettingsRepository: UserSettingsRepository,
     private val incomeRepository: IncomeRepository,
@@ -32,38 +29,24 @@ class SetupQuestViewModel(
 
     private var userSettings: UserSettings? = null
 
-    /**
-     * Load existing draft or create new.
-     */
     fun loadDraft() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-
             try {
                 userSettings = userSettingsRepository.getSettings().first()
                 val settings = userSettings
-
                 if (settings != null && settings.setupChapter in 1..6) {
-                    // Resume from draft
                     restoreFromDraft(settings)
                 } else {
-                    // Start fresh at chapter 1
-                    _uiState.value = _uiState.value.copy(
-                        currentChapter = 1,
-                        isLoading = false
-                    )
+                    _uiState.value = _uiState.value.copy(currentChapter = 1, isLoading = false)
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = "Failed to load draft: ${e.message}"
-                )
+                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to load: ${e.message}")
             }
         }
     }
 
     private suspend fun restoreFromDraft(settings: UserSettings) {
-        // Restore all saved values
         _uiState.value = _uiState.value.copy(
             currentChapter = settings.setupChapter,
             cashOnHandCents = settings.cashOnHandCents,
@@ -73,7 +56,6 @@ class SetupQuestViewModel(
             isLoading = false
         )
 
-        // Load income schedule
         val income = incomeRepository.getActiveSchedule().first()
         if (income != null) {
             _uiState.value = _uiState.value.copy(
@@ -86,7 +68,6 @@ class SetupQuestViewModel(
             )
         }
 
-        // Load budgets
         val monthKey = DateParser.currentMonthKey()
         val foodBudget = budgetRepository.getBudgetForCategory("Food", monthKey).first()
         val wantsBudget = budgetRepository.getBudgetForCategory("Wants", monthKey).first()
@@ -101,27 +82,17 @@ class SetupQuestViewModel(
 
     // Chapter 1: Cash on Hand
     fun updateCashOnHand(input: String) {
-        _uiState.value = _uiState.value.copy(
-            cashOnHandInput = input,
-            cashOnHandError = null
-        )
-
+        _uiState.value = _uiState.value.copy(cashOnHandInput = input, cashOnHandError = null)
         MoneyParser.parseToCents(input).fold(
             onSuccess = { cents ->
                 if (cents < 0) {
-                    _uiState.value = _uiState.value.copy(
-                        cashOnHandError = "Amount cannot be negative"
-                    )
+                    _uiState.value = _uiState.value.copy(cashOnHandError = "Cannot be negative")
                 } else {
-                    _uiState.value = _uiState.value.copy(
-                        cashOnHandCents = cents
-                    )
+                    _uiState.value = _uiState.value.copy(cashOnHandCents = cents)
                     saveDraft()
                 }
             },
-            onFailure = { error ->
-                // Invalid input - don't update cents but keep input
-            }
+            onFailure = {}
         )
     }
 
@@ -132,33 +103,22 @@ class SetupQuestViewModel(
     }
 
     fun updateIncomeAmount(input: String) {
-        _uiState.value = _uiState.value.copy(
-            incomeAmountInput = input,
-            paydayErrors = _uiState.value.paydayErrors - "incomeAmount"
-        )
-
+        _uiState.value = _uiState.value.copy(incomeAmountInput = input, paydayErrors = _uiState.value.paydayErrors - "incomeAmount")
         MoneyParser.parseToCents(input).fold(
             onSuccess = { cents ->
                 if (cents < 0) {
-                    _uiState.value = _uiState.value.copy(
-                        paydayErrors = _uiState.value.paydayErrors + ("incomeAmount" to "Amount cannot be negative")
-                    )
+                    _uiState.value = _uiState.value.copy(paydayErrors = _uiState.value.paydayErrors + ("incomeAmount" to "Cannot be negative"))
                 } else {
                     _uiState.value = _uiState.value.copy(incomeAmountCents = cents)
                     saveDraft()
                 }
             },
-            onFailure = { error ->
-                // Invalid input - don't update cents
-            }
+            onFailure = {}
         )
     }
 
     fun updatePaydayDate(date: String) {
-        _uiState.value = _uiState.value.copy(
-            paydayDate = date,
-            paydayErrors = _uiState.value.paydayErrors - "paydayDate"
-        )
+        _uiState.value = _uiState.value.copy(paydayDate = date, paydayErrors = _uiState.value.paydayErrors - "paydayDate")
         saveDraft()
     }
 
@@ -167,102 +127,107 @@ class SetupQuestViewModel(
         saveDraft()
     }
 
-    fun updateIncomeConfirmed(confirmed: Boolean) {
-        _uiState.value = _uiState.value.copy(isIncomeConfirmed = confirmed)
+    fun toggleIncomeConfirmation() {
+        val newState = !_uiState.value.isIncomeConfirmed
+        _uiState.value = _uiState.value.copy(isIncomeConfirmed = newState)
         saveDraft()
     }
 
     // Chapter 3: Bills
-    fun addBill() {
-        // Navigate to bill entry screen
-        // Implementation depends on navigation setup
+    fun addBill(draftBill: DraftBill) {
+        val currentBills = _uiState.value.bills.toMutableList()
+        currentBills.add(draftBill)
+        _uiState.value = _uiState.value.copy(bills = currentBills)
+    }
+
+    fun updateBillName(billId: Long, name: String) {
+        val updatedBills = _uiState.value.bills.map { bill ->
+            if (bill.id == billId) bill.copy(name = name) else bill
+        }
+        _uiState.value = _uiState.value.copy(bills = updatedBills)
+    }
+
+    fun updateBillAmount(billId: Long, amount: String) {
+        val updatedBills = _uiState.value.bills.map { bill ->
+            if (bill.id == billId) bill.copy(amountInput = amount) else bill
+        }
+        _uiState.value = _uiState.value.copy(bills = updatedBills)
+
+        // Also update cents
+        MoneyParser.parseToCents(amount).fold(
+            onSuccess = { cents ->
+                val billsWithCents = _uiState.value.bills.map { bill ->
+                    if (bill.id == billId) bill.copy(amountCents = cents) else bill
+                }
+                _uiState.value = _uiState.value.copy(bills = billsWithCents)
+            },
+            onFailure = {}
+        )
+    }
+
+    fun updateBillDueDate(billId: Long, dueDate: String) {
+        val updatedBills = _uiState.value.bills.map { bill ->
+            if (bill.id == billId) bill.copy(dueDateInput = dueDate) else bill
+        }
+        _uiState.value = _uiState.value.copy(bills = updatedBills)
+    }
+
+    fun toggleBillProtection(billId: Long) {
+        val updatedBills = _uiState.value.bills.map { bill ->
+            if (bill.id == billId) bill.copy(isProtected = !bill.isProtected) else bill
+        }
+        _uiState.value = _uiState.value.copy(bills = updatedBills)
     }
 
     fun removeBill(billId: Long) {
-        viewModelScope.launch {
-            // Remove from database
-        }
-    }
-
-    fun updateBill(bill: Bill) {
-        viewModelScope.launch {
-            // Update in database
-        }
-    }
-
-    fun acknowledgeNoBills() {
-        _uiState.value = _uiState.value.copy(hasAcknowledgedNoBills = true)
-        saveDraft()
+        val updatedBills = _uiState.value.bills.filter { it.id != billId }
+        _uiState.value = _uiState.value.copy(bills = updatedBills)
     }
 
     // Chapter 4: Savings
     fun updateSavings(input: String) {
-        _uiState.value = _uiState.value.copy(
-            savingsInput = input,
-            savingsError = null
-        )
-
+        _uiState.value = _uiState.value.copy(savingsInput = input, savingsError = null)
         MoneyParser.parseToCents(input).fold(
             onSuccess = { cents ->
                 if (cents < 0) {
-                    _uiState.value = _uiState.value.copy(
-                        savingsError = "Amount cannot be negative"
-                    )
+                    _uiState.value = _uiState.value.copy(savingsError = "Cannot be negative")
                 } else {
                     _uiState.value = _uiState.value.copy(savingsCents = cents)
                     saveDraft()
                 }
             },
-            onFailure = { error ->
-                // Invalid input
-            }
+            onFailure = {}
         )
     }
 
     // Chapter 5: Budgets
     fun updateFoodBudget(input: String) {
-        _uiState.value = _uiState.value.copy(
-            foodBudgetInput = input,
-            budgetErrors = _uiState.value.budgetErrors - "foodBudget"
-        )
-
+        _uiState.value = _uiState.value.copy(foodBudgetInput = input, foodBudgetError = null)
         MoneyParser.parseToCents(input).fold(
             onSuccess = { cents ->
                 if (cents < 0) {
-                    _uiState.value = _uiState.value.copy(
-                        budgetErrors = _uiState.value.budgetErrors + ("foodBudget" to "Amount cannot be negative")
-                    )
+                    _uiState.value = _uiState.value.copy(foodBudgetError = "Cannot be negative")
                 } else {
                     _uiState.value = _uiState.value.copy(foodBudgetCents = cents)
                     saveDraft()
                 }
             },
-            onFailure = { error ->
-                // Invalid input
-            }
+            onFailure = {}
         )
     }
 
     fun updateWantsBudget(input: String) {
-        _uiState.value = _uiState.value.copy(
-            wantsBudgetInput = input,
-            budgetErrors = _uiState.value.budgetErrors - "wantsBudget"
-        )
-
+        _uiState.value = _uiState.value.copy(wantsBudgetInput = input, wantsBudgetError = null)
         MoneyParser.parseToCents(input).fold(
             onSuccess = { cents ->
                 if (cents < 0) {
-                    _uiState.value = _uiState.value.copy(
-                        budgetErrors = _uiState.value.budgetErrors + ("wantsBudget" to "Amount cannot be negative")
-                    )
+                    _uiState.value = _uiState.value.copy(wantsBudgetError = "Cannot be negative")
                 } else {
                     _uiState.value = _uiState.value.copy(wantsBudgetCents = cents)
                     saveDraft()
                 }
             },
-            onFailure = { error ->
-                // Invalid input
-            }
+            onFailure = {}
         )
     }
 
@@ -284,86 +249,49 @@ class SetupQuestViewModel(
         }
     }
 
-    fun goToChapter(chapter: Int) {
-        if (chapter in 1..6) {
-            _uiState.value = _uiState.value.copy(currentChapter = chapter)
-        }
-    }
-
-    /**
-     * Validate current chapter before proceeding.
-     */
     private fun validateCurrentChapter(): Boolean {
-        val state = _uiState.value
-
-        return when (state.currentChapter) {
-            1 -> {
-                if (state.cashOnHandCents < 0) {
-                    _uiState.value = state.copy(cashOnHandError = "Please enter a valid amount")
-                    false
-                } else true
-            }
-            2 -> {
-                val errors = mutableMapOf<String, String>()
-                if (state.incomeName.isBlank()) {
-                    errors["incomeName"] = "Please enter an income name"
-                }
-                if (state.incomeAmountCents <= 0) {
-                    errors["incomeAmount"] = "Please enter a valid amount"
-                }
-                if (state.paydayDate.isBlank()) {
-                    errors["paydayDate"] = "Please select a payday"
-                }
-                _uiState.value = state.copy(paydayErrors = errors)
-                errors.isEmpty()
-            }
-            3 -> {
-                // Bills chapter - valid if has bills OR acknowledged no bills
-                true
-            }
-            4 -> {
-                if (state.savingsCents < 0) {
-                    _uiState.value = state.copy(savingsError = "Please enter a valid amount")
-                    false
-                } else true
-            }
-            5 -> {
-                // Budgets are optional (zero allowed with confirmation)
-                true
-            }
-            else -> true
-        }
-    }
-
-    /**
-     * Check if can proceed from current chapter.
-     */
-    fun canProceed(): Boolean {
         val state = _uiState.value
         return when (state.currentChapter) {
             1 -> state.cashOnHandCents >= 0
-            2 -> state.incomeName.isNotBlank() &&
-                  state.incomeAmountCents > 0 &&
-                  state.paydayDate.isNotBlank()
-            3 -> true // Optional bills
-            4 -> state.savingsCents >= 0
-            5 -> state.foodBudgetCents >= 0 && state.wantsBudgetCents >= 0
-            6 -> true // Review chapter
+            2 -> {
+                val errors = mutableMapOf<String, String>()
+                if (state.incomeName.isBlank()) errors["incomeName"] = "Required"
+                if (state.incomeAmountCents <= 0) errors["incomeAmount"] = "Required"
+                if (state.paydayDate.isBlank()) errors["paydayDate"] = "Required"
+                _uiState.value = state.copy(paydayErrors = errors)
+                errors.isEmpty() && state.isIncomeConfirmed
+            }
             else -> true
         }
     }
 
-    /**
-     * Save current state as draft.
-     */
+    // Complete setup
+    fun completeSetup() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                val settings = UserSettings(
+                    id = 1,
+                    isFirstRunComplete = true,
+                    cashOnHandCents = _uiState.value.cashOnHandCents,
+                    savingsBalanceCents = _uiState.value.savingsCents,
+                    setupChapter = 7,
+                    selectedMonth = DateParser.currentMonthKey()
+                )
+                userSettingsRepository.saveSettings(settings)
+                _uiState.value = _uiState.value.copy(isLoading = false, isComplete = true)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed: ${e.message}")
+            }
+        }
+    }
+
     private fun saveDraft() {
         viewModelScope.launch {
             val state = _uiState.value
-
-            // Update user settings
             val settings = UserSettings(
                 id = 1,
-                isFirstRunComplete = false, // Not complete until activation
+                isFirstRunComplete = false,
                 cashOnHandCents = state.cashOnHandCents,
                 savingsBalanceCents = state.savingsCents,
                 setupChapter = state.currentChapter,
@@ -371,7 +299,6 @@ class SetupQuestViewModel(
             )
             userSettingsRepository.saveSettings(settings)
 
-            // Save income schedule
             if (state.incomeName.isNotBlank() && state.incomeAmountCents > 0) {
                 val schedule = IncomeSchedule(
                     id = 0L,
@@ -385,77 +312,37 @@ class SetupQuestViewModel(
                 incomeRepository.saveSchedule(schedule)
             }
 
-            // Save budgets
             val monthKey = DateParser.currentMonthKey()
-            if (state.foodBudgetCents >= 0) {
-                budgetRepository.saveBudget("Food", monthKey, state.foodBudgetCents)
-            }
-            if (state.wantsBudgetCents >= 0) {
-                budgetRepository.saveBudget("Wants", monthKey, state.wantsBudgetCents)
-            }
-        }
-    }
-
-    /**
-     * Activate the shield - finalize setup.
-     */
-    fun activateShield() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-
-            try {
-                // Atomic completion - all writes must succeed
-                val settings = UserSettings(
-                    id = 1,
-                    isFirstRunComplete = true,
-                    cashOnHandCents = _uiState.value.cashOnHandCents,
-                    savingsBalanceCents = _uiState.value.savingsCents,
-                    setupChapter = 7, // Complete
-                    selectedMonth = DateParser.currentMonthKey()
-                )
-
-                userSettingsRepository.saveSettings(settings)
-
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    isComplete = true
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    activationError = "Failed to activate: ${e.message}. Please try again."
-                )
-            }
+            budgetRepository.saveBudget("Food", monthKey, state.foodBudgetCents)
+            budgetRepository.saveBudget("Wants", monthKey, state.wantsBudgetCents)
         }
     }
 
     companion object {
+        lateinit var instance: SetupQuestViewModel
+            private set
+
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                // These will be injected properly in production
-                // For now, creating minimal implementations
-                TODO("Factory requires repository implementations")
+                error("ViewModel must be created with proper dependencies via MainActivity")
             }
         }
     }
 }
 
-/**
- * UI State for Setup Quest.
- */
 data class SetupQuestUiState(
     val currentChapter: Int = 1,
     val isLoading: Boolean = false,
     val isComplete: Boolean = false,
     val error: String? = null,
 
-    // Chapter 1: Cash on Hand
+    // Chapter 1
     val cashOnHandInput: String = "",
     val cashOnHandCents: Long = 0,
     val cashOnHandError: String? = null,
 
-    // Chapter 2: Payday
+    // Chapter 2
     val incomeName: String = "",
     val incomeAmountInput: String = "",
     val incomeAmountCents: Long = 0,
@@ -464,31 +351,24 @@ data class SetupQuestUiState(
     val isIncomeConfirmed: Boolean = false,
     val paydayErrors: Map<String, String> = emptyMap(),
 
-    // Chapter 3: Bills
-    val setupBills: List<Bill> = emptyList(),
-    val hasAcknowledgedNoBills: Boolean = false,
-    val billsError: String? = null,
+    // Chapter 3
+    val bills: List<DraftBill> = emptyList(),
+    val billErrors: Map<Long, Map<String, String>> = emptyMap(),
 
-    // Chapter 4: Savings
+    // Chapter 4
     val savingsInput: String = "",
     val savingsCents: Long = 0,
     val savingsError: String? = null,
 
-    // Chapter 5: Budgets
+    // Chapter 5
     val foodBudgetInput: String = "",
     val foodBudgetCents: Long = 0,
     val wantsBudgetInput: String = "",
     val wantsBudgetCents: Long = 0,
-    val budgetErrors: Map<String, String> = emptyMap(),
-
-    // Chapter 6: Review
-    val calculatedSafeNow: Long = 0,
-    val activationError: String? = null
+    val foodBudgetError: String? = null,
+    val wantsBudgetError: String? = null
 )
 
-/**
- * Enum representing setup chapters.
- */
 enum class SetupChapter(val number: Int, val title: String) {
     CASH_ON_HAND(1, "Cash on Hand"),
     PAYDAY(2, "Payday Schedule"),
