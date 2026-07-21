@@ -37,9 +37,8 @@ class PersistentFooterTest {
 
     @Before
     fun setup() {
-        // Complete Setup Quest to get to Home
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        // Test starts at Home (setup already completed in test environment)
+        // For fresh-install tests, SetupQuest footer absence is tested separately
         composeTestRule.waitForIdle()
     }
 
@@ -190,8 +189,15 @@ class PersistentFooterTest {
     // ========== EXISTING FOOTER TESTS ==========
 
     @Test
-    fun footerVisibleOnSetupQuest() {
-        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
+    fun footerAbsentOnSetupQuest() {
+        // SetupQuest must NOT show footer - it's a first-run gate
+        // Navigate to SetupQuest from Settings
+        composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag("settings_danger_zone_restart").performClick()
+        composeTestRule.waitForIdle()
+        // Footer should NOT be visible during setup
+        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertDoesNotExist()
     }
 
     @Test
