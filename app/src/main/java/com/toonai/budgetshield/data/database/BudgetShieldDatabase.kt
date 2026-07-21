@@ -5,19 +5,30 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.toonai.budgetshield.data.model.Bill
+import com.toonai.budgetshield.data.model.BudgetCategory
+import com.toonai.budgetshield.data.model.IncomeSchedule
+import com.toonai.budgetshield.data.model.UserSettings
 
 /**
  * Room database for BudgetShield app.
  * Contains all persisted entities.
  */
 @Database(
-    entities = [Bill::class],
-    version = 1,
+    entities = [
+        Bill::class,
+        UserSettings::class,
+        IncomeSchedule::class,
+        BudgetCategory::class
+    ],
+    version = 2,
     exportSchema = false
 )
 abstract class BudgetShieldDatabase : RoomDatabase() {
     
     abstract fun billDao(): BillDao
+    abstract fun userSettingsDao(): UserSettingsDao
+    abstract fun incomeScheduleDao(): IncomeScheduleDao
+    abstract fun budgetCategoryDao(): BudgetCategoryDao
     
     companion object {
         @Volatile
@@ -29,7 +40,9 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                     context.applicationContext,
                     BudgetShieldDatabase::class.java,
                     "budget_shield_database"
-                ).build()
+                )
+                .addMigrations(MIGRATION_1_2)
+                .build()
                 INSTANCE = instance
                 instance
             }

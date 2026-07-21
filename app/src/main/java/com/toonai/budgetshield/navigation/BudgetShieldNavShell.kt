@@ -87,7 +87,10 @@ private fun BudgetShieldScreenContent(
                 onNavigateToBillEntry = { onNavigate(Bills) },
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
-                onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
+                onNavigateToShieldProgression = { onNavigate(ShieldProgression) },
+                onNavigateToRewardScreen = { /* TODO: implement rewards */ },
+                onNavigateToMenu = { onNavigate(Settings) },
+                onNavigateToCalendar = { onNavigate(Settings) }
             )
         }
         is Treasure -> {

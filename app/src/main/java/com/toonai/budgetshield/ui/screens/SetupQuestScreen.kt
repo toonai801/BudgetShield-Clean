@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -40,7 +41,7 @@ fun SetupQuestScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "ARCHITECTURE FOUNDATION - NOT FINAL UI",
+                text = "Phase 2 Implementation - IN PROGRESS",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -48,14 +49,7 @@ fun SetupQuestScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Chapter 1 of 6",
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Money In\n\nThis is a temporary placeholder for the Setup Quest onboarding flow.",
+                text = "Phase 1 Complete:\nDatabase migration, SafeNowCalculator, DAOs, Repositories",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )
@@ -63,19 +57,11 @@ fun SetupQuestScreen(
             Spacer(modifier = Modifier.height(48.dp))
 
             Button(
-                onClick = onComplete
+                onClick = onComplete,
+                modifier = Modifier.testTag("setup_complete_button")
             ) {
-                Text("Complete Setup (Temp)")
+                Text("Complete Setup")
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "On complete: navigates to Home\nBack stack: Setup Quest removed",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
         }
     }
 }

@@ -122,4 +122,38 @@ object DateParser {
     fun daysInMonth(year: Int, month: Int): Int {
         return java.time.YearMonth.of(year, month).lengthOfMonth()
     }
+
+    /**
+     * Get current month as key (YYYY-MM format).
+     */
+    fun currentMonthKey(): String {
+        return java.time.YearMonth.now().toString()
+    }
+
+    /**
+     * Parse ISO date string to LocalDate.
+     * Returns null if parsing fails.
+     */
+    fun parseDate(isoDate: String?): java.time.LocalDate? {
+        if (isoDate.isNullOrEmpty()) return null
+        return try {
+            java.time.LocalDate.parse(isoDate, ISO_FORMATTER)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Format LocalDate to ISO date string.
+     */
+    fun formatDate(date: java.time.LocalDate): String {
+        return date.format(ISO_FORMATTER)
+    }
+
+    /**
+     * Format YearMonth to display string (e.g., "July 2025").
+     */
+    fun formatMonthYear(yearMonth: java.time.YearMonth): String {
+        return yearMonth.format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy"))
+    }
 }

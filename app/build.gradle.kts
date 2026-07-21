@@ -14,8 +14,8 @@ android {
         applicationId = "com.toonai.budgetshield"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.1.4-beta-shield-nav-cleanup"
+        versionCode = 7
+        versionName = "1.2.0-beta-intake-home"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
