@@ -3,6 +3,7 @@ package com.toonai.budgetshield
 import android.content.Context
 import android.content.Intent
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -18,7 +19,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 import java.lang.reflect.Field
 
 /**
@@ -36,36 +36,40 @@ class PersistentFooterTest {
 
     @Before
     fun setup() {
-        scenario?.close()
-
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-        // Clear database singleton
+        // Clear Room singleton INSTANCE via reflection FIRST
         try {
-            BudgetShieldDatabase.getDatabase(context).close()
-        } catch (e: Exception) { }
-
-        try {
-            val instanceField: Field = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
+            val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
             instanceField.isAccessible = true
+            (instanceField.get(null) as? BudgetShieldDatabase)?.close()
             instanceField.set(null, null)
-        } catch (e: Exception) { }
+        } catch (e: Exception) {}
 
-        // Delete database files
-        val dbDir = File(context.dataDir, "databases")
-        if (dbDir.exists()) {
-            dbDir.listFiles()?.forEach { it.delete() }
+        // Delete database files (WAL mode can recreate files)
+        val dbName = "budget_shield_database"
+        context.deleteDatabase(dbName)
+        context.getDatabasePath(dbName).parentFile?.listFiles()?.forEach { file ->
+            if (file.name.startsWith(dbName)) {
+                file.delete()
+            }
         }
 
         // Clear SharedPreferences
-        val prefsDir = File(context.dataDir, "shared_prefs")
-        if (prefsDir.exists()) {
-            prefsDir.listFiles { f -> f.name.contains("budget_shield") }?.forEach { it.delete() }
-        }
-
-        context.deleteDatabase("budget_shield_database")
         context.getSharedPreferences("budget_shield_prefs", Context.MODE_PRIVATE)
             .edit().clear().commit()
+
+        // Verify database is truly empty by opening and clearing all tables
+        val db = BudgetShieldDatabase.getDatabase(context)
+        db.clearAllTables()
+        db.close()
+
+        // Clear singleton again after reopening
+        try {
+            val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
+            instanceField.isAccessible = true
+            instanceField.set(null, null)
+        } catch (e: Exception) {}
     }
 
     @After
@@ -149,6 +153,11 @@ class PersistentFooterTest {
         scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
 
+        // Wait for loading screen to disappear
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
+
         // Footer should NOT exist during Setup Quest - verify Chapter 1 shows
         composeTestRule.onNodeWithText("Chapter 1: Cash on Hand").assertExists()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertDoesNotExist()
@@ -165,21 +174,32 @@ class PersistentFooterTest {
         scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
 
+        // Wait for loading screen to disappear
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
+
         // Verify Setup Quest shows, no footer
         composeTestRule.onNodeWithText("Chapter 1: Cash on Hand").assertExists()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertDoesNotExist()
 
         // Complete setup
         composeTestRule.onNodeWithText("Cash on Hand").performTextInput("500")
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Next").performClick()
 
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Chapter 2: Payday").assertExists()
         composeTestRule.onNodeWithText("Income Name").performTextInput("Job")
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Amount").performTextInput("2000")
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Next Payday (MM/DD/YYYY)").performTextInput("08/15/2025")
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Every 2 weeks").performClick()
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("This income is confirmed and ready to use").performClick()
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Next").performClick()
 
         composeTestRule.waitForIdle()
@@ -188,20 +208,27 @@ class PersistentFooterTest {
 
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Chapter 4: Savings").assertExists()
-        composeTestRule.onNodeWithText("Food Budget").performTextInput("500")
-        composeTestRule.onNodeWithText("Wants Budget").performTextInput("300")
+        composeTestRule.onNodeWithText("Savings Balance").performTextInput("1000")
         composeTestRule.onNodeWithText("Next").performClick()
 
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Chapter 5: Monthly Budgets").assertExists()
+        composeTestRule.onNodeWithText("Food Budget (per month)").performTextInput("500")
+        composeTestRule.onNodeWithText("Wants Budget (per month)").performTextInput("300")
         composeTestRule.onNodeWithText("Next").performClick()
 
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Chapter 6: Shield Review").assertExists()
         composeTestRule.onNodeWithText("Activate My Shield").performClick()
 
-        // After activation, footer should appear
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertExists()
+        // After activation, footer should appear - wait for navigation to complete
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            try {
+                composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertExists()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
     }
 }

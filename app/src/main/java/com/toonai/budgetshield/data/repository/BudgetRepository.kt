@@ -25,7 +25,7 @@ class BudgetRepository(private val budgetCategoryDao: BudgetCategoryDao) {
     /**
      * Save a budget category (compatible API).
      *
-     * @param name Category name
+     * @param name Name of the category (e.g., "Food", "Wants")
      * @param monthKey Month in YYYY-MM format
      * @param amountCents Budget amount in cents
      */
@@ -53,6 +53,19 @@ class BudgetRepository(private val budgetCategoryDao: BudgetCategoryDao) {
             )
             budgetCategoryDao.insertBudget(category)
         }
+    }
+
+    /**
+     * Synchronous blocking version - safe for test environments.
+     */
+    fun saveBudgetBlocking(name: String, monthKey: String, amountCents: Long) {
+        val category = BudgetCategory(
+            name = name,
+            monthKey = monthKey,
+            plannedAmountCents = amountCents,
+            categoryType = if (name == "Food") BudgetCategoryType.FOOD else BudgetCategoryType.WANTS
+        )
+        budgetCategoryDao.insertBudgetBlocking(category)
     }
 
     /**

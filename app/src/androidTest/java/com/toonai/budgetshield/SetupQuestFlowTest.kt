@@ -3,6 +3,7 @@ package com.toonai.budgetshield
 import android.content.Context
 import android.content.Intent
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
@@ -17,7 +18,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 import java.lang.reflect.Field
 
 /**
@@ -35,51 +35,50 @@ class SetupQuestFlowTest {
 
     /**
      * DETERMINISTIC FIXTURE RESET
-     * Clears ALL persistence before each test:
-     * - Closes and nulls Room singleton INSTANCE
-     * - Deletes database files
-     * - Clears SharedPreferences
-     * - Ensures fresh state for next test
+     * Clears ALL persistence before each test.
+     * Must happen BEFORE ActivityScenario.launch() to ensure clean state.
      */
     @Before
     fun setup() {
-        scenario?.close()
-
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-        // Step 1: Close existing database connection
+        // Step 1: Force stop the app to release all database locks
         try {
-            BudgetShieldDatabase.getDatabase(context).close()
-        } catch (e: Exception) {
-            // Database may not exist yet
-        }
+            Runtime.getRuntime().exec("am force-stop ${context.packageName}")
+        } catch (e: Exception) {}
 
-        // Step 2: Clear Room singleton INSTANCE via reflection
-        // REQUIRED: Without this, tests share database state
+        // Step 2: Clear Room singleton INSTANCE via reflection FIRST
         try {
-            val instanceField: Field = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
+            val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
             instanceField.isAccessible = true
+            (instanceField.get(null) as? BudgetShieldDatabase)?.close()
             instanceField.set(null, null)
-        } catch (e: Exception) {
-            android.util.Log.w("SetupQuestTest", "Could not clear INSTANCE: ${e.message}")
-        }
+        } catch (e: Exception) {}
 
-        // Step 3: Delete database files
-        val dbDir = File(context.dataDir, "databases")
-        if (dbDir.exists()) {
-            dbDir.listFiles()?.forEach { it.delete() }
+        // Step 3: Delete database files with retry (WAL mode can recreate files)
+        val dbName = "budget_shield_database"
+        context.deleteDatabase(dbName)
+        context.getDatabasePath(dbName).parentFile?.listFiles()?.forEach { file ->
+            if (file.name.startsWith(dbName)) {
+                file.delete()
+            }
         }
 
         // Step 4: Clear SharedPreferences
-        val prefsDir = File(context.dataDir, "shared_prefs")
-        if (prefsDir.exists()) {
-            prefsDir.listFiles { f -> f.name.contains("budget_shield") }?.forEach { it.delete() }
-        }
-
-        // Step 5: Standard API clearing
-        context.deleteDatabase("budget_shield_database")
         context.getSharedPreferences("budget_shield_prefs", Context.MODE_PRIVATE)
             .edit().clear().commit()
+
+        // Step 5: Verify database is truly empty by opening and clearing all tables
+        val db = BudgetShieldDatabase.getDatabase(context)
+        db.clearAllTables()
+        db.close()
+
+        // Clear singleton again after reopening
+        try {
+            val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
+            instanceField.isAccessible = true
+            instanceField.set(null, null)
+        } catch (e: Exception) {}
     }
 
     @After
@@ -108,6 +107,11 @@ class SetupQuestFlowTest {
         scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
 
+        // Wait for loading screen to disappear
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
+
         // VERIFY: Setup Quest Chapter 1 is shown
         composeTestRule.onNodeWithText("Chapter 1: Cash on Hand").assertExists()
         composeTestRule.onNodeWithText("Chapter 1 of 6").assertExists()
@@ -127,6 +131,11 @@ class SetupQuestFlowTest {
         }
         scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
+
+        // Wait for loading screen to disappear
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
 
         composeTestRule.onNodeWithText("Chapter 1 of 6").assertExists()
     }
@@ -195,10 +204,10 @@ class SetupQuestFlowTest {
                 )
             )
         }
-        
-        // CRITICAL: Close database to ensure data is flushed and unlock file
+
+        // Close database to ensure flush
         db.close()
-        
+
         // Clear singleton so Activity creates fresh connection
         val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
         instanceField.isAccessible = true
@@ -208,7 +217,11 @@ class SetupQuestFlowTest {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         }
         scenario = ActivityScenario.launch(intent)
-        composeTestRule.waitForIdle()
+
+        // Wait for loading screen to disappear
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
 
         // VERIFY: Resumes at Chapter 3
         composeTestRule.onNodeWithText("Chapter 3 of 6").assertExists()
@@ -237,10 +250,10 @@ class SetupQuestFlowTest {
                 )
             )
         }
-        
+
         // CRITICAL: Close database to ensure data is flushed and unlock file
         db.close()
-        
+
         // Clear singleton so Activity creates fresh connection
         val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
         instanceField.isAccessible = true

@@ -1,6 +1,7 @@
 package com.toonai.budgetshield.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -67,7 +68,7 @@ fun SetupQuestScreen(
                         uiState = uiState,
                         onPrevious = { viewModel.goToPreviousChapter() },
                         onNext = { viewModel.goToNextChapter() },
-                        onCompleteSetup = { viewModel.completeSetup() },
+                        onCompleteSetup = { viewModel.completeSetup(onComplete) },
                         onUpdateCashOnHand = { viewModel.updateCashOnHand(it) },
                         onUpdateSavings = { viewModel.updateSavings(it) },
                         onUpdateIncomeName = { viewModel.updateIncomeName(it) },
@@ -338,7 +339,9 @@ private fun ChapterPayday(
         )
         frequencies.forEach { (value, label) ->
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onUpdateFrequency(value) },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
@@ -350,7 +353,9 @@ private fun ChapterPayday(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onToggleIncomeConfirmation() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(

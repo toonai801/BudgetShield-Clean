@@ -1,10 +1,19 @@
 # Project State
 
 ## Current Task
-**Functional Beta Complete:** 6-chapter Setup Quest, Themed Loading Gate, Safe Now Calculation, 130 Unit Tests, 20/23 Connected Tests
+**OpenClaw Rebuild Preservation Checkpoint** — PAUSED
+- Project preserved for complete OpenClaw wipe/rebuild
+- Current implementation is WIP, not complete
+- Connected tests: 20/23 passing (3 failures unresolved)
+- Unit tests: 130 tests passing
 
 ## Previous Work
-**Treasure Screen Correction (2026-07-18)** — COMPLETE  
+**Functional Beta (2026-07-21)** — COMPLETE BUT NOT RELEASED
+- 6-chapter Setup Quest, Themed Loading Gate, Safe Now Calculation
+- 130 Unit Tests, 20/23 Connected Tests (87%)
+- Build clean, lint clean (deprecation warnings only)
+
+**Treasure Persistence Correction (2026-07-18)** — COMPLETE  
 **Setup Quest & Connected Test Fixes (2026-07-21)** — COMPLETE
 
 ## Project Identity
@@ -14,9 +23,11 @@
 - **Package:** com.toonai.budgetshield
 - **Version:** 1.2.0-beta-20260721-211030 (versionCode 7)
 
-## Task Status: Functional Beta COMPLETE
+## Status: PAUSED for OpenClaw Rebuild
 
-### What Was Implemented
+This checkpoint preserves the current beta implementation state before a complete OpenClaw environment rebuild. The codebase is functional but not production-ready.
+
+### Implementation Summary
 
 #### 1. Setup Quest (6 Chapters)
 - **Chapter 1: Cash on Hand** — Starting cleared cash balance entry
@@ -59,6 +70,7 @@
 #### 7. Hilt Dependency Injection
 - DatabaseModule provides all DAOs including SetupDraftDao
 - ViewModels use constructor injection
+- AppModule provides ApplicationScope
 
 #### 8. Connected Test Infrastructure
 - Deterministic test harness with reflection-based INSTANCE clearing
@@ -66,12 +78,20 @@
 - `createEmptyComposeRule()` + explicit `ActivityScenario.launch()`
 - 20/23 connected tests passing (87%)
 
-### Verification Results
+### Unresolved Failures (Blocking Release)
+
+The following 3 connected tests remain failed. Release is **REJECTED** until these pass:
+
+1. **SetupQuestFlowTest.setupPersistsAcrossProcessDeath** — Draft resume returns null in test environment
+2. **NavigationSmokeTest.endToEndSetupQuestCompletes** — Chapter 2→3 navigation timing issue
+3. **PersistentFooterTest.footerHiddenDuringSetupAppearsAfter** — Footer visibility timing assertion
+
+### Verification Results at Checkpoint
 
 #### Build & Tests
 - Build: ✅ SUCCESS
 - Unit Tests: ✅ 130 tests PASSED
-- Connected Tests: ✅ 20/23 PASSED (87%)
+- Connected Tests: ⚠️ 20/23 PASSED (87%) — 3 FAILURES UNRESOLVED
 - Lint: ✅ SUCCESS (only deprecation warnings)
 
 #### Functional Verification
@@ -81,15 +101,6 @@
 - Safe Now: ✅ All 9 documented examples
 - Home data: ✅ All from Room, no hardcoded values
 - Budget Menu: ✅ Navigation working
-
-### Production Defects Identified
-1. **Draft resume loading** — `setupDraftDao.getDraftSync()` returns null in test environment
-2. **Chapter 2→3 navigation timing** — Tests advance too quickly before validation completes
-
-### Release
-- **Tag:** v1.2.0-beta-20260721-211030
-- **APK:** app-debug.apk (23MB)
-- **URL:** https://github.com/toonai801/BudgetShield-Clean/releases/tag/v1.2.0-beta-20260721-211030
 
 ### Architecture
 - Single MainActivity with Hilt
@@ -111,6 +122,17 @@
 - **Room:** 2.7.1
 - **Hilt:** 2.56.1
 
+### Post-Rebuild Restoration Steps
+
+After OpenClaw is rebuilt:
+
+1. Clone `toonai801/BudgetShield-Clean` repository
+2. Open in Android Studio (or IDE with Android plugin)
+3. Configure `local.properties` with Android SDK path
+4. Run `./gradlew clean build test connectedDebugAndroidTest`
+5. Address the 3 remaining connected test failures
+6. Create verified release APK when all tests pass
+
 ---
 
-*Last updated: 2026-07-21 21:10 MST*
+*Last updated: 2026-07-22 00:23 MST — PRE-REBUILD CHECKPOINT*

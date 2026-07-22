@@ -33,8 +33,20 @@ interface BudgetCategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(budget: BudgetCategory): Long
 
+    /**
+     * Synchronous blocking version - safe for test environments.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertBlocking(budget: BudgetCategory): Long
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBudget(budget: BudgetCategory): Long
+
+    /**
+     * Synchronous blocking version - safe for test environments.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertBudgetBlocking(budget: BudgetCategory): Long
 
     @Update
     suspend fun update(budget: BudgetCategory)

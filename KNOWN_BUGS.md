@@ -1,6 +1,37 @@
 # Known Bugs
 
-## Active
+## OpenClaw Rebuild Checkpoint Status
+
+**Preservation Commit:** chore(recovery): preserve beta work before OpenClaw rebuild  
+**Date:** 2026-07-22  
+**Status:** Project paused, tests partially failing (20/23 connected tests pass)
+
+---
+
+## Active — Release Blockers (UNRESOLVED)
+
+### Connected Test Failures (3 of 23)
+
+| Defect | Description | Severity | Status | Details |
+|--------|-------------|----------|--------|---------|
+| CT-001 | `SetupQuestFlowTest.setupPersistsAcrossProcessDeath` returns null draft | HIGH | ❌ FAILING | `setupDraftDao.getDraftSync()` returns null in test environment even after data seeded |
+| CT-002 | `NavigationSmokeTest.endToEndSetupQuestCompletes` Chapter 2→3 timing | HIGH | ❌ FAILING | Test advances before validation completes, assertion on Chapter 3 fails |
+| CT-003 | `PersistentFooterTest.footerHiddenDuringSetupAppearsAfter` visibility timing | HIGH | ❌ FAILING | Footer visibility assertion fails after setup completion |
+
+**Impact:** Release v1.2.0-beta is **REJECTED** until these 3 connected tests pass.
+
+---
+
+## Active — Technical Debt
+
+| Defect | Description | Severity | Status | Resolution |
+|--------|-------------|----------|--------|------------|
+| TD-001 | Blocking DAO methods added for tests only | MEDIUM | 🔄 TECH DEBT | `*Blocking()` methods in DAOs exist purely for test synchronization; may need coroutine test helpers |
+| TD-002 | SetupQuestViewModel uses ExecutorService | MEDIUM | 🔄 TECH DEBT | Thread pool executor in ViewModel for draft persistence — should use coroutines with proper scopes |
+
+---
+
+## Previous Work (Resolved)
 
 ### Treasure Persistence Correction (2026-07-18)
 | Defect | Description | Severity | Status | Resolution |
@@ -17,22 +48,14 @@
 ### TASK 3 Test Integrity (2026-07-15)
 | Defect | Description | Severity | Status | Resolution |
 |--------|-------------|----------|--------|------------|
-| TI-001 | Fake JVM test doubles used instead of production routes | CRITICAL | 🔄 IN PROGRESS | Remove TestHome/TestTreasure/etc., use production routes |
-| TI-002 | Weakened instrumentation coverage to silence CI | CRITICAL | 🔄 IN PROGRESS | Restore full NavigationSmokeTest coverage |
-| TI-003 | Placeholder APK SHA-256 in QA report | HIGH | 🔄 IN PROGRESS | Replace with real APK hash from verified build |
-| TI-004 | Conflicting test counts (12, 14, 20) reported | MEDIUM | 🔄 IN PROGRESS | Use only Gradle XML/HTML report totals |
-| TI-005 | Stale project state marked Task 3 COMPLETE prematurely | MEDIUM | 🔄 IN PROGRESS | Reopen as IN PROGRESS, close after verified evidence |
-| TI-006 | CI unverified — no real emulator test execution | HIGH | 🔄 IN PROGRESS | Run connectedDebugAndroidTest on API 34 emulator |
+| TI-001 | Fake JVM test doubles used instead of production routes | CRITICAL | ✅ FIXED | Remove TestHome/TestTreasure/etc., use production routes |
+| TI-002 | Weakened instrumentation coverage to silence CI | CRITICAL | ✅ FIXED | Restore full NavigationSmokeTest coverage |
+| TI-003 | Placeholder APK SHA-256 in QA report | HIGH | ✅ FIXED | Replace with real APK hash from verified build |
+| TI-004 | Conflicting test counts (12, 14, 20) reported | MEDIUM | ✅ FIXED | Use only Gradle XML/HTML report totals |
+| TI-005 | Stale project state marked Task 3 COMPLETE prematurely | MEDIUM | ✅ FIXED | Reopen as IN PROGRESS, close after verified evidence |
+| TI-006 | CI unverified — no real emulator test execution | HIGH | ✅ FIXED | Run connectedDebugAndroidTest on API 34 emulator |
 
-## Previous (Resolved)
-| Bug ID | Description | Severity | Reported | Status | Resolution |
-|--------|-------------|----------|----------|--------|------------|
-| TI-001 | Fake JVM test doubles used instead of production routes | CRITICAL | 2026-07-15 | 🔄 IN PROGRESS | Remove TestHome/TestTreasure/etc., use production routes |
-| TI-002 | Weakened instrumentation coverage to silence CI | CRITICAL | 2026-07-15 | 🔄 IN PROGRESS | Restore full NavigationSmokeTest coverage |
-| TI-003 | Placeholder APK SHA-256 in QA report | HIGH | 2026-07-15 | 🔄 IN PROGRESS | Replace with real APK hash from verified build |
-| TI-004 | Conflicting test counts (12, 14, 20) reported | MEDIUM | 2026-07-15 | 🔄 IN PROGRESS | Use only Gradle XML/HTML report totals |
-| TI-005 | Stale project state marked Task 3 COMPLETE prematurely | MEDIUM | 2026-07-15 | 🔄 IN PROGRESS | Reopen as IN PROGRESS, close after verified evidence |
-| TI-006 | CI unverified — no real emulator test execution | HIGH | 2026-07-15 | 🔄 IN PROGRESS | Run connectedDebugAndroidTest on API 34 emulator |
+---
 
 ## Resolved
 
@@ -46,8 +69,7 @@
 | NAV3-005 | Runtime QA not executed — no device/emulator testing performed | HIGH | 2025-07-15 | ✅ RESOLVED | Fresh install, launch, and navigation QA executed on emulator-5554 (API 34) |
 | NAV3-006 | Screenshots not captured — placeholder QA report | MEDIUM | 2025-07-15 | ✅ RESOLVED | 5 runtime screenshots captured and verified at 1080x2400 |
 
-## Unresolved Runtime/Test Failures
-None — all Task 3 issues resolved.
+---
 
 ## Tracking Format
 | Bug ID | Description | Severity | Reported | Status | Resolution |
@@ -58,3 +80,7 @@ None — all Task 3 issues resolved.
 - **HIGH** — Major feature broken, workaround exists
 - **MEDIUM** — Feature partially broken, minor workaround
 - **LOW** — Cosmetic, enhancement, or edge case
+
+---
+
+*Last updated: 2026-07-22 — OpenClaw Rebuild Checkpoint*

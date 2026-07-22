@@ -21,8 +21,20 @@ interface UserSettingsDao {
     @Query("SELECT * FROM user_settings WHERE id = 1 LIMIT 1")
     suspend fun getSettingsSync(): UserSettings?
 
+    /**
+     * Synchronous blocking version - safe for test environments.
+     */
+    @Query("SELECT * FROM user_settings WHERE id = 1 LIMIT 1")
+    fun getSettingsBlocking(): UserSettings?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSettings(settings: UserSettings)
+
+    /**
+     * Synchronous blocking version - safe for test environments.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertSettingsBlocking(settings: UserSettings)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(settings: UserSettings)
