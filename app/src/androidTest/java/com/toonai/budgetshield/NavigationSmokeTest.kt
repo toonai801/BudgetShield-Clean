@@ -1,36 +1,105 @@
 package com.toonai.budgetshield
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Navigation 3 Instrumentation Tests - Full Coverage
- * Verifies all 14 destinations are reachable and back-stack behavior works correctly
- * Updated: Bills & Payments now separate from Treasure rewards hub
+ * Navigation Instrumentation Tests - Full Coverage
+ * Tests complete 6-chapter setup flow before testing Home navigation
+ * Updated: Real setup flow - no bypass button
  */
 @RunWith(AndroidJUnit4::class)
 class NavigationSmokeTest {
 
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun clearDatabaseBeforeAll() {
+            // Clear database BEFORE any activity is created
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            context.deleteDatabase("budget_shield_database")
+        }
+    }
+
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
+
+    @Before
+    fun setup() {
+        // Wait for app to be ready
+        composeTestRule.waitForIdle()
+    }
+
+    /**
+     * Complete the full 6-chapter setup quest
+     */
+    private fun completeSetupQuest() {
+        // Chapter 1: Cash on Hand
+        composeTestRule.onNodeWithText("Chapter 1: Cash on Hand").assertExists()
+        composeTestRule.onNodeWithText("Cash on Hand").performTextInput("500")
+        composeTestRule.onNodeWithText("Next").performClick()
+
+        // Chapter 2: Your Payday
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Chapter 2: Your Payday").assertExists()
+        composeTestRule.onNodeWithText("Income Name").performTextInput("Test Job")
+        composeTestRule.onNodeWithText("Amount").performTextInput("2000")
+        composeTestRule.onNodeWithText("Next Payday").performTextInput("08/15/2025")
+        // Select frequency and confirm
+        composeTestRule.onNodeWithText("Every 2 weeks").performClick()
+        composeTestRule.onNodeWithText("confirmed").performClick()
+        composeTestRule.onNodeWithText("Next").performClick()
+
+        // Chapter 3: Your Bills - skip adding bills
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Chapter 3: Your Bills").assertExists()
+        composeTestRule.onNodeWithText("Next").performClick()
+
+        // Chapter 4: Budget Categories
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Chapter 4: Budget Categories").assertExists()
+        composeTestRule.onNodeWithText("Food Budget").performTextInput("500")
+        composeTestRule.onNodeWithText("Wants Budget").performTextInput("300")
+        composeTestRule.onNodeWithText("Next").performClick()
+
+        // Chapter 5: Review
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Chapter 5: Review").assertExists()
+        composeTestRule.onNodeWithText("Next").performClick()
+
+        // Chapter 6: Shield Review - Activate
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Chapter 6: Shield Review").assertExists()
+        composeTestRule.onNodeWithText("Activate My Shield").performClick()
+
+        // Verify Home is reached
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag("bottom_nav_home").assertExists()
+    }
 
     @Test
     fun appLaunchesAndShowsSetupQuest() {
         // Verify Setup Quest is the starting destination
         composeTestRule.onNodeWithText("Setup Quest").assertExists()
-        composeTestRule.onNodeWithText("ARCHITECTURE FOUNDATION - NOT FINAL UI").assertExists()
+        composeTestRule.onNodeWithText("Chapter 1 of 6").assertExists()
     }
 
     @Test
     fun completeSetupQuestNavigatesToHomeAndReplacesStack() {
-        // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        // Complete the real 6-chapter setup
+        completeSetupQuest()
 
         // Verify Home is shown
         composeTestRule.onNodeWithText("Home").assertExists()
@@ -47,7 +116,7 @@ class NavigationSmokeTest {
     @Test
     fun backFromHomeExitsActivity() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Verify Home is showing
         composeTestRule.onNodeWithText("Home").assertExists()
@@ -63,7 +132,7 @@ class NavigationSmokeTest {
     @Test
     fun treasureDestinationReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Treasure
         composeTestRule.onNodeWithText("Treasure").performClick()
@@ -79,7 +148,7 @@ class NavigationSmokeTest {
     @Test
     fun billsDestinationReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Bills via Home's Pay Bill button using testTag
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
@@ -95,7 +164,7 @@ class NavigationSmokeTest {
     @Test
     fun statsDestinationReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Stats using testTag
         composeTestRule.onNodeWithTag("bottom_nav_stats").performClick()
@@ -105,7 +174,7 @@ class NavigationSmokeTest {
     @Test
     fun goalsDestinationReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Goals using testTag
         composeTestRule.onNodeWithTag("bottom_nav_goals").performClick()
@@ -115,7 +184,7 @@ class NavigationSmokeTest {
     @Test
     fun settingsDestinationReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Settings using testTag
         composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
@@ -125,7 +194,7 @@ class NavigationSmokeTest {
     @Test
     fun nestedNavigationStatsToGoalsAndBack() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate: Home -> Stats -> Goals using testTags
         composeTestRule.onNodeWithTag("bottom_nav_stats").performClick()
@@ -150,7 +219,7 @@ class NavigationSmokeTest {
     @Test
     fun homeToBillsAndBackReturnsToHome() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Bills via Pay Bill using testTag
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
@@ -166,7 +235,7 @@ class NavigationSmokeTest {
     @Test
     fun billPaymentFlowNavigatesToBillProtected() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Bills using testTag
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
@@ -180,7 +249,7 @@ class NavigationSmokeTest {
     @Test
     fun incomeEntryScreenReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Income Entry
         composeTestRule.onNodeWithText("Add Income").performClick()
@@ -197,7 +266,7 @@ class NavigationSmokeTest {
     @Test
     fun billEntryScreenReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Bills first using testTag
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
@@ -210,7 +279,7 @@ class NavigationSmokeTest {
     @Test
     fun savingsEntryScreenReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Savings Entry
         composeTestRule.onNodeWithText("Save Money").performClick()
@@ -218,10 +287,10 @@ class NavigationSmokeTest {
         composeTestRule.onNodeWithText("Save Money").assertExists()
     }
 
-        @Test
+    @Test
     fun transactionDetailsReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Verify Home shows Recent Activity section
         composeTestRule.onNodeWithText("Recent Activity").assertExists()
@@ -232,10 +301,11 @@ class NavigationSmokeTest {
         // Verify footer remains visible
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertExists()
     }
+
     @Test
     fun shieldProgressionReachable() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Open Shield Progression from Home (tap on Money Shield card)
         composeTestRule.onNodeWithText("Money Shield").performClick()
@@ -247,7 +317,7 @@ class NavigationSmokeTest {
     fun treasureAndBillsAreDistinct() {
         // Verify that Treasure (rewards) and Bills (payments) are separate destinations
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Treasure - should show rewards hub
         composeTestRule.onNodeWithText("Treasure").performClick()
@@ -267,7 +337,7 @@ class NavigationSmokeTest {
     @Test
     fun treasureFiveSectionsInteractiveWithHonestEmptyStates() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Treasure
         composeTestRule.onNodeWithText("Treasure").performClick()
@@ -291,7 +361,7 @@ class NavigationSmokeTest {
     @Test
     fun treasureContainsNoBillElements() {
         // Complete Setup Quest
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
 
         // Navigate to Treasure
         composeTestRule.onNodeWithText("Treasure").performClick()
@@ -314,7 +384,7 @@ class NavigationSmokeTest {
         composeTestRule.onNodeWithText("Setup Quest").assertExists()
 
         // Complete to get to Home
-        composeTestRule.onNodeWithText("Complete Setup (Temp)").performClick()
+        completeSetupQuest()
         composeTestRule.onNodeWithTag("bottom_nav_home").assertExists()
 
         // Navigate through accessible destinations using testTags
@@ -328,5 +398,27 @@ class NavigationSmokeTest {
         }
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
         composeTestRule.onNodeWithTag("bills_screen").assertExists() // #4
+    }
+
+    @Test
+    fun setupQuestHasNoFooter() {
+        // Verify Setup Quest has NO footer (bypass prevention)
+        composeTestRule.onNodeWithText("Setup Quest").assertExists()
+        
+        // Footer should NOT exist during setup
+        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Home").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Treasure").assertDoesNotExist()
+    }
+
+    @Test
+    fun homeHasFooterAfterSetup() {
+        // Complete Setup Quest
+        completeSetupQuest()
+
+        // Footer should be visible after setup completion
+        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertExists()
+        composeTestRule.onNodeWithText("Home").assertExists()
+        composeTestRule.onNodeWithText("Treasure").assertExists()
     }
 }

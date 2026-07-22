@@ -46,6 +46,11 @@ object DatabaseModule {
         return database.budgetCategoryDao()
     }
 
+    @Provides
+    fun provideSetupDraftDao(database: BudgetShieldDatabase): SetupDraftDao {
+        return database.setupDraftDao()
+    }
+
     // Repository providers
     @Provides
     @Singleton

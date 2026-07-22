@@ -30,19 +30,26 @@ fun SetupQuestScreen(
     viewModel: SetupQuestViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(uiState.currentChapter, uiState.isComplete) {
+        android.util.Log.d("SetupQuest", "Chapter: ${uiState.currentChapter}, isComplete: ${uiState.isComplete}")
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadDraft()
     }
 
-    LaunchedEffect(uiState.isComplete) {
-        if (uiState.isComplete) {
+    val isComplete = uiState.isComplete
+    LaunchedEffect(isComplete) {
+        if (isComplete) {
             onComplete()
         }
     }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("setup_quest_root"),
         color = MaterialTheme.colorScheme.background
     ) {
         when {
@@ -55,27 +62,29 @@ fun SetupQuestScreen(
                 }
             }
             else -> {
-                SetupQuestContent(
-                    uiState = uiState,
-                    onPrevious = { viewModel.goToPreviousChapter() },
-                    onNext = { viewModel.goToNextChapter() },
-                    onCompleteSetup = { viewModel.completeSetup() },
-                    onUpdateCashOnHand = { viewModel.updateCashOnHand(it) },
-                    onUpdateSavings = { viewModel.updateSavings(it) },
-                    onUpdateIncomeName = { viewModel.updateIncomeName(it) },
-                    onUpdateIncomeAmount = { viewModel.updateIncomeAmount(it) },
-                    onUpdatePaydayDate = { viewModel.updatePaydayDate(it) },
-                    onUpdateFrequency = { viewModel.updateFrequency(it) },
-                    onToggleIncomeConfirmation = { viewModel.toggleIncomeConfirmation() },
-                    onAddBill = { viewModel.addBill(it) },
-                    onUpdateBillName = { id, name -> viewModel.updateBillName(id, name) },
-                    onUpdateBillAmount = { id, amount -> viewModel.updateBillAmount(id, amount) },
-                    onUpdateBillDueDate = { id, date -> viewModel.updateBillDueDate(id, date) },
-                    onToggleBillProtection = { id -> viewModel.toggleBillProtection(id) },
-                    onRemoveBill = { viewModel.removeBill(it) },
-                    onUpdateFoodBudget = { viewModel.updateFoodBudget(it) },
-                    onUpdateWantsBudget = { viewModel.updateWantsBudget(it) }
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    SetupQuestContent(
+                        uiState = uiState,
+                        onPrevious = { viewModel.goToPreviousChapter() },
+                        onNext = { viewModel.goToNextChapter() },
+                        onCompleteSetup = { viewModel.completeSetup() },
+                        onUpdateCashOnHand = { viewModel.updateCashOnHand(it) },
+                        onUpdateSavings = { viewModel.updateSavings(it) },
+                        onUpdateIncomeName = { viewModel.updateIncomeName(it) },
+                        onUpdateIncomeAmount = { viewModel.updateIncomeAmount(it) },
+                        onUpdatePaydayDate = { viewModel.updatePaydayDate(it) },
+                        onUpdateFrequency = { viewModel.updateFrequency(it) },
+                        onToggleIncomeConfirmation = { viewModel.toggleIncomeConfirmation() },
+                        onAddBill = { viewModel.addBill(it) },
+                        onUpdateBillName = { id, name -> viewModel.updateBillName(id, name) },
+                        onUpdateBillAmount = { id, amount -> viewModel.updateBillAmount(id, amount) },
+                        onUpdateBillDueDate = { id, date -> viewModel.updateBillDueDate(id, date) },
+                        onToggleBillProtection = { id -> viewModel.toggleBillProtection(id) },
+                        onRemoveBill = { viewModel.removeBill(it) },
+                        onUpdateFoodBudget = { viewModel.updateFoodBudget(it) },
+                        onUpdateWantsBudget = { viewModel.updateWantsBudget(it) }
+                    )
+                }
             }
         }
     }
@@ -120,10 +129,7 @@ private fun SetupQuestContent(
                 1 -> ChapterCash(
                     cashOnHandInput = uiState.cashOnHandInput,
                     cashOnHandError = uiState.cashOnHandError,
-                    savingsInput = uiState.savingsInput,
-                    savingsError = uiState.savingsError,
-                    onUpdateCashOnHand = onUpdateCashOnHand,
-                    onUpdateSavings = onUpdateSavings
+                    onUpdateCashOnHand = onUpdateCashOnHand
                 )
                 2 -> ChapterPayday(
                     incomeName = uiState.incomeName,
@@ -149,6 +155,11 @@ private fun SetupQuestContent(
                     onRemoveBill = onRemoveBill
                 )
                 4 -> ChapterSavings(
+                    savingsInput = uiState.savingsInput,
+                    savingsError = uiState.savingsError,
+                    onUpdateSavings = onUpdateSavings
+                )
+                5 -> ChapterMonthlyBudgets(
                     foodBudgetInput = uiState.foodBudgetInput,
                     foodBudgetError = uiState.foodBudgetError,
                     wantsBudgetInput = uiState.wantsBudgetInput,
@@ -156,10 +167,8 @@ private fun SetupQuestContent(
                     onUpdateFoodBudget = onUpdateFoodBudget,
                     onUpdateWantsBudget = onUpdateWantsBudget
                 )
-                5 -> ChapterReview(
-                    uiState = uiState
-                )
-                6 -> ChapterComplete(
+                6 -> ChapterShieldReview(
+                    uiState = uiState,
                     onCompleteSetup = onCompleteSetup
                 )
             }
@@ -169,11 +178,14 @@ private fun SetupQuestContent(
             currentChapter = uiState.currentChapter,
             totalChapters = 6,
             canProceed = when (uiState.currentChapter) {
-                1 -> uiState.cashOnHandError == null && uiState.savingsError == null
-                2 -> uiState.paydayErrors.isEmpty() && uiState.isIncomeConfirmed
+                1 -> uiState.cashOnHandError == null && uiState.cashOnHandInput.isNotBlank()
+                2 -> uiState.paydayErrors.isEmpty() && uiState.isIncomeConfirmed && 
+                       uiState.incomeName.isNotBlank() && uiState.incomeAmountInput.isNotBlank() && 
+                       uiState.paydayDate.isNotBlank()
                 3 -> uiState.billErrors.isEmpty()
-                4 -> uiState.foodBudgetError == null && uiState.wantsBudgetError == null
-                5 -> true
+                4 -> uiState.savingsError == null
+                5 -> uiState.foodBudgetError == null && uiState.wantsBudgetError == null &&
+                       uiState.foodBudgetInput.isNotBlank() && uiState.wantsBudgetInput.isNotBlank()
                 6 -> true
                 else -> false
             },
@@ -222,10 +234,7 @@ private fun SetupProgressHeader(
 private fun ChapterCash(
     cashOnHandInput: String,
     cashOnHandError: String?,
-    savingsInput: String,
-    savingsError: String?,
-    onUpdateCashOnHand: (String) -> Unit,
-    onUpdateSavings: (String) -> Unit
+    onUpdateCashOnHand: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -238,7 +247,7 @@ private fun ChapterCash(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Tell us about your current money situation.",
+            text = "Enter your cleared checking balance. Zero is allowed.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
@@ -251,17 +260,6 @@ private fun ChapterCash(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = cashOnHandError != null,
             supportingText = cashOnHandError?.let { { Text(it) } },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(
-            value = savingsInput,
-            onValueChange = onUpdateSavings,
-            label = { Text("Savings Balance (optional)") },
-            prefix = { Text("$") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            isError = savingsError != null,
-            supportingText = savingsError?.let { { Text(it) } },
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -287,7 +285,7 @@ private fun ChapterPayday(
             .padding(16.dp)
     ) {
         Text(
-            text = "Chapter 2: Your Payday",
+            text = "Chapter 2: Payday",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -381,7 +379,7 @@ private fun ChapterBills(
             .padding(16.dp)
     ) {
         Text(
-            text = "Chapter 3: Your Bills",
+            text = "Chapter 3: Bills",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -493,6 +491,41 @@ private fun BillCard(
 
 @Composable
 private fun ChapterSavings(
+    savingsInput: String,
+    savingsError: String?,
+    onUpdateSavings: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Chapter 4: Savings",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Enter your current savings balance.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        OutlinedTextField(
+            value = savingsInput,
+            onValueChange = onUpdateSavings,
+            label = { Text("Savings Balance") },
+            prefix = { Text("$") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            isError = savingsError != null,
+            supportingText = savingsError?.let { { Text(it) } },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+private fun ChapterMonthlyBudgets(
     foodBudgetInput: String,
     foodBudgetError: String?,
     wantsBudgetInput: String,
@@ -506,7 +539,7 @@ private fun ChapterSavings(
             .padding(16.dp)
     ) {
         Text(
-            text = "Chapter 4: Budget Categories",
+            text = "Chapter 5: Monthly Budgets",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -541,8 +574,9 @@ private fun ChapterSavings(
 }
 
 @Composable
-private fun ChapterReview(
-    uiState: SetupQuestUiState
+private fun ChapterShieldReview(
+    uiState: SetupQuestUiState,
+    onCompleteSetup: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -550,12 +584,12 @@ private fun ChapterReview(
             .padding(16.dp)
     ) {
         Text(
-            text = "Chapter 5: Review",
+            text = "Chapter 6: Shield Review",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Here's what you've set up:",
+            text = "Review your setup before activation:",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
@@ -600,6 +634,13 @@ private fun ChapterReview(
                 "Wants" to "$${uiState.wantsBudgetInput}"
             )
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onCompleteSetup,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Activate My Shield")
+        }
     }
 }
 
@@ -628,43 +669,6 @@ private fun ReviewCard(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun ChapterComplete(
-    onCompleteSetup: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "✓",
-            style = MaterialTheme.typography.displayLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "You're All Set!",
-            style = MaterialTheme.typography.headlineLarge
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Your budget shield is ready to protect your money.",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(48.dp))
-        Button(
-            onClick = onCompleteSetup,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Start Using Budget Shield")
         }
     }
 }
@@ -718,7 +722,6 @@ private fun SetupNavigationFooter(
     }
 }
 
-// Draft bill data class
 data class DraftBill(
     val id: Long = System.currentTimeMillis(),
     val name: String = "",

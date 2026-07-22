@@ -119,8 +119,8 @@ class BudgetShieldNavShellTest {
     fun `all production routes have footer - SetupQuest has null selection but still shows footer`() {
         val allRoutes = BudgetShieldRouteRegistry.allDestinations
 
-        // All 14 routes should either map to a destination OR SetupQuest (which has footer but no selected tab)
-        assertEquals("Should have 14 registered routes", 14, allRoutes.size)
+        // All 15 routes should either map to a destination OR SetupQuest (which has footer but no selected tab)
+        assertEquals("Should have 15 registered routes", 15, allRoutes.size)
 
         for (route in allRoutes) {
             val destination = getMainDestinationForKey(route)

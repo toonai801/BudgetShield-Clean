@@ -85,7 +85,10 @@ fun HomeScreen(
         viewModel.loadHomeData()
     }
     
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .testTag("budgetshield_root")
+    ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = BackgroundDark
@@ -185,7 +188,7 @@ private fun HeaderSection(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Buddy",
+                    text = "Shield",
                     color = CyanAccent,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
@@ -483,16 +486,16 @@ private fun DailyActionsSection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                ActionButton(icon = "💰", label = "Add Income", onClick = onAddIncome)
-                ActionButton(icon = "💳", label = "Pay Bill", onClick = onPayBill)
-                ActionButton(icon = "💎", label = "Save Money", onClick = onSaveMoney)
+                ActionButton(icon = "💰", label = "Add Income", onClick = onAddIncome, testTag = "home_action_add_income")
+                ActionButton(icon = "💳", label = "Pay Bill", onClick = onPayBill, testTag = "home_action_pay_bill")
+                ActionButton(icon = "💎", label = "Save Money", onClick = onSaveMoney, testTag = "home_action_save_money")
             }
         }
     }
 }
 
 @Composable
-private fun ActionButton(icon: String, label: String, onClick: () -> Unit) {
+private fun ActionButton(icon: String, label: String, onClick: () -> Unit, testTag: String = "") {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(
             onClick = onClick,
@@ -500,6 +503,7 @@ private fun ActionButton(icon: String, label: String, onClick: () -> Unit) {
                 .size(56.dp)
                 .clip(CircleShape)
                 .background(CyanAccent.copy(alpha = 0.15f))
+                .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
         ) {
             Text(text = icon, fontSize = 24.sp)
         }

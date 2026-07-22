@@ -26,15 +26,16 @@ object BudgetShieldRouteRegistry {
         BillEntry,
         BillPayment,
         SavingsEntry,
-        TransactionDetails(), // Default instance for registry listing
+        TransactionDetails(),
         BillProtected,
-        ShieldProgression
+        ShieldProgression,
+        BudgetMenu
     )
 
     /**
      * Count of production destinations.
      */
-    const val DESTINATION_COUNT: Int = 14
+    const val DESTINATION_COUNT: Int = 15
 
     /**
      * Check if a given key is a valid production destination.
@@ -54,7 +55,8 @@ object BudgetShieldRouteRegistry {
             is SavingsEntry,
             is TransactionDetails,
             is BillProtected,
-            is ShieldProgression -> true
+            is ShieldProgression,
+            is BudgetMenu -> true
             else -> false
         }
     }

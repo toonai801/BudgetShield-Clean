@@ -18,6 +18,7 @@ import com.toonai.budgetshield.ui.screens.BillEntryScreen
 import com.toonai.budgetshield.ui.screens.BillPaymentScreen
 import com.toonai.budgetshield.ui.screens.BillProtectedScreen
 import com.toonai.budgetshield.ui.screens.BillsScreen
+import com.toonai.budgetshield.ui.screens.BudgetMenuScreen
 import com.toonai.budgetshield.ui.screens.GoalsScreen
 import com.toonai.budgetshield.ui.screens.HomeScreen
 import com.toonai.budgetshield.ui.screens.IncomeEntryScreen
@@ -54,6 +55,7 @@ fun getMainDestinationForKey(key: NavKey): MainDestination? {
         is TransactionDetails -> MainDestination.HOME
         is BillProtected -> MainDestination.HOME
         is ShieldProgression -> MainDestination.HOME
+        is BudgetMenu -> MainDestination.HOME
         // SetupQuest has no selected tab but still shows footer
         is SetupQuest -> null  // SetupQuest has no footer
         else -> null
@@ -89,8 +91,17 @@ private fun BudgetShieldScreenContent(
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) },
                 onNavigateToRewardScreen = { /* TODO: implement rewards */ },
-                onNavigateToMenu = { onNavigate(Settings) },
+                onNavigateToMenu = { onNavigate(BudgetMenu) },
                 onNavigateToCalendar = { onNavigate(Settings) }
+            )
+        }
+        is BudgetMenu -> {
+            BudgetMenuScreen(
+                onNavigateToBills = { onNavigate(Bills) },
+                onNavigateToIncome = { onNavigate(IncomeEntry) },
+                onNavigateToSavings = { onNavigate(SavingsEntry) },
+                onNavigateToSettings = { onNavigate(Settings) },
+                onDismiss = { onNavigateBack() }
             )
         }
         is Treasure -> {

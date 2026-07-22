@@ -9,21 +9,23 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.data.model.BudgetCategory
 import com.toonai.budgetshield.data.model.IncomeSchedule
+import com.toonai.budgetshield.data.model.SetupDraft
 import com.toonai.budgetshield.data.model.UserSettings
 
 /**
  * Room database for BudgetShield app.
- * Version 2 adds: UserSettings, IncomeSchedule, BudgetCategory
- * Migration preserves all existing bills.
+ * Version 3 adds: SetupDraft for process-death resume
+ * Migration preserves all existing data.
  */
 @Database(
     entities = [
         Bill::class,
         UserSettings::class,
         IncomeSchedule::class,
-        BudgetCategory::class
+        BudgetCategory::class,
+        SetupDraft::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class BudgetShieldDatabase : RoomDatabase() {
@@ -32,6 +34,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
     abstract fun userSettingsDao(): UserSettingsDao
     abstract fun incomeScheduleDao(): IncomeScheduleDao
     abstract fun budgetCategoryDao(): BudgetCategoryDao
+    abstract fun setupDraftDao(): SetupDraftDao
 
     companion object {
         @Volatile
@@ -97,6 +100,32 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration from version 2 to 3.
+         * Adds SetupDraft table for process-death resume.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // SetupDraft - incomplete setup progress
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS setup_drafts (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 1,
+                        currentChapter INTEGER NOT NULL DEFAULT 1,
+                        cashOnHandCents INTEGER NOT NULL DEFAULT 0,
+                        incomeName TEXT NOT NULL DEFAULT '',
+                        incomeAmountCents INTEGER NOT NULL DEFAULT 0,
+                        nextPaydayDate TEXT NOT NULL DEFAULT '',
+                        frequency TEXT NOT NULL DEFAULT '',
+                        isIncomeConfirmed INTEGER NOT NULL DEFAULT 0,
+                        savingsBalanceCents INTEGER NOT NULL DEFAULT 0,
+                        foodBudgetCents INTEGER NOT NULL DEFAULT 0,
+                        wantsBudgetCents INTEGER NOT NULL DEFAULT 0,
+                        updatedAt INTEGER NOT NULL
+                    )
+                """)
+            }
+        }
+
         fun getDatabase(context: Context): BudgetShieldDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -104,7 +133,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                     BudgetShieldDatabase::class.java,
                     "budget_shield_database"
                 )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
                 INSTANCE = instance
                 instance

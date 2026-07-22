@@ -10,13 +10,16 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,19 +30,96 @@ import kotlin.math.abs
  * Verifies footer is visible on all screens and maintains correct state
  * PHYSICAL PHONE FOOTER CLEARANCE FIX: Tests for label visibility with explicit 8.dp bottom padding
  * Required for beta-footer-clearance release
+ * UPDATED: Uses real 6-chapter setup flow - no bypass button
  */
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
 class PersistentFooterTest {
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun clearDatabaseBeforeAll() {
+            // Clear database BEFORE any activity is created
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            context.deleteDatabase("budget_shield_database")
+        }
+    }
 
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Before
     fun setup() {
-        // Test starts at Home (setup already completed in test environment)
-        // For fresh-install tests, SetupQuest footer absence is tested separately
+        // Tests start fresh - wait for idle but don't assume starting state
         composeTestRule.waitForIdle()
+    }
+
+    /**
+     * Helper: Complete the real 6-chapter setup to reach Home screen with footer
+     */
+    private fun completeSetupQuest() {
+        // Chapter 1: Cash on Hand
+        composeTestRule.onNodeWithText("Chapter 1: Cash on Hand").assertExists()
+        composeTestRule.onNodeWithText("Cash on Hand").performTextInput("500")
+        composeTestRule.onNodeWithText("Next").performClick()
+        composeTestRule.waitForIdle()
+
+        // Chapter 2: Your Payday
+        composeTestRule.onNodeWithText("Chapter 2: Your Payday").assertExists()
+        composeTestRule.onNodeWithText("Income Name").performTextInput("Test Job")
+        composeTestRule.onNodeWithText("Amount").performTextInput("2000")
+        composeTestRule.onNodeWithText("Next Payday").performTextInput("08/15/2025")
+        composeTestRule.onNodeWithText("Every 2 weeks").performClick()
+        composeTestRule.onNodeWithText("confirmed").performClick()
+        composeTestRule.onNodeWithText("Next").performClick()
+        composeTestRule.waitForIdle()
+
+        // Chapter 3: Your Bills - skip adding bills
+        composeTestRule.onNodeWithText("Chapter 3: Your Bills").assertExists()
+        composeTestRule.onNodeWithText("Next").performClick()
+        composeTestRule.waitForIdle()
+
+        // Chapter 4: Budget Categories
+        composeTestRule.onNodeWithText("Chapter 4: Budget Categories").assertExists()
+        composeTestRule.onNodeWithText("Food Budget").performTextInput("500")
+        composeTestRule.onNodeWithText("Wants Budget").performTextInput("300")
+        composeTestRule.onNodeWithText("Next").performClick()
+        composeTestRule.waitForIdle()
+
+        // Chapter 5: Review
+        composeTestRule.onNodeWithText("Chapter 5: Review").assertExists()
+        composeTestRule.onNodeWithText("Next").performClick()
+        composeTestRule.waitForIdle()
+
+        // Chapter 6: Shield Review - Activate
+        composeTestRule.onNodeWithText("Chapter 6: Shield Review").assertExists()
+        composeTestRule.onNodeWithText("Activate My Shield").performClick()
+        composeTestRule.waitForIdle()
+
+        // Verify Home is reached
+        composeTestRule.onNodeWithTag("bottom_nav_home").assertExists()
+    }
+
+    /**
+     * Helper: Complete setup to reach Home screen with footer
+     */
+    private fun ensureAtHomeWithFooter() {
+        // Check if we need to complete setup first
+        val isSetupQuest = try {
+            composeTestRule.onNodeWithText("Setup Quest").assertExists()
+            true
+        } catch (e: AssertionError) {
+            false
+        }
+
+        if (isSetupQuest) {
+            // Complete the real 6-chapter setup
+            completeSetupQuest()
+        }
+
+        // Verify we're at Home with footer
+        composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
     }
 
     // ========== FOOTER LABEL CLEARANCE TESTS ==========
@@ -51,6 +131,9 @@ class PersistentFooterTest {
      */
     @Test
     fun footerNavItemsHaveClearance_AllVisible() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         // Verify root and footer are displayed
         composeTestRule.onNodeWithTag("budgetshield_root").assertIsDisplayed()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
@@ -100,6 +183,9 @@ class PersistentFooterTest {
      */
     @Test
     fun footerLabelsMaintainClearanceAfterScrolling() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         // Navigate to Settings (has scrollable content)
         composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
         composeTestRule.waitForIdle()
@@ -135,6 +221,9 @@ class PersistentFooterTest {
      */
     @Test
     fun footerExtendsToBottomEdge() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         // Capture root bounds (entire screen viewport)
         val rootBounds = getRootBounds()
 
@@ -190,18 +279,20 @@ class PersistentFooterTest {
 
     @Test
     fun footerAbsentOnSetupQuest() {
+        // Verify we start on Setup Quest
+        composeTestRule.onNodeWithText("Setup Quest").assertExists()
+        
         // SetupQuest must NOT show footer - it's a first-run gate
-        // Navigate to SetupQuest from Settings
-        composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag("settings_danger_zone_restart").performClick()
-        composeTestRule.waitForIdle()
-        // Footer should NOT be visible during setup
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Home").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Treasure").assertDoesNotExist()
     }
 
     @Test
     fun footerTabsAllVisible() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
         composeTestRule.onNodeWithTag("bottom_nav_home").assertIsDisplayed()
         composeTestRule.onNodeWithTag("bottom_nav_treasure").assertIsDisplayed()
@@ -212,6 +303,9 @@ class PersistentFooterTest {
 
     @Test
     fun homeTabNavigationAndSelection() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_treasure").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bottom_nav_home").performClick()
@@ -222,6 +316,9 @@ class PersistentFooterTest {
 
     @Test
     fun treasureTabNavigationAndSelection() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_treasure").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bottom_nav_treasure").assertIsSelected()
@@ -230,6 +327,9 @@ class PersistentFooterTest {
 
     @Test
     fun statsTabNavigationAndSelection() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_stats").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bottom_nav_stats").assertIsSelected()
@@ -238,6 +338,9 @@ class PersistentFooterTest {
 
     @Test
     fun goalsTabNavigationAndSelection() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_goals").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bottom_nav_goals").assertIsSelected()
@@ -246,16 +349,22 @@ class PersistentFooterTest {
 
     @Test
     fun settingsTabNavigationAndSelection() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bottom_nav_settings").assertIsSelected()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
         composeTestRule.onNodeWithTag("settings_beta_version_marker").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.4", substring = true)
+        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.2.0", substring = true)
     }
 
     @Test
     fun footerVisibleOnBillsScreen() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bills_screen").assertIsDisplayed()
@@ -264,6 +373,9 @@ class PersistentFooterTest {
 
     @Test
     fun footerVisibleOnBillEntryScreen() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bills_add_bill").performClick()
@@ -274,6 +386,9 @@ class PersistentFooterTest {
 
     @Test
     fun footerVisibleOnHome() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
         composeTestRule.onNodeWithTag("bottom_nav_home").assertIsDisplayed()
         composeTestRule.onNodeWithTag("bottom_nav_treasure").assertIsDisplayed()
@@ -285,6 +400,9 @@ class PersistentFooterTest {
 
     @Test
     fun footerVisibleOnTreasure() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_treasure").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
@@ -293,6 +411,9 @@ class PersistentFooterTest {
 
     @Test
     fun footerVisibleOnStats() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_stats").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
@@ -301,6 +422,9 @@ class PersistentFooterTest {
 
     @Test
     fun footerVisibleOnGoals() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_goals").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
@@ -309,16 +433,22 @@ class PersistentFooterTest {
 
     @Test
     fun footerVisibleOnSettings() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
         composeTestRule.onNodeWithTag("bottom_nav_settings").assertIsSelected()
         composeTestRule.onNodeWithTag("settings_beta_version_marker").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.1.4", substring = true)
+        composeTestRule.onNodeWithTag("settings_beta_version_marker").assertTextContains("1.2.0", substring = true)
     }
 
     @Test
     fun billNavigationFromHome() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("home_action_pay_bill").assertIsDisplayed()
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
         composeTestRule.waitForIdle()
@@ -329,6 +459,9 @@ class PersistentFooterTest {
 
     @Test
     fun billEntryNavigationFromBills() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bills_add_bill").assertIsDisplayed()
@@ -341,6 +474,9 @@ class PersistentFooterTest {
 
     @Test
     fun backNavigationFromBillEntryReturnsToBills() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("bills_add_bill").performClick()
@@ -356,6 +492,9 @@ class PersistentFooterTest {
 
     @Test
     fun footerBoundsRemainFixedAfterScrollingStats() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_stats").performClick()
         composeTestRule.waitForIdle()
         val boundsBefore = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
@@ -369,6 +508,9 @@ class PersistentFooterTest {
 
     @Test
     fun footerBoundsRemainFixedAfterScrollingSettings() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
         composeTestRule.waitForIdle()
         val boundsBefore = composeTestRule.onNodeWithTag("budgetshield_bottom_nav").getBoundsInRoot()
@@ -382,6 +524,9 @@ class PersistentFooterTest {
 
     @Test
     fun scrollableContentNotHiddenBehindFooter() {
+        // Ensure we're at Home with footer visible
+        ensureAtHomeWithFooter()
+        
         composeTestRule.onNodeWithTag("bottom_nav_settings").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertIsDisplayed()
