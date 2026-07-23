@@ -69,7 +69,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             BudgetShieldAppWithLoading(
                 billRepository = billRepository,
-                userSettingsRepository = userSettingsRepository
+                userSettingsRepository = userSettingsRepository,
+                coroutineScope = lifecycleScope
             )
         }
     }
@@ -78,7 +79,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun BudgetShieldAppWithLoading(
     billRepository: BillRepository,
-    userSettingsRepository: UserSettingsRepository
+    userSettingsRepository: UserSettingsRepository,
+    coroutineScope: kotlinx.coroutines.CoroutineScope
 ) {
     BudgetShieldTheme {
         var isLoading by remember { mutableStateOf(true) }
@@ -87,9 +89,12 @@ private fun BudgetShieldAppWithLoading(
         
         LaunchedEffect(Unit) {
             try {
-                val settings = userSettingsRepository.getSettings()
-                isFirstRunComplete = settings?.isFirstRunComplete == true
-                isLoading = false
+                // Move database access off main thread to avoid ANR under power management
+                coroutineScope.launch {
+                    val settings = userSettingsRepository.getSettings()
+                    isFirstRunComplete = settings?.isFirstRunComplete == true
+                    isLoading = false
+                }.join() // Wait for completion
             } catch (e: Exception) {
                 hasError = true
                 isLoading = false
