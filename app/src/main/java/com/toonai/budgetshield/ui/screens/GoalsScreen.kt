@@ -19,11 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,7 +45,9 @@ import com.toonai.budgetshield.theme.PurpleAccent
 import com.toonai.budgetshield.theme.OrangeAccent
 import com.toonai.budgetshield.theme.TextPrimary
 import com.toonai.budgetshield.theme.TextMuted
-
+import com.toonai.budgetshield.ui.LocalXpRepository
+import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
+import com.toonai.budgetshield.data.model.ShieldLevels
 
 @Composable
 fun GoalsScreen(
@@ -52,6 +55,17 @@ fun GoalsScreen(
     onNavigateToTransactionDetails: () -> Unit,
     onNavigateToShieldProgression: () -> Unit
 ) {
+    val xpRepository = LocalXpRepository.current
+    val savingsGoalRepository = LocalSavingsGoalRepository.current
+
+    // Collect real data from repositories
+    val totalXp by xpRepository.totalXp.collectAsState(initial = 0)
+    val currentLevel by xpRepository.currentLevel.collectAsState(initial = ShieldLevels.LEVELS.first())
+    val xpToNextLevel by xpRepository.xpToNextLevel.collectAsState(initial = 500)
+    val levelProgress by xpRepository.levelProgressPercent.collectAsState(initial = 0)
+    val savingsGoals by savingsGoalRepository.allGoals.collectAsState(initial = emptyList())
+    val userStreak by savingsGoalRepository.userStreak.collectAsState(initial = null)
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = BackgroundDark
@@ -71,20 +85,32 @@ fun GoalsScreen(
                 // Header
                 HeaderSection()
 
-                // Streak Card
-                StreakCard(streakDays = 12)
+                // Streak Card - uses real streak data
+                StreakCardReal(streak = userStreak)
 
-                // Shield Level
-                ShieldLevelCard(onViewProgression = onNavigateToShieldProgression)
+                // Shield Level - uses real XP data
+                ShieldLevelCardReal(
+                    currentLevel = currentLevel,
+                    totalXp = totalXp,
+                    xpToNextLevel = xpToNextLevel,
+                    levelProgress = levelProgress,
+                    onViewProgression = onNavigateToShieldProgression
+                )
 
-                // Savings Goals
-                SavingsGoalsSection(onAddSavings = onNavigateToSavingsEntry)
+                // Savings Goals - uses real goals from repository
+                SavingsGoalsSectionReal(
+                    savingsGoals = savingsGoals,
+                    onAddSavings = onNavigateToSavingsEntry
+                )
 
                 // Action Buttons
                 BottomActionsSection(
                     onViewHistory = onNavigateToTransactionDetails,
                     onAddSavings = onNavigateToSavingsEntry
                 )
+
+                // Bottom spacer - no duplicate footer
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -132,7 +158,12 @@ private fun HeaderSection() {
 }
 
 @Composable
-private fun StreakCard(streakDays: Int) {
+private fun StreakCardReal(
+    streak: com.toonai.budgetshield.data.model.UserStreak?
+) {
+    val streakDays = streak?.currentStreak ?: 0
+    val bestStreak = streak?.bestStreak ?: 0
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -186,14 +217,22 @@ private fun StreakCard(streakDays: Int) {
                         fontWeight = FontWeight.ExtraBold
                     )
 
-                    Text(
-                        text = "Best: 18 days • Keep it going!",
-                        color = TextMuted,
-                        fontSize = 12.sp
-                    )
+                    if (streakDays > 0) {
+                        Text(
+                            text = "Best: $bestStreak days",
+                            color = TextMuted,
+                            fontSize = 12.sp
+                        )
+                    } else {
+                        Text(
+                            text = "Start saving to build your streak",
+                            color = TextMuted,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
 
-                // Flame animation placeholder
+                // Flame icon
                 Box(
                     modifier = Modifier
                         .size(72.dp)
@@ -219,7 +258,23 @@ private fun StreakCard(streakDays: Int) {
 }
 
 @Composable
-private fun ShieldLevelCard(onViewProgression: () -> Unit) {
+private fun ShieldLevelCardReal(
+    currentLevel: ShieldLevels.Level,
+    totalXp: Int,
+    xpToNextLevel: Int,
+    levelProgress: Int,
+    onViewProgression: () -> Unit
+) {
+    val nextLevelName = when (currentLevel.level) {
+        1 -> "Apprentice Shield"
+        2 -> "Guardian Shield"
+        3 -> "Elite Shield"
+        4 -> "Master Shield"
+        else -> "Max Level"
+    }
+
+    val progressFloat = levelProgress / 100f
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -256,13 +311,13 @@ private fun ShieldLevelCard(onViewProgression: () -> Unit) {
 
                     Column {
                         Text(
-                            text = "Novice Shield",
+                            text = currentLevel.name + " Shield",
                             color = CyanAccent,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Level 1",
+                            text = "Level ${currentLevel.level}",
                             color = TextMuted,
                             fontSize = 12.sp
                         )
@@ -295,7 +350,7 @@ private fun ShieldLevelCard(onViewProgression: () -> Unit) {
                         fontSize = 12.sp
                     )
                     Text(
-                        text = "245 / 500 XP",
+                        text = "$totalXp / ${totalXp + xpToNextLevel} XP",
                         color = TextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
@@ -311,7 +366,7 @@ private fun ShieldLevelCard(onViewProgression: () -> Unit) {
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.49f)
+                            .fillMaxWidth(progressFloat.coerceIn(0f, 1f))
                             .fillMaxHeight()
                             .background(
                                 Brush.horizontalGradient(
@@ -321,18 +376,29 @@ private fun ShieldLevelCard(onViewProgression: () -> Unit) {
                     )
                 }
 
-                Text(
-                    text = "255 XP until Guardian Shield",
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
+                if (currentLevel.level < 5) {
+                    Text(
+                        text = "$xpToNextLevel XP until $nextLevelName",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                } else {
+                    Text(
+                        text = "Max level reached! 🎉",
+                        color = GoldAccent,
+                        fontSize = 11.sp
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SavingsGoalsSection(onAddSavings: () -> Unit) {
+private fun SavingsGoalsSectionReal(
+    savingsGoals: List<com.toonai.budgetshield.data.model.SavingsGoal>,
+    onAddSavings: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -377,52 +443,62 @@ private fun SavingsGoalsSection(onAddSavings: () -> Unit) {
                 }
             }
 
-            // Goal items
-            GoalItem(
-                icon = "🚨",
-                name = "Emergency Fund",
-                current = 2500,
-                target = 5000,
-                color = GreenAccent
-            )
-
-            GoalItem(
-                icon = "✈️",
-                name = "Vacation",
-                current = 800,
-                target = 2000,
-                color = PurpleAccent
-            )
-
-            GoalItem(
-                icon = "🎮",
-                name = "New Gadget",
-                current = 350,
-                target = 800,
-                color = BlueAccent
-            )
-
-            GoalItem(
-                icon = "🎓",
-                name = "Education",
-                current = 1200,
-                target = 3000,
-                color = PurpleAccent
-            )
+            if (savingsGoals.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "🎯",
+                            fontSize = 32.sp
+                        )
+                        Text(
+                            text = "No savings goals yet",
+                            color = TextMuted,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = "Tap + Add to create your first goal",
+                            color = TextMuted,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            } else {
+                // Real goals from database
+                savingsGoals.forEach { goal ->
+                    GoalItemReal(goal = goal)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun GoalItem(
-    icon: String,
-    name: String,
-    current: Int,
-    target: Int,
-    color: Color
+private fun GoalItemReal(
+    goal: com.toonai.budgetshield.data.model.SavingsGoal
 ) {
-    val progress = current.toFloat() / target
+    val progress = if (goal.targetAmountCents > 0) {
+        (goal.currentAmountCents.toFloat() / goal.targetAmountCents).coerceIn(0f, 1f)
+    } else 0f
+
     val percentage = (progress * 100).toInt()
+
+    // Determine color based on progress
+    val color = when {
+        progress >= 1.0f -> GreenAccent
+        progress >= 0.5f -> GoldAccent
+        else -> BlueAccent
+    }
+
+    val icon = goal.icon
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -451,7 +527,7 @@ private fun GoalItem(
 
                 Column {
                     Text(
-                        text = name,
+                        text = goal.name,
                         color = TextPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
@@ -465,7 +541,7 @@ private fun GoalItem(
             }
 
             Text(
-                text = "$$current / $$target",
+                text = goal.formattedCurrent + " / " + goal.formattedTarget,
                 color = TextPrimary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold

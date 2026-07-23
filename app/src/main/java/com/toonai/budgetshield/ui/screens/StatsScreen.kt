@@ -24,6 +24,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,12 +51,32 @@ import com.toonai.budgetshield.theme.PurpleAccent
 import com.toonai.budgetshield.theme.OrangeAccent
 import com.toonai.budgetshield.theme.TextPrimary
 import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.ui.LocalBillRepository
+import com.toonai.budgetshield.ui.LocalIncomeRepository
+import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
+import java.time.YearMonth
 
 
 @Composable
 fun StatsScreen(
     onNavigateToTransactionDetails: () -> Unit
 ) {
+    val billRepository = LocalBillRepository.current
+    val incomeRepository = LocalIncomeRepository.current
+    val savingsGoalRepository = LocalSavingsGoalRepository.current
+
+    // Collect real data from repositories
+    val bills by billRepository.allBills.collectAsState(initial = emptyList())
+    val incomes by incomeRepository.getAllActiveSchedules().collectAsState(initial = emptyList())
+    val savingsGoals by savingsGoalRepository.allGoals.collectAsState(initial = emptyList())
+    val totalSavings by savingsGoalRepository.totalSavings.collectAsState(initial = 0L)
+
+    // Calculate real stats
+    val totalBillsAmount = bills.sumOf { it.amountCents }
+    val protectedBillsCount = bills.count { it.isProtected }
+    val savingsGoalsCount = savingsGoals.size
+    val totalIncome = incomes.sumOf { it.amountCents }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -76,19 +98,34 @@ fun StatsScreen(
                 // Header
                 HeaderSection()
 
-                // Monthly Overview
-                MonthlyOverviewCard()
+                // Monthly Overview - uses real bill and income data
+                MonthlyOverviewCardReal(
+                    totalBills = totalBillsAmount,
+                    totalIncome = totalIncome,
+                    protectedCount = protectedBillsCount,
+                    billsCount = bills.size
+                )
 
-                // Category Breakdown
-                CategoryBreakdownSection()
+                // Bills Breakdown - shows real bills grouped by icon/category
+                BillsBreakdownSectionReal(
+                    bills = bills
+                )
 
-                // Spending Trends
-                SpendingTrendsSection()
+                // Quick Stats - uses real data
+                QuickStatsSectionReal(
+                    billsCount = bills.size,
+                    protectedCount = protectedBillsCount,
+                    savingsGoalsCount = savingsGoalsCount,
+                    totalSavings = totalSavings
+                )
 
                 // Bottom Actions
                 BottomActionsSection(
                     onViewTransactions = onNavigateToTransactionDetails
                 )
+
+                // Bottom spacer - no duplicate footer
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -96,6 +133,8 @@ fun StatsScreen(
 
 @Composable
 private fun HeaderSection() {
+    val currentMonth = YearMonth.now().format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy"))
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -126,7 +165,7 @@ private fun HeaderSection() {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "July 2025 Overview",
+                    text = "$currentMonth Overview",
                     color = TextMuted,
                     fontSize = 12.sp
                 )
@@ -136,11 +175,15 @@ private fun HeaderSection() {
 }
 
 @Composable
-private fun MonthlyOverviewCard() {
+private fun MonthlyOverviewCardReal(
+    totalBills: Long,
+    totalIncome: Long,
+    protectedCount: Int,
+    billsCount: Int
+) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = PanelDark
@@ -148,12 +191,12 @@ private fun MonthlyOverviewCard() {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(20.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Monthly Spending",
+                text = "Monthly Overview",
                 color = TextPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -164,44 +207,65 @@ private fun MonthlyOverviewCard() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                // Income
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "$1,840.50",
-                        color = TextPrimary,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        text = "Income",
+                        color = TextMuted,
+                        fontSize = 12.sp
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "↓ 12%",
-                            color = GreenAccent,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "vs last month",
-                            color = TextMuted,
-                            fontSize = 12.sp
-                        )
-                    }
+                    Text(
+                        text = "${totalIncome / 100}.${(totalIncome % 100).toString().padStart(2, '0')}",
+                        color = GreenAccent,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
-                // Simple bar chart visualization
-                Row(
-                    modifier = Modifier.height(80.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    ChartBar(height = 0.4f, color = CyanAccent)
-                    ChartBar(height = 0.6f, color = CyanAccent)
-                    ChartBar(height = 0.5f, color = CyanAccent)
-                    ChartBar(height = 0.8f, color = CyanAccent)
-                    ChartBar(height = 0.7f, color = GreenAccent)
-                    ChartBar(height = 0.9f, color = CyanAccent)
-                    ChartBar(height = 0.6f, color = CyanAccent)
+                // Divider
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(40.dp)
+                        .background(PanelBorder)
+                )
+
+                // Bills
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Bills",
+                        color = TextMuted,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "${totalBills / 100}.${(totalBills % 100).toString().padStart(2, '0')}",
+                        color = CyanAccent,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Divider
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(40.dp)
+                        .background(PanelBorder)
+                )
+
+                // Protected
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Protected",
+                        color = TextMuted,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "$protectedCount",
+                        color = GoldAccent,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
@@ -209,46 +273,24 @@ private fun MonthlyOverviewCard() {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                LegendItem(color = CyanAccent, label = "Spending")
-                LegendItem(color = GreenAccent, label = "Saved")
+                LegendItem(color = GreenAccent, label = "Income")
+                LegendItem(color = CyanAccent, label = "Bills")
+                LegendItem(color = GoldAccent, label = "Protected")
             }
         }
     }
 }
 
 @Composable
-private fun ChartBar(height: Float, color: Color) {
-    Box(
-        modifier = Modifier
-            .width(12.dp)
-            .fillMaxHeight(height)
-            .clip(RoundedCornerShape(6.dp))
-            .background(color.copy(alpha = 0.8f))
-    )
-}
+private fun BillsBreakdownSectionReal(
+    bills: List<com.toonai.budgetshield.data.model.Bill>
+) {
+    // Group bills by icon and calculate totals
+    val billsByIcon = bills.groupBy { it.icon }
+    val iconTotals = billsByIcon.map { (icon, billsList) ->
+        Triple(icon, billsList.sumOf { it.amountCents }, billsList.size)
+    }.sortedByDescending { it.second }
 
-@Composable
-private fun LegendItem(color: Color, label: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(color)
-        )
-        Text(
-            text = label,
-            color = TextMuted,
-            fontSize = 12.sp
-        )
-    }
-}
-
-@Composable
-private fun CategoryBreakdownSection() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -261,80 +303,56 @@ private fun CategoryBreakdownSection() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Spending by Category",
+                text = "Bills by Type",
                 color = TextPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            // Category items
-            CategoryItem(
-                icon = "🍔",
-                name = "Food & Dining",
-                amount = "$485.00",
-                percentage = 0.26f,
-                color = OrangeAccent,
-                budget = "$600"
-            )
+            if (iconTotals.isEmpty()) {
+                Text(
+                    text = "No bills added yet",
+                    color = TextMuted,
+                    fontSize = 14.sp
+                )
+            } else {
+                val maxAmount = iconTotals.maxOfOrNull { it.second } ?: 1
 
-            CategoryItem(
-                icon = "🏠",
-                name = "Housing",
-                amount = "$950.00",
-                percentage = 0.52f,
-                color = BlueAccent,
-                budget = "$950"
-            )
+                iconTotals.forEach { (icon, amountCents, count) ->
+                    val percentage = if (maxAmount > 0) amountCents.toFloat() / maxAmount else 0f
+                    val (categoryName, color) = when (icon) {
+                        "🏠" -> "Housing" to BlueAccent
+                        "🍔", "🍽️" -> "Food" to OrangeAccent
+                        "⚡", "💡", "💧" -> "Utilities" to CyanAccent
+                        "📱", "🌐", "📺" -> "Services" to PurpleAccent
+                        "🚗", "⛽", "🚌" -> "Transport" to GreenAccent
+                        "🎮", "🎬", "🎵" -> "Entertainment" to GoldAccent
+                        "🏥", "💊" -> "Health" to PurpleAccent
+                        else -> "Other" to BlueAccent
+                    }
 
-            CategoryItem(
-                icon = "🎮",
-                name = "Wants & Fun",
-                amount = "$180.00",
-                percentage = 0.10f,
-                color = PurpleAccent,
-                budget = "$300"
-            )
-
-            CategoryItem(
-                icon = "🚌",
-                name = "Transport",
-                amount = "$125.50",
-                percentage = 0.07f,
-                color = GreenAccent,
-                budget = "$200"
-            )
-
-            CategoryItem(
-                icon = "📱",
-                name = "Utilities",
-                amount = "$145.50",
-                percentage = 0.08f,
-                color = CyanAccent,
-                budget = "$180"
-            )
-
-            CategoryItem(
-                icon = "💰",
-                name = "Savings",
-                amount = "$300.00",
-                percentage = 0.14f,
-                color = GoldAccent,
-                budget = "$400",
-                isIncome = true
-            )
+                    CategoryItemReal(
+                        icon = icon,
+                        name = categoryName,
+                        amountCents = amountCents,
+                        percentage = percentage,
+                        color = color,
+                        count = count
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun CategoryItem(
+private fun CategoryItemReal(
     icon: String,
     name: String,
-    amount: String,
+    amountCents: Long,
     percentage: Float,
     color: Color,
-    budget: String,
-    isIncome: Boolean = false
+    count: Int
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -369,7 +387,7 @@ private fun CategoryItem(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Budget: $budget",
+                        text = "$count bills",
                         color = TextMuted,
                         fontSize = 11.sp
                     )
@@ -377,8 +395,8 @@ private fun CategoryItem(
             }
 
             Text(
-                text = amount,
-                color = if (isIncome) GreenAccent else TextPrimary,
+                text = "${amountCents / 100}.${(amountCents % 100).toString().padStart(2, '0')}",
+                color = TextPrimary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -394,7 +412,7 @@ private fun CategoryItem(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(percentage)
+                    .fillMaxWidth(percentage.coerceIn(0f, 1f))
                     .fillMaxHeight()
                     .background(color)
             )
@@ -403,7 +421,12 @@ private fun CategoryItem(
 }
 
 @Composable
-private fun SpendingTrendsSection() {
+private fun QuickStatsSectionReal(
+    billsCount: Int,
+    protectedCount: Int,
+    savingsGoalsCount: Int,
+    totalSavings: Long
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -428,27 +451,67 @@ private fun SpendingTrendsSection() {
             ) {
                 StatCard(
                     modifier = Modifier.weight(1f),
-                    icon = "🔥",
-                    value = "12",
-                    label = "Day Streak",
-                    color = OrangeAccent
+                    icon = "📄",
+                    value = billsCount.toString(),
+                    label = "Total Bills",
+                    color = CyanAccent
                 )
 
                 StatCard(
                     modifier = Modifier.weight(1f),
-                    icon = "🎯",
-                    value = "85%",
-                    label = "Budget On Track",
+                    icon = "🛡️",
+                    value = protectedCount.toString(),
+                    label = "Protected",
                     color = GreenAccent
                 )
 
                 StatCard(
                     modifier = Modifier.weight(1f),
-                    icon = "💎",
-                    value = "3",
-                    label = "Bills Protected",
-                    color = CyanAccent
+                    icon = "🎯",
+                    value = savingsGoalsCount.toString(),
+                    label = "Goals",
+                    color = GoldAccent
                 )
+            }
+
+            // Savings summary
+            if (totalSavings > 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF0D1B26)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "💰",
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = "${totalSavings / 100}.${(totalSavings % 100).toString().padStart(2, '0')}",
+                                color = GreenAccent,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Total Savings",
+                                color = TextMuted,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -496,6 +559,26 @@ private fun StatCard(
 }
 
 @Composable
+private fun LegendItem(color: Color, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(color)
+        )
+        Text(
+            text = label,
+            color = TextMuted,
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
 private fun BottomActionsSection(
     onViewTransactions: () -> Unit
 ) {
@@ -515,5 +598,3 @@ private fun BottomActionsSection(
         }
     }
 }
-
-

@@ -183,7 +183,7 @@ class SetupQuestViewModel @Inject constructor(
     // Chapter 3: Bills
     fun addBill(draftBill: DraftBill) {
         val currentBills = _uiState.value.bills.toMutableList()
-        currentBills.add(draftBill)
+        currentBills.add(0, draftBill)  // Add at TOP of list
         _uiState.value = _uiState.value.copy(bills = currentBills)
         saveDraft()
     }

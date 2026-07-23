@@ -137,13 +137,8 @@ fun TransactionDetailsScreen(
                     netAmount = uiState.netAmount
                 )
 
-                // Quick Navigation
-                QuickNavSection(
-                    onHome = onNavigateToHome,
-                    onTreasure = onNavigateToTreasure,
-                    onStats = onNavigateToStats,
-                    onGoals = onNavigateToGoals
-                )
+                // Footer spacer - system provides bottom nav
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -691,99 +686,4 @@ private fun TransactionItem(
     }
 }
 
-@Composable
-private fun QuickNavSection(
-    onHome: () -> Unit,
-    onTreasure: () -> Unit,
-    onStats: () -> Unit,
-    onGoals: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = PanelDark
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "Quick Navigation",
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                NavCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "🏠",
-                    label = "Home",
-                    onClick = onHome
-                )
-
-                NavCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "🗝️",
-                    label = "Treasure",
-                    onClick = onTreasure
-                )
-
-                NavCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "📊",
-                    label = "Stats",
-                    onClick = onStats
-                )
-
-                NavCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "🎯",
-                    label = "Goals",
-                    onClick = onGoals
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun NavCard(
-    modifier: Modifier = Modifier,
-    icon: String,
-    label: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0D1B26)
-        ),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = icon,
-                fontSize = 22.sp
-            )
-            Text(
-                text = label,
-                color = TextPrimary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
-}
