@@ -134,6 +134,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                     "budget_shield_database"
                 )
                 .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
                 instance
