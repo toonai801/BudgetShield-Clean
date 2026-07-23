@@ -1,6 +1,7 @@
 package com.toonai.budgetshield
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -55,39 +56,22 @@ import com.toonai.budgetshield.ui.LocalXpRepository
 import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
 import com.toonai.budgetshield.ui.LocalBudgetRepository
 import com.toonai.budgetshield.ui.LocalUserSettingsRepository
-import kotlinx.coroutines.launch
 
-/**
- * Data class to hold all repositories for the app.
- * This provides a clean way to pass repositories through the composition.
- */
-data class AppRepositories(
-    val billRepository: BillRepository,
-    val incomeRepository: IncomeRepository,
-    val transactionRepository: TransactionRepository,
-    val xpRepository: XpRepository,
-    val savingsGoalRepository: SavingsGoalRepository,
-    val budgetRepository: BudgetRepository,
-    val userSettingsRepository: UserSettingsRepository
-)
-
-/**
- * MainActivity with non-bypassable first-run gate.
- * Shows themed loading state while checking first-run status.
- * Shows SetupQuest on first launch until user completes setup.
- * Footer is completely hidden during setup - no Home flash.
- */
 class MainActivity : ComponentActivity() {
-    
+
     private lateinit var repositories: AppRepositories
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         try {
+            Log.d("BudgetShield", "Starting MainActivity onCreate")
+
             // Initialize repositories
             val database = BudgetShieldDatabase.getDatabase(this)
+            Log.d("BudgetShield", "Database initialized")
+
             repositories = AppRepositories(
                 billRepository = BillRepository(database.billDao()),
                 incomeRepository = IncomeRepository(database.incomeScheduleDao()),
@@ -97,11 +81,13 @@ class MainActivity : ComponentActivity() {
                 budgetRepository = BudgetRepository(database.budgetCategoryDao()),
                 userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
             )
-            
+            Log.d("BudgetShield", "Repositories initialized")
+
             setContent {
                 BudgetShieldAppWithLoading(repositories = repositories)
             }
         } catch (e: Exception) {
+            Log.e("BudgetShield", "Fatal error in onCreate", e)
             // Database initialization failed - show simple error UI
             setContent {
                 BudgetShieldTheme {
@@ -120,27 +106,32 @@ private fun BudgetShieldAppWithLoading(
         var isLoading by remember { mutableStateOf(true) }
         var isFirstRunComplete by remember { mutableStateOf(false) }
         var hasError by remember { mutableStateOf(false) }
-        
+        var errorMessage by remember { mutableStateOf("") }
+
         LaunchedEffect(Unit) {
             try {
+                Log.d("BudgetShield", "Loading settings...")
                 val settings = try {
                     repositories.userSettingsRepository.getSettings()
                 } catch (e: Exception) {
-                    // If settings can't be loaded, initialize defaults
+                    Log.w("BudgetShield", "Failed to load settings, initializing defaults", e)
                     repositories.userSettingsRepository.initializeDefaultSettings()
                     repositories.userSettingsRepository.getSettings()
                 }
                 isFirstRunComplete = settings?.isFirstRunComplete == true
+                Log.d("BudgetShield", "First run complete: $isFirstRunComplete")
                 isLoading = false
             } catch (e: Exception) {
+                Log.e("BudgetShield", "Error loading settings", e)
                 hasError = true
+                errorMessage = e.message ?: "Unknown error"
                 isLoading = false
             }
         }
-        
+
         when {
             isLoading -> ThemedLoadingScreen()
-            hasError -> ErrorScreen()
+            hasError -> ErrorScreenWithRetry(error = errorMessage)
             else -> BudgetShieldApp(
                 repositories = repositories,
                 initialDestination = if (isFirstRunComplete) Home else SetupQuest
@@ -206,21 +197,6 @@ private fun ErrorScreenWithRetry(error: String) {
                 color = MaterialTheme.colorScheme.error
             )
         }
-    }
-}
-
-@Composable
-private fun ErrorScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Something went wrong. Please restart the app.",
-            color = MaterialTheme.colorScheme.error
-        )
     }
 }
 
