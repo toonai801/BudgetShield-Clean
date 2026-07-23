@@ -1,0 +1,46 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Exception while marshalling /home/toon/android-sdk/build-tools/35.0.0/package.xml. Probably the SDK is read-only
+Observed package id 'build-tools;34.0.0' in inconsistent location '/home/toon/android-sdk/build-tools/35.0.0' (Expected '/home/toon/android-sdk/build-tools/34.0.0')
+Observed package id 'build-tools;35.0.0' in inconsistent location '/home/toon/android-sdk/build-tools/35.0.0-2' (Expected '/home/toon/android-sdk/build-tools/35.0.0')
+Observed package id 'platforms;android-35' in inconsistent location '/home/toon/android-sdk/platforms/android-36' (Expected '/home/toon/android-sdk/platforms/android-35')
+Already observed package id 'platforms;android-35' in '/home/toon/android-sdk/platforms/android-35'. Skipping duplicate at '/home/toon/android-sdk/platforms/android-36'
+Observed package id 'platforms;android-36' in inconsistent location '/home/toon/android-sdk/platforms/android-36-2' (Expected '/home/toon/android-sdk/platforms/android-36')
+[=========                              ] 25%                                   > Task :app:clean
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig
+> Task :app:checkDebugAarMetadata
+> Task :app:processDebugNavigationResources
+> Task :app:generateDebugResValues
+> Task :app:compileDebugNavigationResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:mergeDebugResources
+> Task :app:processDebugManifest
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:mergeDebugJniLibFolders
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugNativeLibs
+> Task :app:mergeLibDexDebug
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so. Run with --info option to learn more.
+
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:processDebugManifestForPackage

@@ -33,19 +33,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Premium gamified dark theme colors (matching Home)
-private val BackgroundDark = Color(0xFF02070D)
-private val PanelDark = Color(0xFF06121D)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val GreenAccent = Color(0xFF2FE6A7)
-private val GoldAccent = Color(0xFFFFC545)
-private val BlueAccent = Color(0xFF1678B9)
-private val PurpleAccent = Color(0xFF9D4EDD)
-private val PinkAccent = Color(0xFFFF6B9D)
-private val OrangeAccent = Color(0xFFFF8C42)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.PanelBorder
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.GreenAccent
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.BlueAccent
+import com.toonai.budgetshield.theme.PurpleAccent
+import com.toonai.budgetshield.theme.OrangeAccent
+import com.toonai.budgetshield.theme.TextPrimary
+import com.toonai.budgetshield.theme.TextMuted
+
 
 @Composable
 fun GoalsScreen(
@@ -408,7 +407,7 @@ private fun SavingsGoalsSection(onAddSavings: () -> Unit) {
                 name = "Education",
                 current = 1200,
                 target = 3000,
-                color = PinkAccent
+                color = PurpleAccent
             )
         }
     }

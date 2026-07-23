@@ -18,12 +18,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,23 +38,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.toonai.budgetshield.ui.viewmodel.TransactionViewModel
+import com.toonai.budgetshield.util.DateParser
 
-// Premium gamified dark theme colors (matching Home)
-private val BackgroundDark = Color(0xFF02070D)
-private val PanelDark = Color(0xFF06121D)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val GreenAccent = Color(0xFF2FE6A7)
-private val GoldAccent = Color(0xFFFFC545)
-private val BlueAccent = Color(0xFF1678B9)
-private val PurpleAccent = Color(0xFF9D4EDD)
-private val OrangeAccent = Color(0xFFFF8C42)
-private val DangerColor = Color(0xFFFF553D)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.PanelBorder
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.GreenAccent
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.BlueAccent
+import com.toonai.budgetshield.theme.PurpleAccent
+import com.toonai.budgetshield.theme.OrangeAccent
+import com.toonai.budgetshield.theme.TextPrimary
+import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.theme.DangerDot
+
 
 @Composable
 fun TransactionDetailsScreen(
+    viewModel: TransactionViewModel,
     transactionId: Long? = null,
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
@@ -55,6 +66,13 @@ fun TransactionDetailsScreen(
     onNavigateToStats: () -> Unit,
     onNavigateToGoals: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Load transaction when ID changes
+    LaunchedEffect(transactionId) {
+        transactionId?.let { viewModel.loadTransaction(it) }
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = BackgroundDark
@@ -72,13 +90,52 @@ fun TransactionDetailsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Header
-                HeaderSection(transactionId = transactionId, onBack = onNavigateBack)
+                HeaderSection(
+                    transactionId = transactionId ?: uiState.selectedTransaction?.id,
+                    onBack = onNavigateBack
+                )
+
+                // Loading state
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = CyanAccent)
+                    }
+                }
+
+                // Error message
+                if (uiState.errorMessage != null) {
+                    ErrorBanner(
+                        message = uiState.errorMessage!!,
+                        onDismiss = { viewModel.clearError() }
+                    )
+                }
 
                 // Transaction Detail Card
-                TransactionDetailCard()
+                val transaction = uiState.selectedTransaction
+                if (transaction != null) {
+                    TransactionDetailCard(
+                        transaction = transaction,
+                        onDelete = { showDeleteDialog = true }
+                    )
+                } else {
+                    TransactionDetailCardPlaceholder()
+                }
 
                 // Recent Transactions
-                RecentTransactionsSection()
+                RecentTransactionsSection(
+                    transactions = uiState.transactions,
+                    onTransactionClick = { id -> viewModel.loadTransaction(id) }
+                )
+
+                // Monthly Summary
+                MonthlySummaryCard(
+                    totalIncome = uiState.totalIncome,
+                    totalExpenses = uiState.totalExpenses,
+                    netAmount = uiState.netAmount
+                )
 
                 // Quick Navigation
                 QuickNavSection(
@@ -89,6 +146,34 @@ fun TransactionDetailsScreen(
                 )
             }
         }
+    }
+
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Transaction?", color = TextPrimary) },
+            text = { Text("This action cannot be undone.", color = TextMuted) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        transactionId?.let {
+                            viewModel.deleteTransaction(it)
+                            showDeleteDialog = false
+                            onNavigateBack()
+                        }
+                    }
+                ) {
+                    Text("Delete", color = DangerDot)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel", color = CyanAccent)
+                }
+            },
+            containerColor = PanelDark
+        )
     }
 }
 
@@ -145,7 +230,45 @@ private fun HeaderSection(transactionId: Long?, onBack: () -> Unit) {
 }
 
 @Composable
-private fun TransactionDetailCard() {
+private fun ErrorBanner(message: String, onDismiss: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = DangerDot.copy(alpha = 0.15f)
+        ),
+        border = BorderStroke(1.dp, DangerDot.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = message,
+                color = DangerDot,
+                fontSize = 14.sp
+            )
+            TextButton(onClick = onDismiss) {
+                Text("Dismiss", color = DangerDot)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransactionDetailCard(
+    transaction: com.toonai.budgetshield.data.model.Transaction,
+    onDelete: () -> Unit
+) {
+    val amountText = if (transaction.isIncome) {
+        "+$${transaction.amountCents / 100}.${kotlin.math.abs(transaction.amountCents % 100).toString().padStart(2, '0')}"
+    } else {
+        "-$${kotlin.math.abs(transaction.amountCents) / 100}.${kotlin.math.abs(transaction.amountCents % 100).toString().padStart(2, '0')}"
+    }
+    val amountColor = if (transaction.isIncome) GreenAccent else TextPrimary
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -197,21 +320,14 @@ private fun TransactionDetailCard() {
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "-$950.00",
-                        color = TextPrimary,
+                        text = amountText,
+                        color = amountColor,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
+                    if (transaction.category != null) {
                         Text(
-                            text = "🛡️",
-                            fontSize = 12.sp
-                        )
-                        Text(
-                            text = "Protected",
+                            text = transaction.category,
                             color = CyanAccent,
                             fontSize = 12.sp
                         )
@@ -231,52 +347,105 @@ private fun TransactionDetailCard() {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DetailRow("Date", "July 6, 2025")
-                DetailRow("Time", "2:34 PM")
-                DetailRow("Payment Method", "Bank Account ****4567")
-                DetailRow("Transaction ID", "TXN-2025-07-06-789")
-                DetailRow("Status", "Completed ✓")
+                DetailRow("Date", transaction.transactionDate)
+                DetailRow("Description", transaction.description ?: "No description")
+                DetailRow("Type", if (transaction.isIncome) "Income" else "Expense")
+                DetailRow("Category", transaction.category ?: "Uncategorized")
+                DetailRow("Status", if (transaction.id > 0) "Synced ✓" else "Pending")
+                DetailRow("Transaction ID", "TXN-${transaction.id}")
             }
 
-            // XP Earned
+            // Delete button
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = GoldAccent.copy(alpha = 0.1f)
+                    containerColor = DangerDot.copy(alpha = 0.15f)
                 ),
-                border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f))
+                border = BorderStroke(1.dp, DangerDot.copy(alpha = 0.3f)),
+                onClick = onDelete
             ) {
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(14.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "⭐",
-                            fontSize = 20.sp
-                        )
-                        Text(
-                            text = "XP Earned",
-                            color = TextPrimary,
-                            fontSize = 14.sp
-                        )
-                    }
-
                     Text(
-                        text = "+50 XP",
-                        color = GoldAccent,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "🗑️ Delete Transaction",
+                        color = DangerDot,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
+
+            // XP indicator (if applicable)
+            if (!transaction.isIncome && transaction.amountCents < 0) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = GoldAccent.copy(alpha = 0.1f)
+                    ),
+                    border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "⭐",
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = "XP Available",
+                                color = TextPrimary,
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        Text(
+                            text = "+${kotlin.math.abs(transaction.amountCents / 100)} XP",
+                            color = GoldAccent,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransactionDetailCardPlaceholder() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(20.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Select a transaction to view details",
+                color = TextMuted,
+                fontSize = 16.sp
+            )
         }
     }
 }
@@ -303,7 +472,10 @@ private fun DetailRow(label: String, value: String) {
 }
 
 @Composable
-private fun RecentTransactionsSection() {
+private fun RecentTransactionsSection(
+    transactions: List<com.toonai.budgetshield.data.model.Transaction>,
+    onTransactionClick: (Long) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -339,57 +511,120 @@ private fun RecentTransactionsSection() {
                 }
             }
 
-            // Transaction items
-            TransactionItem(
-                icon = "🏠",
-                iconBg = BlueAccent,
-                name = "Rent Payment",
-                category = "Housing",
-                amount = "-$950.00",
-                date = "Jul 6",
-                isNegative = true
-            )
+            if (transactions.isEmpty()) {
+                Text(
+                    text = "No transactions yet",
+                    color = TextMuted,
+                    fontSize = 14.sp
+                )
+            } else {
+                transactions.take(5).forEach { transaction ->
+                    val isIncome = transaction.isIncome
+                    val isNegative = !isIncome && transaction.amountCents < 0
+                    val amountText = if (isIncome) {
+                        "+$${transaction.amountCents / 100}.${(transaction.amountCents % 100).toString().padStart(2, '0')}"
+                    } else {
+                        "-$${kotlin.math.abs(transaction.amountCents) / 100}.${kotlin.math.abs(transaction.amountCents % 100).toString().padStart(2, '0')}"
+                    }
 
-            TransactionItem(
-                icon = "💰",
-                iconBg = GreenAccent,
-                name = "Paycheck",
-                category = "Income",
-                amount = "+$2,400.00",
-                date = "Jul 5",
-                isNegative = false
-            )
-
-            TransactionItem(
-                icon = "🏦",
-                iconBg = GoldAccent,
-                name = "Savings Transfer",
-                category = "Savings",
-                amount = "-$300.00",
-                date = "Jul 5",
-                isNegative = true
-            )
-
-            TransactionItem(
-                icon = "⚡",
-                iconBg = OrangeAccent,
-                name = "Utilities",
-                category = "Bills",
-                amount = "-$145.50",
-                date = "Jul 4",
-                isNegative = true
-            )
-
-            TransactionItem(
-                icon = "🍔",
-                iconBg = PurpleAccent,
-                name = "Grocery Store",
-                category = "Food",
-                amount = "-$85.25",
-                date = "Jul 3",
-                isNegative = true
-            )
+                    TransactionItem(
+                        icon = getCategoryIcon(transaction.category),
+                        iconBg = getCategoryColor(transaction.category),
+                        name = transaction.description ?: "Transaction",
+                        category = transaction.category ?: "Uncategorized",
+                        amount = amountText,
+                        date = transaction.transactionDate.substringAfterLast("-").toInt().toString() + " " + when(transaction.transactionDate.substring(5, 7).toInt()) {
+                            1 -> "Jan"
+                            2 -> "Feb"
+                            3 -> "Mar"
+                            4 -> "Apr"
+                            5 -> "May"
+                            6 -> "Jun"
+                            7 -> "Jul"
+                            8 -> "Aug"
+                            9 -> "Sep"
+                            10 -> "Oct"
+                            11 -> "Nov"
+                            12 -> "Dec"
+                            else -> transaction.transactionDate
+                        },
+                        isNegative = !isIncome,
+                        onClick = { onTransactionClick(transaction.id) }
+                    )
+                }
+            }
         }
+    }
+}
+
+private fun getCategoryIcon(category: String?): String = when (category) {
+    "Food" -> "🍔"
+    "Wants" -> "🎮"
+    "Bills" -> "📄"
+    "Savings" -> "🏦"
+    "Income" -> "💰"
+    else -> "💳"
+}
+
+private fun getCategoryColor(category: String?): Color = when (category) {
+    "Food" -> PurpleAccent
+    "Wants" -> GoldAccent
+    "Bills" -> BlueAccent
+    "Savings" -> GoldAccent
+    "Income" -> GreenAccent
+    else -> CyanAccent
+}
+
+@Composable
+private fun MonthlySummaryCard(
+    totalIncome: Long,
+    totalExpenses: Long,
+    netAmount: Long
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "This Month",
+                color = TextPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                SummaryItem("Income", totalIncome, GreenAccent)
+                SummaryItem("Expenses", totalExpenses, DangerDot)
+                SummaryItem("Net", netAmount, if (netAmount >= 0) GreenAccent else DangerDot)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SummaryItem(label: String, amountCents: Long, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            color = TextMuted,
+            fontSize = 12.sp
+        )
+        Text(
+            text = "$${kotlin.math.abs(amountCents) / 100}.${kotlin.math.abs(amountCents % 100).toString().padStart(2, '0')}",
+            color = color,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -401,51 +636,58 @@ private fun TransactionItem(
     category: String,
     amount: String,
     date: String,
-    isNegative: Boolean
+    isNegative: Boolean,
+    onClick: () -> Unit = {}
 ) {
-    Row(
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        onClick = onClick
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(iconBg.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = icon,
-                    fontSize = 18.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(iconBg.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon,
+                        fontSize = 18.sp
+                    )
+                }
+
+                Column {
+                    Text(
+                        text = name,
+                        color = TextPrimary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "$category • $date",
+                        color = TextMuted,
+                        fontSize = 12.sp
+                    )
+                }
             }
 
-            Column {
-                Text(
-                    text = name,
-                    color = TextPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "$category • $date",
-                    color = TextMuted,
-                    fontSize = 12.sp
-                )
-            }
+            Text(
+                text = amount,
+                color = if (isNegative) TextPrimary else GreenAccent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
-
-        Text(
-            text = amount,
-            color = if (isNegative) TextPrimary else GreenAccent,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
-        )
     }
 }
 

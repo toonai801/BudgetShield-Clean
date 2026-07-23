@@ -6,15 +6,20 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.toonai.budgetshield.data.model.Achievement
 import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.data.model.BudgetCategory
 import com.toonai.budgetshield.data.model.IncomeSchedule
+import com.toonai.budgetshield.data.model.SavingsGoal
 import com.toonai.budgetshield.data.model.SetupDraft
+import com.toonai.budgetshield.data.model.Transaction
 import com.toonai.budgetshield.data.model.UserSettings
+import com.toonai.budgetshield.data.model.UserStreak
+import com.toonai.budgetshield.data.model.XpEntry
 
 /**
  * Room database for BudgetShield app.
- * Version 3 adds: SetupDraft for process-death resume
+ * Version 4 adds: Transaction, XP, Achievement, SavingsGoal, Streak tables
  * Migration preserves all existing data.
  */
 @Database(
@@ -23,9 +28,14 @@ import com.toonai.budgetshield.data.model.UserSettings
         UserSettings::class,
         IncomeSchedule::class,
         BudgetCategory::class,
-        SetupDraft::class
+        SetupDraft::class,
+        Transaction::class,
+        XpEntry::class,
+        Achievement::class,
+        SavingsGoal::class,
+        UserStreak::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class BudgetShieldDatabase : RoomDatabase() {
@@ -35,6 +45,11 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
     abstract fun incomeScheduleDao(): IncomeScheduleDao
     abstract fun budgetCategoryDao(): BudgetCategoryDao
     abstract fun setupDraftDao(): SetupDraftDao
+    abstract fun transactionDao(): TransactionDao
+    abstract fun xpEntryDao(): XpEntryDao
+    abstract fun achievementDao(): AchievementDao
+    abstract fun savingsGoalDao(): SavingsGoalDao
+    abstract fun userStreakDao(): UserStreakDao
 
     companion object {
         @Volatile
@@ -126,6 +141,102 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration from version 3 to 4.
+         * Adds Transaction, XP, Achievement, SavingsGoal, and Streak tables.
+         */
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Transactions
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS transactions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        type TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        description TEXT,
+                        amountCents INTEGER NOT NULL,
+                        category TEXT NOT NULL,
+                        icon TEXT NOT NULL DEFAULT '💰',
+                        relatedBillId INTEGER,
+                        relatedIncomeId INTEGER,
+                        earnsXp INTEGER NOT NULL DEFAULT 1,
+                        xpEarned INTEGER NOT NULL DEFAULT 0,
+                        isProtected INTEGER NOT NULL DEFAULT 0,
+                        transactionDate TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL
+                    )
+                """)
+                database.execSQL("""
+                    CREATE INDEX IF NOT EXISTS index_transactions_date ON transactions(transactionDate)
+                """)
+                database.execSQL("""
+                    CREATE INDEX IF NOT EXISTS index_transactions_category ON transactions(category)
+                """)
+
+                // XP Entries
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS xp_entries (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        amount INTEGER NOT NULL,
+                        activityType TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        relatedId INTEGER,
+                        entryDate TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL
+                    )
+                """)
+                database.execSQL("""
+                    CREATE INDEX IF NOT EXISTS index_xp_entries_date ON xp_entries(entryDate)
+                """)
+
+                // Achievements
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS achievements (
+                        id TEXT PRIMARY KEY NOT NULL,
+                        name TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        icon TEXT NOT NULL,
+                        xpReward INTEGER NOT NULL,
+                        category TEXT NOT NULL,
+                        isUnlocked INTEGER NOT NULL DEFAULT 0,
+                        unlockedAt INTEGER,
+                        progress INTEGER NOT NULL DEFAULT 0,
+                        targetValue INTEGER NOT NULL DEFAULT 1
+                    )
+                """)
+
+                // Savings Goals
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS savings_goals (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        icon TEXT NOT NULL DEFAULT '🎯',
+                        targetAmountCents INTEGER NOT NULL,
+                        currentAmountCents INTEGER NOT NULL DEFAULT 0,
+                        deadlineDate TEXT,
+                        isCompleted INTEGER NOT NULL DEFAULT 0,
+                        completedAt INTEGER,
+                        priority INTEGER NOT NULL DEFAULT 1,
+                        isEmergencyFund INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL
+                    )
+                """)
+
+                // User Streaks
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS user_streaks (
+                        id INTEGER PRIMARY KEY NOT NULL DEFAULT 1,
+                        currentStreak INTEGER NOT NULL DEFAULT 0,
+                        bestStreak INTEGER NOT NULL DEFAULT 0,
+                        lastActivityDate TEXT,
+                        isActiveToday INTEGER NOT NULL DEFAULT 0,
+                        totalActiveDays INTEGER NOT NULL DEFAULT 0,
+                        updatedAt INTEGER NOT NULL
+                    )
+                """)
+            }
+        }
+
         fun getDatabase(context: Context): BudgetShieldDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -133,7 +244,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                     BudgetShieldDatabase::class.java,
                     "budget_shield_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
                 INSTANCE = instance
                 instance

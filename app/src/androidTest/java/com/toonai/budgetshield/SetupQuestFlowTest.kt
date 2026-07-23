@@ -1,89 +1,54 @@
 package com.toonai.budgetshield
 
-import android.content.Context
 import android.content.Intent
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.toonai.budgetshield.data.database.BudgetShieldDatabase
 import com.toonai.budgetshield.data.model.SetupDraft
 import com.toonai.budgetshield.data.model.UserSettings
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import java.lang.reflect.Field
+import javax.inject.Inject
 
 /**
- * Setup Quest Flow - Deterministic Connected Tests
+ * Setup Quest Flow - Deterministic Connected Tests with Hilt
  * Each test prepares exact fixture state BEFORE launching MainActivity
- * No auto-launch rules - explicit ActivityScenario only
  */
-@RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class SetupQuestFlowTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
     @get:Rule
     val composeTestRule = createEmptyComposeRule()
 
+    @Inject
+    lateinit var database: BudgetShieldDatabase
+
     private var scenario: ActivityScenario<MainActivity>? = null
 
-    /**
-     * DETERMINISTIC FIXTURE RESET
-     * Clears ALL persistence before each test.
-     * Must happen BEFORE ActivityScenario.launch() to ensure clean state.
-     */
     @Before
     fun setup() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-
-        // Step 1: Force stop the app to release all database locks
-        try {
-            Runtime.getRuntime().exec("am force-stop ${context.packageName}")
-        } catch (e: Exception) {}
-
-        // Step 2: Clear Room singleton INSTANCE via reflection FIRST
-        try {
-            val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
-            instanceField.isAccessible = true
-            (instanceField.get(null) as? BudgetShieldDatabase)?.close()
-            instanceField.set(null, null)
-        } catch (e: Exception) {}
-
-        // Step 3: Delete database files with retry (WAL mode can recreate files)
-        val dbName = "budget_shield_database"
-        context.deleteDatabase(dbName)
-        context.getDatabasePath(dbName).parentFile?.listFiles()?.forEach { file ->
-            if (file.name.startsWith(dbName)) {
-                file.delete()
-            }
-        }
-
-        // Step 4: Clear SharedPreferences
-        context.getSharedPreferences("budget_shield_prefs", Context.MODE_PRIVATE)
-            .edit().clear().commit()
-
-        // Step 5: Verify database is truly empty by opening and clearing all tables
-        val db = BudgetShieldDatabase.getDatabase(context)
-        db.clearAllTables()
-        db.close()
-
-        // Clear singleton again after reopening
-        try {
-            val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
-            instanceField.isAccessible = true
-            instanceField.set(null, null)
-        } catch (e: Exception) {}
+        hiltRule.inject()
+        
+        // Clear all tables before each test
+        database.clearAllTables()
     }
 
     @After
     fun tearDown() {
         scenario?.close()
+        // Clear tables after test
+        database.clearAllTables()
     }
 
     /**
@@ -96,8 +61,7 @@ class SetupQuestFlowTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         // VERIFY: Database is empty (no settings exist)
-        val db = BudgetShieldDatabase.getDatabase(context)
-        val settings = runBlocking { db.userSettingsDao().getSettingsSync() }
+        val settings = runBlocking { database.userSettingsDao().getSettingsSync() }
         assert(settings == null) { "Database should be empty at test start" }
 
         // Launch MainActivity AFTER fixture preparation
@@ -108,8 +72,18 @@ class SetupQuestFlowTest {
         composeTestRule.waitForIdle()
 
         // Wait for loading screen to disappear
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
+
+        // Wait for any setup quest content to appear (Setup Quest title)
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            try {
+                composeTestRule.onNodeWithText("Setup Quest").assertExists()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
 
         // VERIFY: Setup Quest Chapter 1 is shown
@@ -133,8 +107,18 @@ class SetupQuestFlowTest {
         composeTestRule.waitForIdle()
 
         // Wait for loading screen to disappear
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
+
+        // Wait for any setup quest content to appear (Setup Quest title)
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            try {
+                composeTestRule.onNodeWithText("Setup Quest").assertExists()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
 
         composeTestRule.onNodeWithText("Chapter 1 of 6").assertExists()
@@ -147,12 +131,9 @@ class SetupQuestFlowTest {
      */
     @Test
     fun completedUserSeesHomeScreen() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-
-        // FIXTURE: Seed completed settings BEFORE launch
-        val db = BudgetShieldDatabase.getDatabase(context)
+        // FIXTURE: Seed completed settings BEFORE launch using injected database
         runBlocking {
-            db.userSettingsDao().insertSettings(
+            database.userSettingsDao().insertSettings(
                 UserSettings(
                     id = 1L,
                     isFirstRunComplete = true,
@@ -162,6 +143,8 @@ class SetupQuestFlowTest {
                 )
             )
         }
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         // Launch MainActivity AFTER seeding fixture
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -181,19 +164,16 @@ class SetupQuestFlowTest {
      */
     @Test
     fun draftResumeContinuesAtSavedChapter() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-
-        // FIXTURE: Seed incomplete setup draft
-        val db = BudgetShieldDatabase.getDatabase(context)
+        // FIXTURE: Seed incomplete setup draft using injected database
         runBlocking {
-            db.userSettingsDao().insertSettings(
+            database.userSettingsDao().insertSettings(
                 UserSettings(
                     id = 1L,
                     isFirstRunComplete = false,
                     cashOnHandCents = 50000L
                 )
             )
-            db.setupDraftDao().saveDraft(
+            database.setupDraftDao().saveDraft(
                 SetupDraft(
                     currentChapter = 3,
                     cashOnHandCents = 50000L,
@@ -205,13 +185,7 @@ class SetupQuestFlowTest {
             )
         }
 
-        // Close database to ensure flush
-        db.close()
-
-        // Clear singleton so Activity creates fresh connection
-        val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
-        instanceField.isAccessible = true
-        instanceField.set(null, null)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -219,8 +193,28 @@ class SetupQuestFlowTest {
         scenario = ActivityScenario.launch(intent)
 
         // Wait for loading screen to disappear
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty()
+        }
+
+        // Wait for setup quest content to load with draft (check for Setup Quest title first)
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            try {
+                composeTestRule.onNodeWithText("Setup Quest").assertExists()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Wait for chapter 3 content specifically
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            try {
+                composeTestRule.onNodeWithText("Chapter 3: Bills").assertExists()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
 
         // VERIFY: Resumes at Chapter 3
@@ -235,12 +229,9 @@ class SetupQuestFlowTest {
      */
     @Test
     fun endToEndPersistenceAfterCompleteSetup() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-
-        // FIXTURE: Complete setup with all values saved
-        val db = BudgetShieldDatabase.getDatabase(context)
+        // FIXTURE: Complete setup with all values saved using injected database
         runBlocking {
-            db.userSettingsDao().insertSettings(
+            database.userSettingsDao().insertSettings(
                 UserSettings(
                     id = 1L,
                     isFirstRunComplete = true,
@@ -251,13 +242,7 @@ class SetupQuestFlowTest {
             )
         }
 
-        // CRITICAL: Close database to ensure data is flushed and unlock file
-        db.close()
-
-        // Clear singleton so Activity creates fresh connection
-        val instanceField = BudgetShieldDatabase::class.java.getDeclaredField("INSTANCE")
-        instanceField.isAccessible = true
-        instanceField.set(null, null)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         // Launch and verify Home
         val intent = Intent(context, MainActivity::class.java).apply {

@@ -7,6 +7,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -16,15 +20,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.toonai.budgetshield.data.model.IncomeFrequency
 import com.toonai.budgetshield.ui.viewmodel.SetupQuestUiState
 import com.toonai.budgetshield.ui.viewmodel.SetupQuestViewModel
-
+import com.toonai.budgetshield.util.DateParser
+import com.toonai.budgetshield.util.MoneyParser
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.*
 @Composable
 fun SetupQuestScreen(
     onComplete: () -> Unit,
@@ -180,9 +191,13 @@ private fun SetupQuestContent(
             totalChapters = 6,
             canProceed = when (uiState.currentChapter) {
                 1 -> uiState.cashOnHandError == null && uiState.cashOnHandInput.isNotBlank()
-                2 -> uiState.paydayErrors.isEmpty() && uiState.isIncomeConfirmed && 
+                2 -> {
+                    val canProceed = uiState.paydayErrors.isEmpty() && uiState.isIncomeConfirmed && 
                        uiState.incomeName.isNotBlank() && uiState.incomeAmountInput.isNotBlank() && 
                        uiState.paydayDate.isNotBlank()
+                    android.util.Log.d("SetupQuest", "Chapter 2 canProceed: errorsEmpty=${uiState.paydayErrors.isEmpty()}, isConfirmed=${uiState.isIncomeConfirmed}, nameBlank=${uiState.incomeName.isBlank()}, amountBlank=${uiState.incomeAmountInput.isBlank()}, dateBlank=${uiState.paydayDate.isBlank()}, incomeAmountCents=${uiState.incomeAmountCents}")
+                    canProceed
+                }
                 3 -> uiState.billErrors.isEmpty()
                 4 -> uiState.savingsError == null
                 5 -> uiState.foodBudgetError == null && uiState.wantsBudgetError == null &&
@@ -214,7 +229,8 @@ private fun SetupProgressHeader(
             Text(
                 text = "Setup Quest",
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.testTag("setup_quest_title")
             )
             Spacer(modifier = Modifier.height(8.dp))
             LinearProgressIndicator(
@@ -225,7 +241,8 @@ private fun SetupProgressHeader(
             Text(
                 text = "Chapter $currentChapter of $totalChapters",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                modifier = Modifier.testTag("chapter_indicator")
             )
         }
     }
@@ -244,7 +261,8 @@ private fun ChapterCash(
     ) {
         Text(
             text = "Chapter 1: Cash on Hand",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.testTag("chapter1_title")
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -261,11 +279,14 @@ private fun ChapterCash(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = cashOnHandError != null,
             supportingText = cashOnHandError?.let { { Text(it) } },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chapter1_cash_input")
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChapterPayday(
     incomeName: String,
@@ -280,6 +301,66 @@ private fun ChapterPayday(
     onUpdateFrequency: (String) -> Unit,
     onToggleIncomeConfirmation: () -> Unit
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    // Parse existing date if available
+    // Using Locale.US for consistent date formatting
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd/yyyy", Locale.US) }
+    val selectedDateMillis = remember(paydayDate) {
+        try {
+            if (paydayDate.isNotBlank()) {
+                LocalDate.parse(paydayDate, dateFormatter)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            } else {
+                LocalDate.now()
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            }
+        } catch (e: Exception) {
+            LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        }
+    }
+    
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDateMillis
+    )
+    
+    // Date picker dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val date = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+                            val formattedDate = date.format(dateFormatter)
+                            onUpdatePaydayDate(formattedDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Select")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -287,7 +368,8 @@ private fun ChapterPayday(
     ) {
         Text(
             text = "Chapter 2: Payday",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.testTag("chapter2_title")
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -303,27 +385,60 @@ private fun ChapterPayday(
             placeholder = { Text("e.g., Bi-weekly Paycheck") },
             isError = paydayErrors.containsKey("incomeName"),
             supportingText = paydayErrors["incomeName"]?.let { { Text(it) } },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chapter2_name_input")
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = incomeAmountInput,
-            onValueChange = onUpdateIncomeAmount,
+            onValueChange = { input ->
+                // Strip non-numeric characters except decimal point
+                val cleaned = input.replace(Regex("[^0-9.]"), "")
+                // Format as currency as user types
+                onUpdateIncomeAmount(cleaned)
+            },
             label = { Text("Amount") },
             prefix = { Text("$") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = paydayErrors.containsKey("incomeAmount"),
             supportingText = paydayErrors["incomeAmount"]?.let { { Text(it) } },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chapter2_amount_input")
         )
+        // Show formatted currency below input
+        if (incomeAmountInput.isNotBlank()) {
+            MoneyParser.parseToCents(incomeAmountInput).fold(
+                onSuccess = { cents ->
+                    Text(
+                        text = "= ${MoneyParser.formatCents(cents)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                    )
+                },
+                onFailure = {}
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = paydayDate,
-            onValueChange = onUpdatePaydayDate,
-            label = { Text("Next Payday (MM/DD/YYYY)") },
+            onValueChange = { },
+            readOnly = true,
+            label = { Text("Next Payday") },
+            placeholder = { Text("MM/DD/YYYY") },
             isError = paydayErrors.containsKey("paydayDate"),
             supportingText = paydayErrors["paydayDate"]?.let { { Text(it) } },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chapter2_date_input")
+                .clickable { showDatePicker = true },
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Text("📅")
+                }
+            }
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -355,6 +470,7 @@ private fun ChapterPayday(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag("chapter2_confirmation_checkbox")
                 .clickable { onToggleIncomeConfirmation() },
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -385,7 +501,8 @@ private fun ChapterBills(
     ) {
         Text(
             text = "Chapter 3: Bills",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.testTag("chapter3_title")
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -425,6 +542,7 @@ private fun ChapterBills(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BillCard(
     bill: DraftBill,
@@ -435,6 +553,78 @@ private fun BillCard(
     onToggleProtection: () -> Unit,
     onRemove: () -> Unit
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    // Parse existing date if available
+    // Using Locale.US for consistent date formatting
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd", Locale.US) }
+    val selectedDateMillis = remember(bill.dueDateInput) {
+        try {
+            if (bill.dueDateInput.isNotBlank()) {
+                // Try to parse MM/DD format and convert to current year
+                val parts = bill.dueDateInput.split("/")
+                if (parts.size >= 2) {
+                    val month = parts[0].toInt()
+                    val day = parts[1].toInt()
+                    LocalDate.of(LocalDate.now().year, month, day)
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                } else {
+                    LocalDate.now()
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                }
+            } else {
+                LocalDate.now()
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            }
+        } catch (e: Exception) {
+            LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        }
+    }
+    
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDateMillis
+    )
+    
+    // Date picker dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val date = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+                            // Format as MM/DD for bills
+                            val formattedDate = "${date.monthValue}/${date.dayOfMonth}"
+                            onUpdateDueDate(formattedDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Select")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -467,12 +657,20 @@ private fun BillCard(
                 )
                 OutlinedTextField(
                     value = bill.dueDateInput,
-                    onValueChange = onUpdateDueDate,
+                    onValueChange = { },
+                    readOnly = true,
                     label = { Text("Due Date") },
                     placeholder = { Text("MM/DD") },
                     isError = errors.containsKey("dueDate"),
                     supportingText = errors["dueDate"]?.let { { Text(it) } },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { showDatePicker = true },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Text(text = "📅", fontSize = 12.sp)
+                        }
+                    }
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -507,7 +705,8 @@ private fun ChapterSavings(
     ) {
         Text(
             text = "Chapter 4: Savings",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.testTag("chapter4_title")
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -524,7 +723,9 @@ private fun ChapterSavings(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = savingsError != null,
             supportingText = savingsError?.let { { Text(it) } },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chapter4_savings_input")
         )
     }
 }
@@ -545,7 +746,8 @@ private fun ChapterMonthlyBudgets(
     ) {
         Text(
             text = "Chapter 5: Monthly Budgets",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.testTag("chapter5_title")
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -562,7 +764,9 @@ private fun ChapterMonthlyBudgets(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = foodBudgetError != null,
             supportingText = foodBudgetError?.let { { Text(it) } } ?: { Text("Groceries, dining out, etc.") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chapter5_food_input")
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
@@ -573,7 +777,9 @@ private fun ChapterMonthlyBudgets(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = wantsBudgetError != null,
             supportingText = wantsBudgetError?.let { { Text(it) } } ?: { Text("Entertainment, hobbies, etc.") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chapter5_wants_input")
         )
     }
 }
@@ -590,7 +796,8 @@ private fun ChapterShieldReview(
     ) {
         Text(
             text = "Chapter 6: Shield Review",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.testTag("chapter6_title")
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -708,8 +915,12 @@ private fun SetupNavigationFooter(
             }
             if (currentChapter < totalChapters) {
                 Button(
-                    onClick = onNext,
-                    enabled = canProceed
+                    onClick = {
+                        android.util.Log.d("SetupQuest", "Next button clicked, canProceed=$canProceed")
+                        onNext()
+                    },
+                    enabled = canProceed,
+                    modifier = Modifier.testTag("setup_next_button")
                 ) {
                     Text("Next")
                     Spacer(modifier = Modifier.width(8.dp))
@@ -718,7 +929,8 @@ private fun SetupNavigationFooter(
             } else {
                 Button(
                     onClick = onNext,
-                    enabled = canProceed
+                    enabled = canProceed,
+                    modifier = Modifier.testTag("setup_finish_button")
                 ) {
                     Text("Finish")
                 }

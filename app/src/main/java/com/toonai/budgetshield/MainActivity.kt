@@ -35,15 +35,40 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.toonai.budgetshield.data.database.BudgetShieldDatabase
 import com.toonai.budgetshield.data.repository.BillRepository
+import com.toonai.budgetshield.data.repository.BudgetRepository
+import com.toonai.budgetshield.data.repository.IncomeRepository
+import com.toonai.budgetshield.data.repository.SavingsGoalRepository
+import com.toonai.budgetshield.data.repository.TransactionRepository
 import com.toonai.budgetshield.data.repository.UserSettingsRepository
+import com.toonai.budgetshield.data.repository.XpRepository
 import com.toonai.budgetshield.navigation.BackStackPolicy
 import com.toonai.budgetshield.navigation.Home
 import com.toonai.budgetshield.navigation.SetupQuest
 import com.toonai.budgetshield.navigation.createBudgetShieldEntryProvider
 import com.toonai.budgetshield.theme.BudgetShieldTheme
 import com.toonai.budgetshield.ui.LocalBillRepository
+import com.toonai.budgetshield.ui.LocalIncomeRepository
+import com.toonai.budgetshield.ui.LocalTransactionRepository
+import com.toonai.budgetshield.ui.LocalXpRepository
+import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
+import com.toonai.budgetshield.ui.LocalBudgetRepository
+import com.toonai.budgetshield.ui.LocalUserSettingsRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+
+/**
+ * Data class to hold all repositories for the app.
+ * This provides a clean way to pass repositories through the composition.
+ */
+data class AppRepositories(
+    val billRepository: BillRepository,
+    val incomeRepository: IncomeRepository,
+    val transactionRepository: TransactionRepository,
+    val xpRepository: XpRepository,
+    val savingsGoalRepository: SavingsGoalRepository,
+    val budgetRepository: BudgetRepository,
+    val userSettingsRepository: UserSettingsRepository
+)
 
 /**
  * MainActivity with non-bypassable first-run gate.
@@ -54,8 +79,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     
-    private lateinit var billRepository: BillRepository
-    private lateinit var userSettingsRepository: UserSettingsRepository
+    private lateinit var repositories: AppRepositories
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,22 +87,25 @@ class MainActivity : ComponentActivity() {
         
         // Initialize repositories
         val database = BudgetShieldDatabase.getDatabase(this)
-        billRepository = BillRepository(database.billDao())
-        userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
+        repositories = AppRepositories(
+            billRepository = BillRepository(database.billDao()),
+            incomeRepository = IncomeRepository(database.incomeScheduleDao()),
+            transactionRepository = TransactionRepository(database.transactionDao()),
+            xpRepository = XpRepository(database.xpEntryDao(), database.achievementDao()),
+            savingsGoalRepository = SavingsGoalRepository(database.savingsGoalDao(), database.userStreakDao()),
+            budgetRepository = BudgetRepository(database.budgetCategoryDao()),
+            userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
+        )
         
         setContent {
-            BudgetShieldAppWithLoading(
-                billRepository = billRepository,
-                userSettingsRepository = userSettingsRepository
-            )
+            BudgetShieldAppWithLoading(repositories = repositories)
         }
     }
 }
 
 @Composable
 private fun BudgetShieldAppWithLoading(
-    billRepository: BillRepository,
-    userSettingsRepository: UserSettingsRepository
+    repositories: AppRepositories
 ) {
     BudgetShieldTheme {
         var isLoading by remember { mutableStateOf(true) }
@@ -87,7 +114,7 @@ private fun BudgetShieldAppWithLoading(
         
         LaunchedEffect(Unit) {
             try {
-                val settings = userSettingsRepository.getSettings()
+                val settings = repositories.userSettingsRepository.getSettings()
                 isFirstRunComplete = settings?.isFirstRunComplete == true
                 isLoading = false
             } catch (e: Exception) {
@@ -100,8 +127,7 @@ private fun BudgetShieldAppWithLoading(
             isLoading -> ThemedLoadingScreen()
             hasError -> ErrorScreen()
             else -> BudgetShieldApp(
-                billRepository = billRepository,
-                userSettingsRepository = userSettingsRepository,
+                repositories = repositories,
                 initialDestination = if (isFirstRunComplete) Home else SetupQuest
             )
         }
@@ -152,12 +178,17 @@ private fun ErrorScreen() {
 
 @Composable
 private fun BudgetShieldApp(
-    billRepository: BillRepository,
-    userSettingsRepository: UserSettingsRepository,
+    repositories: AppRepositories,
     initialDestination: NavKey
 ) {
     CompositionLocalProvider(
-        LocalBillRepository provides billRepository
+        LocalBillRepository provides repositories.billRepository,
+        LocalIncomeRepository provides repositories.incomeRepository,
+        LocalTransactionRepository provides repositories.transactionRepository,
+        LocalXpRepository provides repositories.xpRepository,
+        LocalSavingsGoalRepository provides repositories.savingsGoalRepository,
+        LocalBudgetRepository provides repositories.budgetRepository,
+        LocalUserSettingsRepository provides repositories.userSettingsRepository
     ) {
         // Navigation 3: Use rememberNavBackStack for state management
         val backStack: NavBackStack<NavKey> = rememberNavBackStack(initialDestination)
@@ -172,7 +203,8 @@ private fun BudgetShieldApp(
             },
             onReplaceStack = { key ->
                 BackStackPolicy.completeSetup(backStack)
-            }
+            },
+            repositories = repositories
         )
 
         // Navigation 3: NavDisplay renders the current entry

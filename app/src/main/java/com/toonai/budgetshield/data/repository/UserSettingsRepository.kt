@@ -18,11 +18,6 @@ class UserSettingsRepository(private val userSettingsDao: UserSettingsDao) {
         return userSettingsDao.getSettingsSync()
     }
 
-    /** Synchronous blocking version - safe for test environments */
-    fun getSettingsBlocking(): UserSettings? {
-        return userSettingsDao.getSettingsBlocking()
-    }
-
     /** Get user settings as Flow */
     fun getSettingsFlow(): Flow<UserSettings?> {
         return userSettingsDao.getSettings()
@@ -33,10 +28,6 @@ class UserSettingsRepository(private val userSettingsDao: UserSettingsDao) {
         userSettingsDao.insertSettings(settings)
     }
 
-    /** Synchronous blocking version - safe for test environments */
-    fun saveSettingsBlocking(settings: UserSettings) {
-        userSettingsDao.insertSettingsBlocking(settings)
-    }
 
     /** Update first-run completion status */
     suspend fun completeFirstRun(chapter: Int = 7) {

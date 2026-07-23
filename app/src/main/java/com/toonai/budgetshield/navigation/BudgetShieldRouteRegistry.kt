@@ -52,6 +52,7 @@ object BudgetShieldRouteRegistry {
             is IncomeEntry,
             is BillEntry,
             is BillPayment,
+            is BillPaymentWithId,
             is SavingsEntry,
             is TransactionDetails,
             is BillProtected,

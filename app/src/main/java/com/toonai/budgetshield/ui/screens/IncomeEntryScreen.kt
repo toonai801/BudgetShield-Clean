@@ -21,12 +21,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +41,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.toonai.budgetshield.ui.viewmodel.IncomeEntryViewModel
+import com.toonai.budgetshield.util.DateParser
 
 // Premium gamified dark theme colors (matching Home)
 private val BackgroundDark = Color(0xFF02070D)
@@ -50,15 +55,27 @@ private val GoldAccent = Color(0xFFFFC545)
 private val BlueAccent = Color(0xFF1678B9)
 private val TextPrimary = Color(0xFFF4F7FB)
 private val TextMuted = Color(0xFFA6B1BF)
+private val DangerColor = Color(0xFFFF553D)
 
 @Composable
 fun IncomeEntryScreen(
+    viewModel: IncomeEntryViewModel,
     onNavigateToHome: () -> Unit,
     onNavigateToSetupQuest: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var amount by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var payday by remember { mutableStateOf("") }
+    var selectedFrequency by remember { mutableStateOf("semimonthly") }
+
+    // Handle success navigation
+    LaunchedEffect(uiState.saveSuccess) {
+        if (uiState.saveSuccess) {
+            onNavigateToHome()
+            viewModel.resetSuccess()
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -79,6 +96,14 @@ fun IncomeEntryScreen(
                 // Header
                 HeaderSection()
 
+                // Error message
+                if (uiState.errorMessage != null) {
+                    ErrorBanner(
+                        message = uiState.errorMessage!!,
+                        onDismiss = { viewModel.clearError() }
+                    )
+                }
+
                 // Form Card
                 FormCard(
                     name = name,
@@ -86,7 +111,9 @@ fun IncomeEntryScreen(
                     amount = amount,
                     onAmountChange = { amount = it },
                     payday = payday,
-                    onPaydayChange = { payday = it }
+                    onPaydayChange = { payday = it },
+                    selectedFrequency = selectedFrequency,
+                    onFrequencyChange = { selectedFrequency = it }
                 )
 
                 // Income Type
@@ -94,9 +121,52 @@ fun IncomeEntryScreen(
 
                 // Action Buttons
                 ActionButtons(
-                    onSave = onNavigateToHome,
+                    isLoading = uiState.isLoading,
+                    onSave = {
+                        val amountCents = amount.replace("[^0-9.]", "").toDoubleOrNull()?.let {
+                            (it * 100).toLong()
+                        } ?: 0L
+                        viewModel.saveIncome(
+                            name = name,
+                            amountCents = amountCents,
+                            nextPayday = payday.ifBlank { DateParser.today() },
+                            frequency = selectedFrequency
+                        )
+                    },
                     onBackSetup = onNavigateToSetupQuest
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ErrorBanner(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = DangerColor.copy(alpha = 0.15f)
+        ),
+        border = BorderStroke(1.dp, DangerColor.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = message,
+                color = DangerColor,
+                fontSize = 14.sp
+            )
+            TextButton(onClick = onDismiss) {
+                Text("Dismiss", color = DangerColor)
             }
         }
     }
@@ -150,7 +220,9 @@ private fun FormCard(
     amount: String,
     onAmountChange: (String) -> Unit,
     payday: String,
-    onPaydayChange: (String) -> Unit
+    onPaydayChange: (String) -> Unit,
+    selectedFrequency: String,
+    onFrequencyChange: (String) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -237,9 +309,18 @@ private fun FormCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PaydayChip("15th & 30th", true)
-                    PaydayChip("Weekly", false)
-                    PaydayChip("Custom", false)
+                    PaydayChip("15th & 30th", selectedFrequency == "semimonthly") {
+                        onFrequencyChange("semimonthly")
+                    }
+                    PaydayChip("Weekly", selectedFrequency == "weekly") {
+                        onFrequencyChange("weekly")
+                    }
+                    PaydayChip("Biweekly", selectedFrequency == "biweekly") {
+                        onFrequencyChange("biweekly")
+                    }
+                    PaydayChip("Monthly", selectedFrequency == "monthly") {
+                        onFrequencyChange("monthly")
+                    }
                 }
             }
 
@@ -254,7 +335,7 @@ private fun FormCard(
                 TextField(
                     value = payday,
                     onValueChange = onPaydayChange,
-                    placeholder = { Text("MM/DD/YYYY") },
+                    placeholder = { Text("YYYY-MM-DD") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF0D1B26),
@@ -280,7 +361,11 @@ private fun FormCard(
 }
 
 @Composable
-private fun PaydayChip(label: String, selected: Boolean) {
+private fun PaydayChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
     val bgColor = if (selected) GreenAccent.copy(alpha = 0.2f) else Color(0xFF0D1B26)
     val textColor = if (selected) GreenAccent else TextMuted
     val borderColor = if (selected) GreenAccent else PanelBorder
@@ -290,7 +375,8 @@ private fun PaydayChip(label: String, selected: Boolean) {
         colors = CardDefaults.cardColors(
             containerColor = bgColor
         ),
-        border = BorderStroke(1.dp, borderColor)
+        border = BorderStroke(1.dp, borderColor),
+        onClick = onClick
     ) {
         Text(
             text = label,
@@ -401,6 +487,7 @@ private fun IncomeTypeCard(
 
 @Composable
 private fun ActionButtons(
+    isLoading: Boolean,
     onSave: () -> Unit,
     onBackSetup: () -> Unit
 ) {
@@ -414,6 +501,7 @@ private fun ActionButtons(
             colors = CardDefaults.cardColors(
                 containerColor = GreenAccent
             ),
+            enabled = !isLoading,
             onClick = onSave
         ) {
             Box(
@@ -422,12 +510,19 @@ private fun ActionButtons(
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "💾 Save Income",
-                    color = BackgroundDark,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = BackgroundDark,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = "💾 Save Income",
+                        color = BackgroundDark,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
 
@@ -436,28 +531,6 @@ private fun ActionButtons(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Card(
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = PanelDark
-                ),
-                onClick = onSave
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "← Home",
-                        color = TextPrimary,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
             Card(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(16.dp),

@@ -107,6 +107,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Public method to set a specific month (for date picker)
+     */
+    fun setSelectedMonth(month: YearMonth) {
+        updateSelectedMonth(month)
+    }
+
     private fun calculateShieldPower(bills: List<Bill>): Int {
         val protectedBills = bills.filter { it.isProtected }
         if (protectedBills.isEmpty()) return 100

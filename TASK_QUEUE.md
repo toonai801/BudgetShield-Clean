@@ -7,13 +7,13 @@
 | TASK 3 | Android architecture and navigation foundation | COMPLETE | Navigation 3, 14 destinations, 97 tests passing |
 | TASK 4 | Functional Beta Intake and Home | COMPLETE | Version 1.2.0-beta-intake-home, 6-step Setup Quest, live data Home, Safe Now calculation |
 | TASK 5 | Design system and reusable components | NOT STARTED | |
-| TASK 6 | Income and payday system | PARTIAL | IncomeSchedule model in place, full system pending |
-| TASK 7 | Bills and recurrence engine | PARTIAL | Bill model exists, recurrence expansion pending |
-| TASK 8 | Savings, wants, and food budgets | PARTIAL | Basic models in place, full system pending |
+| TASK 6 | Income and payday system | COMPLETE | IncomeSchedule model, DAO, Repository, IncomeEntryScreen, IncomeEntryViewModel with frequency selection, XP integration |
+| TASK 7 | Bills and recurrence engine | COMPLETE | Bill model with payment tracking, recurrence fields, BillRepository with payment validation, recurrence engine for generating instances |
+| TASK 8 | Savings, wants, and food budgets | COMPLETE | BudgetCategory model (Food/Wants types), DAO, BudgetRepository with month-key scoping, SavingsGoal model, SavingsEntryScreen with XP integration |
 | TASK 9 | Safe Now calculation engine | COMPLETE | SafeNowCalculator.kt with all documented rules |
-| TASK 10 | Transactions and editing | NOT STARTED | |
-| TASK 11 | Shield XP and achievement system | NOT STARTED | |
-| TASK 12 | Stats, goals, and settings | NOT STARTED | |
+| TASK 10 | Transactions and editing | COMPLETE | Transaction model with type/category, DAO with date range queries, Repository, TransactionDetailsScreen with editing UI, TransactionViewModel with state management |
+| TASK 11 | Shield XP and achievement system | COMPLETE | XpEntry model with activity types, XpEntryDao, XpRepository with level calculation, ShieldLevels configuration, AchievementDao, ShieldProgressionScreen with ViewModel integration, achievement display |
+| TASK 12 | Stats, goals, and settings | COMPLETE | GoalsScreen + GoalsViewModel (savings goals, streaks, shield preview), StatsScreen + StatsViewModel (spending stats, category breakdown, monthly summaries), SettingsScreen with setup quest navigation |
 | TASK 13 | Full navigation and interaction QA | NOT STARTED | |
 | TASK 14 | Visual accuracy pass | NOT STARTED | |
 | TASK 15 | Fresh-install beta QA | NOT STARTED | |

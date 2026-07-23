@@ -40,18 +40,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.toonai.budgetshield.BuildConfig
 
-// Premium gamified dark theme colors (matching Home)
-private val BackgroundDark = Color(0xFF02070D)
-private val PanelDark = Color(0xFF06121D)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val GreenAccent = Color(0xFF2FE6A7)
-private val GoldAccent = Color(0xFFFFC545)
-private val BlueAccent = Color(0xFF1678B9)
-private val PurpleAccent = Color(0xFF9D4EDD)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
-private val DangerColor = Color(0xFFFF553D)
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.PanelBorder
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.GreenAccent
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.BlueAccent
+import com.toonai.budgetshield.theme.PurpleAccent
+import com.toonai.budgetshield.theme.TextPrimary
+import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.theme.DangerDot
+
 
 @Composable
 fun SettingsScreen(
@@ -390,7 +390,7 @@ private fun DangerZoneSection(onRestartSetup: () -> Unit) {
                 )
                 Text(
                     text = "Danger Zone",
-                    color = DangerColor,
+                    color = DangerDot,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -408,7 +408,7 @@ private fun DangerZoneSection(onRestartSetup: () -> Unit) {
                     .testTag("settings_danger_zone_restart"),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = DangerColor.copy(alpha = 0.15f)
+                    containerColor = DangerDot.copy(alpha = 0.15f)
                 ),
                 onClick = onRestartSetup
             ) {
@@ -427,7 +427,7 @@ private fun DangerZoneSection(onRestartSetup: () -> Unit) {
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(DangerColor.copy(alpha = 0.3f)),
+                                .background(DangerDot.copy(alpha = 0.3f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -439,7 +439,7 @@ private fun DangerZoneSection(onRestartSetup: () -> Unit) {
                         Column {
                             Text(
                                 text = "Restart Setup Quest",
-                                color = DangerColor,
+                                color = DangerDot,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -453,7 +453,7 @@ private fun DangerZoneSection(onRestartSetup: () -> Unit) {
 
                     Text(
                         text = "›",
-                        color = DangerColor,
+                        color = DangerDot,
                         fontSize = 20.sp
                     )
                 }

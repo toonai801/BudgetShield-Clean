@@ -30,20 +30,9 @@ interface IncomeScheduleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(schedule: IncomeSchedule): Long
 
-    /**
-     * Synchronous blocking version - safe for test environments.
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertBlocking(schedule: IncomeSchedule): Long
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSchedule(schedule: IncomeSchedule): Long
 
-    /**
-     * Synchronous blocking version - safe for test environments.
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertScheduleBlocking(schedule: IncomeSchedule): Long
 
     @Update
     suspend fun update(schedule: IncomeSchedule)

@@ -62,10 +62,6 @@ class IncomeRepository(private val incomeScheduleDao: IncomeScheduleDao) {
         }
     }
 
-    /** Synchronous blocking version - safe for test environments */
-    fun saveScheduleBlocking(schedule: IncomeSchedule): Long {
-        return incomeScheduleDao.insertBlocking(schedule)
-    }
 
     /** Update an existing income schedule */
     suspend fun updateIncomeSchedule(incomeSchedule: IncomeSchedule) {

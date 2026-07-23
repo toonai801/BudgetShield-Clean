@@ -44,21 +44,21 @@ import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.ui.viewmodel.BillsUiState
 import com.toonai.budgetshield.ui.viewmodel.BillsViewModel
 
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.PanelBorder
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.CyanSoft
+import com.toonai.budgetshield.theme.GreenAccent
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.GoldAccent20
+import com.toonai.budgetshield.theme.BlueAccent
+import com.toonai.budgetshield.theme.PurpleAccent
+import com.toonai.budgetshield.theme.TextPrimary
+import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.theme.Warning
+
 // Premium gamified dark theme - Bills & Payments Edition
-private val BackgroundDark = Color(0xFF02070D)
-private val PanelDark = Color(0xFF06121D)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val CyanGlow = Color(0xFF10CDD9)
-private val GreenAccent = Color(0xFF2FE6A7)
-private val GoldAccent = Color(0xFFFFC545)
-private val GoldGlow = Color(0xFFFFD700)
-private val BlueAccent = Color(0xFF1678B9)
-private val PurpleAccent = Color(0xFF9D4EDD)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
-private val ProtectedGreen = Color(0xFF2FE6A7)
-private val UnprotectedAmber = Color(0xFFFFB74D)
 
 @Composable
 fun BillsScreen(
@@ -282,7 +282,7 @@ private fun ProtectedMoneyCard(
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
-                            .background(ProtectedGreen.copy(alpha = 0.2f)),
+                            .background(GreenAccent.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -292,7 +292,7 @@ private fun ProtectedMoneyCard(
                     }
                     Text(
                         text = "Protected Money",
-                        color = ProtectedGreen,
+                        color = GreenAccent,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -336,7 +336,7 @@ private fun ProtectedMoneyCard(
                             .clip(RoundedCornerShape(3.dp))
                             .background(
                                 Brush.horizontalGradient(
-                                    colors = listOf(ProtectedGreen, CyanAccent)
+                                    colors = listOf(GreenAccent, CyanAccent)
                                 )
                             )
                     )
@@ -364,7 +364,7 @@ private fun ProtectionSummary(
             label = "Protected",
             count = protectedCount,
             amount = protectedAmount,
-            color = ProtectedGreen
+            color = GreenAccent
         )
 
         // Unprotected count
@@ -374,7 +374,7 @@ private fun ProtectionSummary(
             label = "Needs Shield",
             count = unprotectedCount,
             amount = unprotectedAmount,
-            color = UnprotectedAmber
+            color = Warning
         )
     }
 }
@@ -572,8 +572,8 @@ private fun BillCard(
     bill: Bill,
     onPay: () -> Unit
 ) {
-    val statusColor = if (bill.isProtected) ProtectedGreen else UnprotectedAmber
-    val statusBg = if (bill.isProtected) ProtectedGreen.copy(alpha = 0.1f) else UnprotectedAmber.copy(alpha = 0.1f)
+    val statusColor = if (bill.isProtected) GreenAccent else Warning
+    val statusBg = if (bill.isProtected) GreenAccent.copy(alpha = 0.1f) else Warning.copy(alpha = 0.1f)
     
     // Calculate days until due
     val daysLeft = calculateDaysUntilDue(bill.dueDate)
@@ -642,7 +642,7 @@ private fun BillCard(
                     // Due date with urgency
                     val dateColor = when {
                         daysLeft <= 3 -> Color(0xFFFF553D)
-                        daysLeft <= 7 -> UnprotectedAmber
+                        daysLeft <= 7 -> Warning
                         else -> TextMuted
                     }
 
@@ -695,7 +695,7 @@ private fun BillCard(
                     // Fully paid bills show paid status
                     Text(
                         text = "✓ Paid",
-                        color = ProtectedGreen,
+                        color = GreenAccent,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     )

@@ -54,28 +54,6 @@ class BillRepository(private val billDao: BillDao) {
         return billDao.insertBill(bill)
     }
 
-    /** Synchronous blocking version - safe for test environments */
-    fun createBillBlocking(
-        name: String,
-        icon: String,
-        amountCents: Long,
-        dueDate: String,
-        isProtected: Boolean = false
-    ): Long {
-        val bill = Bill(
-            name = name,
-            icon = icon,
-            amountCents = amountCents,
-            dueDate = dueDate,
-            isProtected = isProtected
-        )
-        return billDao.insertBillBlocking(bill)
-    }
-
-    /** Synchronous blocking version - safe for test environments */
-    fun getAllBillsBlocking(): List<Bill> {
-        return billDao.getAllBillsBlocking()
-    }
     
     /**
      * Make a payment toward a bill.

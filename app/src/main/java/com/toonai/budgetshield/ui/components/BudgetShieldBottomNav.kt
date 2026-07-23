@@ -24,16 +24,17 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.toonai.budgetshield.theme.BudgetShieldTheme
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.PanelBorder
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.theme.TextPrimary
 
 import kotlin.reflect.KClass
-
-// Premium gamified dark theme colors (matching Home)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val TextMuted = Color(0xFFA6B1BF)
-private val FooterBackground = Color(0xFF06121D)
 
 /**
  * BudgetShield Shared Bottom Navigation Bar
@@ -59,7 +60,7 @@ fun BudgetShieldBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
-        color = FooterBackground
+        color = PanelDark
     ) {
         Column(
             modifier = Modifier
@@ -158,6 +159,124 @@ enum class MainDestination(
             GOALS -> com.toonai.budgetshield.navigation.Goals::class
             SETTINGS -> com.toonai.budgetshield.navigation.Settings::class
         }
+}
+
+// ============================================
+// PREVIEWS
+// ============================================
+
+@Preview(
+    name = "Bottom Nav - Home Selected",
+    showBackground = true,
+    backgroundColor = 0xFF02070D
+)
+@Composable
+private fun BottomNavHomeSelectedPreview() {
+    BudgetShieldTheme {
+        BudgetShieldBottomNav(
+            currentDestination = MainDestination.HOME,
+            onNavigateToHome = {},
+            onNavigateToTreasure = {},
+            onNavigateToStats = {},
+            onNavigateToGoals = {},
+            onNavigateToSettings = {}
+        )
+    }
+}
+
+@Preview(
+    name = "Bottom Nav - Treasure Selected",
+    showBackground = true,
+    backgroundColor = 0xFF02070D
+)
+@Composable
+private fun BottomNavTreasureSelectedPreview() {
+    BudgetShieldTheme {
+        BudgetShieldBottomNav(
+            currentDestination = MainDestination.TREASURE,
+            onNavigateToHome = {},
+            onNavigateToTreasure = {},
+            onNavigateToStats = {},
+            onNavigateToGoals = {},
+            onNavigateToSettings = {}
+        )
+    }
+}
+
+@Preview(
+    name = "Bottom Nav - Stats Selected",
+    showBackground = true,
+    backgroundColor = 0xFF02070D
+)
+@Composable
+private fun BottomNavStatsSelectedPreview() {
+    BudgetShieldTheme {
+        BudgetShieldBottomNav(
+            currentDestination = MainDestination.STATS,
+            onNavigateToHome = {},
+            onNavigateToTreasure = {},
+            onNavigateToStats = {},
+            onNavigateToGoals = {},
+            onNavigateToSettings = {}
+        )
+    }
+}
+
+@Preview(
+    name = "Bottom Nav - Goals Selected",
+    showBackground = true,
+    backgroundColor = 0xFF02070D
+)
+@Composable
+private fun BottomNavGoalsSelectedPreview() {
+    BudgetShieldTheme {
+        BudgetShieldBottomNav(
+            currentDestination = MainDestination.GOALS,
+            onNavigateToHome = {},
+            onNavigateToTreasure = {},
+            onNavigateToStats = {},
+            onNavigateToGoals = {},
+            onNavigateToSettings = {}
+        )
+    }
+}
+
+@Preview(
+    name = "Bottom Nav - Settings Selected",
+    showBackground = true,
+    backgroundColor = 0xFF02070D
+)
+@Composable
+private fun BottomNavSettingsSelectedPreview() {
+    BudgetShieldTheme {
+        BudgetShieldBottomNav(
+            currentDestination = MainDestination.SETTINGS,
+            onNavigateToHome = {},
+            onNavigateToTreasure = {},
+            onNavigateToStats = {},
+            onNavigateToGoals = {},
+            onNavigateToSettings = {}
+        )
+    }
+}
+
+@Preview(
+    name = "Bottom Nav - No Selection",
+    showBackground = true,
+    backgroundColor = 0xFF02070D
+)
+@Composable
+private fun BottomNavNoSelectionPreview() {
+    BudgetShieldTheme {
+        BudgetShieldBottomNav(
+            currentDestination = null,
+            onNavigateToHome = {},
+            onNavigateToTreasure = {},
+            onNavigateToStats = {},
+            onNavigateToGoals = {},
+            onNavigateToSettings = {}
+        )
+    }
 }
 
 @Composable

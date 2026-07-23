@@ -17,7 +17,7 @@ android {
         targetSdk = 35
         versionCode = 7
         versionName = "1.2.0-beta-intake-home"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.toonai.budgetshield.HiltTestRunner"
     }
 
     buildTypes {
@@ -113,4 +113,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    
+    // Hilt testing
+    androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptAndroidTest("com.google.dagger:hilt-compiler:$hiltVersion")
 }

@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,19 +34,13 @@ class SetupQuestViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SetupQuestUiState())
     val uiState: StateFlow<SetupQuestUiState> = _uiState.asStateFlow()
 
-    // Dedicated executor for persistence - survives coroutine cancellation
-    private val persistenceExecutor = Executors.newSingleThreadExecutor()
-
     fun loadDraft() {
         android.util.Log.d("SetupQuest", "loadDraft: Starting")
         _uiState.value = _uiState.value.copy(isLoading = true)
 
         viewModelScope.launch {
             try {
-                // Submit blocking call to executor
-                val settings = persistenceExecutor.submit<UserSettings?> {
-                    userSettingsRepository.getSettingsBlocking()
-                }.get()
+                val settings = userSettingsRepository.getSettings()
 
                 android.util.Log.d("SetupQuest", "loadDraft: userSettings=$settings")
                 if (settings?.isFirstRunComplete == true) {
@@ -57,9 +50,7 @@ class SetupQuestViewModel @Inject constructor(
                 }
 
                 // Load from setup draft for resume capability
-                val draft = persistenceExecutor.submit<SetupDraft?> {
-                    setupDraftDao.getDraftBlocking()
-                }.get()
+                val draft = setupDraftDao.getDraftSync()
 
                 android.util.Log.d("SetupQuest", "loadDraft: draft=$draft")
 
@@ -78,10 +69,8 @@ class SetupQuestViewModel @Inject constructor(
     private suspend fun restoreFromDraft(draft: SetupDraft) {
         android.util.Log.d("SetupQuest", "loadDraft: Restoring from draft, chapter=${draft.currentChapter}")
 
-        // Load bills from repository using blocking call
-        val persistedBills = persistenceExecutor.submit<List<Bill>> {
-            billRepository.getAllBillsBlocking()
-        }.get()
+        // Load bills from repository using coroutines
+        val persistedBills = billRepository.allBills.first()
 
         val draftBills = if (persistedBills.isNotEmpty()) {
             persistedBills.map { bill ->
@@ -137,41 +126,58 @@ class SetupQuestViewModel @Inject constructor(
 
     // Chapter 2: Income
     fun updateIncomeName(name: String) {
-        _uiState.value = _uiState.value.copy(incomeName = name)
-        _uiState.value = _uiState.value.copy(paydayErrors = emptyMap())
+        // Clear error for this field if it exists, then update name
+        val currentErrors = _uiState.value.paydayErrors.filterKeys { it != "incomeName" }
+        _uiState.value = _uiState.value.copy(incomeName = name, paydayErrors = currentErrors)
         saveDraft()
     }
 
     fun updateIncomeAmount(input: String) {
+        // Update input and parse amount synchronously
         MoneyParser.parseToCents(input).fold(
             onSuccess = { cents ->
                 _uiState.value = _uiState.value.copy(
+                    incomeAmountInput = input,
                     incomeAmountCents = cents,
-                    paydayErrors = emptyMap()
+                    paydayErrors = _uiState.value.paydayErrors.filterKeys { it != "incomeAmount" }
                 )
                 saveDraft()
             },
-            onFailure = {}
+            onFailure = { error ->
+                _uiState.value = _uiState.value.copy(
+                    incomeAmountInput = input,
+                    incomeAmountCents = 0,
+                    paydayErrors = _uiState.value.paydayErrors + ("incomeAmount" to (error.message ?: "Invalid amount"))
+                )
+            }
         )
     }
 
     fun updatePaydayDate(date: String) {
-        _uiState.value = _uiState.value.copy(paydayDate = date, paydayErrors = emptyMap())
+        // Update synchronously with immediate error clearing
+        val currentErrors = _uiState.value.paydayErrors.filterKeys { it != "paydayDate" }
+        _uiState.value = _uiState.value.copy(paydayDate = date, paydayErrors = currentErrors)
         saveDraft()
     }
 
     fun updateFrequency(frequency: String) {
-        _uiState.value = _uiState.value.copy(frequency = frequency)
+        // Clear frequency error if present, then update
+        val currentErrors = _uiState.value.paydayErrors.filterKeys { it != "frequency" }
+        _uiState.value = _uiState.value.copy(frequency = frequency, paydayErrors = currentErrors)
         saveDraft()
     }
 
     fun toggleIncomeConfirmation() {
         val newState = !_uiState.value.isIncomeConfirmed
+        android.util.Log.d("SetupQuest", "toggleIncomeConfirmation: old=${_uiState.value.isIncomeConfirmed}, new=$newState")
+        // Clear confirmation error when toggling
+        val currentErrors = _uiState.value.paydayErrors.filterKeys { it != "confirmation" }
         _uiState.value = _uiState.value.copy(
             isIncomeConfirmed = newState,
-            paydayErrors = emptyMap()
+            paydayErrors = currentErrors
         )
         saveDraft()
+        android.util.Log.d("SetupQuest", "toggleIncomeConfirmation: after update isIncomeConfirmed=${_uiState.value.isIncomeConfirmed}")
     }
 
     // Chapter 3: Bills
@@ -337,74 +343,60 @@ class SetupQuestViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Submit all persistence work to executor
-                val completed = persistenceExecutor.submit<Boolean> {
-                    try {
-                        // 1. Save income schedule
-                        if (_uiState.value.incomeName.isNotBlank() && _uiState.value.incomeAmountCents > 0) {
-                            incomeRepository.saveScheduleBlocking(
-                                IncomeSchedule(
-                                    id = 0L,
-                                    name = _uiState.value.incomeName,
-                                    amountCents = _uiState.value.incomeAmountCents,
-                                    nextPaydayDate = _uiState.value.paydayDate,
-                                    frequency = _uiState.value.frequency,
-                                    isConfirmed = _uiState.value.isIncomeConfirmed
-                                )
-                            )
-                            android.util.Log.d("SetupQuest", "completeSetup: Income schedule saved")
-                        }
-
-                        // 2. Save budgets for current month
-                        val monthKey = DateParser.currentMonthKey()
-                        budgetRepository.saveBudgetBlocking("Food", monthKey, _uiState.value.foodBudgetCents)
-                        budgetRepository.saveBudgetBlocking("Wants", monthKey, _uiState.value.wantsBudgetCents)
-                        android.util.Log.d("SetupQuest", "completeSetup: Budgets saved")
-
-                        // 3. Save bills from setup
-                        _uiState.value.bills.forEach { draftBill ->
-                            if (draftBill.name.isNotBlank() && draftBill.amountCents > 0) {
-                                billRepository.createBillBlocking(
-                                    name = draftBill.name,
-                                    icon = "📝",
-                                    amountCents = draftBill.amountCents,
-                                    dueDate = draftBill.dueDateInput,
-                                    isProtected = draftBill.isProtected
-                                )
-                            }
-                        }
-                        android.util.Log.d("SetupQuest", "completeSetup: Bills saved")
-
-                        // 4. Mark setup complete in UserSettings
-                        val settings = UserSettings(
-                            id = 1,
-                            isFirstRunComplete = true,
-                            cashOnHandCents = _uiState.value.cashOnHandCents,
-                            savingsBalanceCents = _uiState.value.savingsCents,
-                            setupChapter = 7,
-                            selectedMonth = monthKey
+                // 1. Save income schedule
+                if (_uiState.value.incomeName.isNotBlank() && _uiState.value.incomeAmountCents > 0) {
+                    incomeRepository.saveSchedule(
+                        IncomeSchedule(
+                            id = 0L,
+                            name = _uiState.value.incomeName,
+                            amountCents = _uiState.value.incomeAmountCents,
+                            nextPaydayDate = _uiState.value.paydayDate,
+                            frequency = _uiState.value.frequency,
+                            isConfirmed = _uiState.value.isIncomeConfirmed
                         )
-                        userSettingsRepository.saveSettingsBlocking(settings)
-                        android.util.Log.d("SetupQuest", "completeSetup: Settings saved")
+                    )
+                    android.util.Log.d("SetupQuest", "completeSetup: Income schedule saved")
+                }
 
-                        // 5. Clear draft
-                        setupDraftDao.clearDraftBlocking()
-                        android.util.Log.d("SetupQuest", "completeSetup: Draft cleared")
+                // 2. Save budgets for current month
+                val monthKey = DateParser.currentMonthKey()
+                budgetRepository.saveBudget("Food", monthKey, _uiState.value.foodBudgetCents)
+                budgetRepository.saveBudget("Wants", monthKey, _uiState.value.wantsBudgetCents)
+                android.util.Log.d("SetupQuest", "completeSetup: Budgets saved")
 
-                        true
-                    } catch (e: Exception) {
-                        android.util.Log.e("SetupQuest", "completeSetup: Failed in executor", e)
-                        false
+                // 3. Save bills from setup
+                _uiState.value.bills.forEach { draftBill ->
+                    if (draftBill.name.isNotBlank() && draftBill.amountCents > 0) {
+                        billRepository.createBill(
+                            name = draftBill.name,
+                            icon = "📝",
+                            amountCents = draftBill.amountCents,
+                            dueDate = draftBill.dueDateInput,
+                            isProtected = draftBill.isProtected
+                        )
                     }
-                }.get()
+                }
+                android.util.Log.d("SetupQuest", "completeSetup: Bills saved")
+
+                // 4. Mark setup complete in UserSettings
+                val settings = UserSettings(
+                    id = 1,
+                    isFirstRunComplete = true,
+                    cashOnHandCents = _uiState.value.cashOnHandCents,
+                    savingsBalanceCents = _uiState.value.savingsCents,
+                    setupChapter = 7,
+                    selectedMonth = monthKey
+                )
+                userSettingsRepository.saveSettings(settings)
+                android.util.Log.d("SetupQuest", "completeSetup: Settings saved")
+
+                // 5. Clear draft
+                setupDraftDao.clearDraft()
+                android.util.Log.d("SetupQuest", "completeSetup: Draft cleared")
 
                 _uiState.value = _uiState.value.copy(isLoading = false)
-                if (completed) {
-                    android.util.Log.d("SetupQuest", "completeSetup: Success, calling onSuccess")
-                    onSuccess()
-                } else {
-                    _uiState.value = _uiState.value.copy(error = "Activation failed")
-                }
+                android.util.Log.d("SetupQuest", "completeSetup: Success, calling onSuccess")
+                onSuccess()
             } catch (e: Exception) {
                 android.util.Log.e("SetupQuest", "completeSetup: Failed", e)
                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Activation failed: ${e.message}")
@@ -413,8 +405,7 @@ class SetupQuestViewModel @Inject constructor(
     }
 
     private fun saveDraft() {
-        // Submit to executor - fire and forget for drafts
-        persistenceExecutor.submit {
+        viewModelScope.launch {
             try {
                 val state = _uiState.value
                 val draft = SetupDraft(
@@ -431,16 +422,11 @@ class SetupQuestViewModel @Inject constructor(
                     wantsBudgetCents = state.wantsBudgetCents,
                     updatedAt = System.currentTimeMillis()
                 )
-                setupDraftDao.saveDraftBlocking(draft)
+                setupDraftDao.saveDraft(draft)
             } catch (e: Exception) {
                 android.util.Log.e("SetupQuest", "saveDraft: Failed", e)
             }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        persistenceExecutor.shutdown()
     }
 }
 

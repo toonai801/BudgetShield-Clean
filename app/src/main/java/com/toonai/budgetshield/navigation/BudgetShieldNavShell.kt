@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import com.toonai.budgetshield.AppRepositories
 import com.toonai.budgetshield.ui.components.BudgetShieldBottomNav
 import com.toonai.budgetshield.ui.components.MainDestination
 import com.toonai.budgetshield.ui.screens.BillEntryScreen
@@ -29,6 +31,13 @@ import com.toonai.budgetshield.ui.screens.ShieldProgressionScreen
 import com.toonai.budgetshield.ui.screens.StatsScreen
 import com.toonai.budgetshield.ui.screens.TransactionDetailsScreen
 import com.toonai.budgetshield.ui.screens.TreasureScreen
+import com.toonai.budgetshield.ui.viewmodel.BillsViewModel
+import com.toonai.budgetshield.ui.viewmodel.GoalsViewModel
+import com.toonai.budgetshield.ui.viewmodel.IncomeEntryViewModel
+import com.toonai.budgetshield.ui.viewmodel.SavingsEntryViewModel
+import com.toonai.budgetshield.ui.viewmodel.SettingsViewModel
+import com.toonai.budgetshield.ui.viewmodel.StatsViewModel
+import com.toonai.budgetshield.ui.viewmodel.TransactionViewModel
 
 // Premium gamified dark theme - Background
 private val BackgroundDark = Color(0xFF02070D)
@@ -71,7 +80,8 @@ private fun BudgetShieldScreenContent(
     key: NavKey,
     onNavigate: (NavKey) -> Unit,
     onNavigateBack: () -> Unit,
-    onReplaceStack: (NavKey) -> Unit
+    onReplaceStack: (NavKey) -> Unit,
+    repositories: AppRepositories
 ) {
     when (key) {
         is SetupQuest -> {
@@ -90,9 +100,9 @@ private fun BudgetShieldScreenContent(
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) },
-                onNavigateToRewardScreen = { /* TODO: implement rewards */ },
+                onNavigateToRewardScreen = { /* Rewards not implemented - button hidden in UI */ },
                 onNavigateToMenu = { onNavigate(BudgetMenu) },
-                onNavigateToCalendar = { onNavigate(Settings) }
+                onNavigateToCalendar = { /* Calendar button removed - use month picker */ }
             )
         }
         is BudgetMenu -> {
@@ -136,6 +146,12 @@ private fun BudgetShieldScreenContent(
         }
         is IncomeEntry -> {
             IncomeEntryScreen(
+                viewModel = viewModel(
+                    factory = IncomeEntryViewModel.Factory(
+                        repositories.incomeRepository,
+                        repositories.xpRepository
+                    )
+                ),
                 onNavigateToHome = { onNavigate(Home) },
                 onNavigateToSetupQuest = { onNavigate(SetupQuest) }
             )
@@ -163,12 +179,22 @@ private fun BudgetShieldScreenContent(
         }
         is SavingsEntry -> {
             SavingsEntryScreen(
+                viewModel = viewModel(
+                    factory = SavingsEntryViewModel.Factory(
+                        repositories.savingsGoalRepository,
+                        repositories.transactionRepository,
+                        repositories.xpRepository
+                    )
+                ),
                 onNavigateToGoals = { onNavigate(Goals) },
                 onNavigateToHome = { onNavigate(Home) }
             )
         }
         is TransactionDetails -> {
             TransactionDetailsScreen(
+                viewModel = viewModel(
+                    factory = TransactionViewModel.Factory(repositories.transactionRepository)
+                ),
                 transactionId = key.transactionId,
                 onNavigateBack = { onNavigateBack() },
                 onNavigateToHome = { onNavigate(Home) },
@@ -201,7 +227,8 @@ private fun BudgetShieldScreenContent(
 fun createBudgetShieldEntryProvider(
     onNavigate: (NavKey) -> Unit,
     onNavigateBack: () -> Unit,
-    onReplaceStack: (NavKey) -> Unit
+    onReplaceStack: (NavKey) -> Unit,
+    repositories: AppRepositories
 ): (NavKey) -> NavEntry<NavKey> {
     return { key: NavKey ->
         NavEntry(key) {
@@ -245,7 +272,8 @@ fun createBudgetShieldEntryProvider(
                             key = key,
                             onNavigate = onNavigate,
                             onNavigateBack = onNavigateBack,
-                            onReplaceStack = onReplaceStack
+                            onReplaceStack = onReplaceStack,
+                            repositories = repositories
                         )
                     }
                 }
@@ -256,7 +284,8 @@ fun createBudgetShieldEntryProvider(
                     key = key,
                     onNavigate = onNavigate,
                     onNavigateBack = onNavigateBack,
-                    onReplaceStack = onReplaceStack
+                    onReplaceStack = onReplaceStack,
+                    repositories = repositories
                 )
             } else {
                 // Unknown screens render without scaffold
@@ -278,7 +307,8 @@ fun createBudgetShieldEntryProvider(
                         key = key,
                         onNavigate = onNavigate,
                         onNavigateBack = onNavigateBack,
-                        onReplaceStack = onReplaceStack
+                        onReplaceStack = onReplaceStack,
+                        repositories = repositories
                     )
                 }
             }

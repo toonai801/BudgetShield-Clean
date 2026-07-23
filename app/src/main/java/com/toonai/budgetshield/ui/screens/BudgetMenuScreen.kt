@@ -16,16 +16,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Premium gamified dark theme colors
-private val BackgroundDark = Color(0xFF02070D)
-private val PanelDark = Color(0xFF06121D)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val CyanSoft = Color(0xFF10CDD9)
-private val GreenAccent = Color(0xFF2FE6A7)
-private val GoldAccent = Color(0xFFFFC545)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.PanelBorder
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.CyanSoft
+import com.toonai.budgetshield.theme.GreenAccent
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.TextPrimary
+import com.toonai.budgetshield.theme.TextMuted
+
 
 @Composable
 fun BudgetMenuScreen(

@@ -32,13 +32,7 @@ interface BillDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBill(bill: Bill): Long
 
-    /** Synchronous blocking version - safe for test environments. */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertBillBlocking(bill: Bill): Long
 
-    /** Synchronous blocking version - safe for test environments. */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertBlocking(bill: Bill): Long
     
     /** Update an existing bill */
     @Update
@@ -72,9 +66,5 @@ interface BillDao {
     @Query("SELECT COUNT(*) FROM bills")
     suspend fun getBillCount(): Int
 
-    /**
-     * Synchronous blocking version - safe for test environments.
-     */
-    @Query("SELECT * FROM bills ORDER BY dueDate ASC, name ASC")
-    fun getAllBillsBlocking(): List<Bill>
+
 }

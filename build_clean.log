@@ -1,0 +1,12 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Exception while marshalling /home/toon/android-sdk/build-tools/35.0.0/package.xml. Probably the SDK is read-only
+Observed package id 'build-tools;34.0.0' in inconsistent location '/home/toon/android-sdk/build-tools/35.0.0' (Expected '/home/toon/android-sdk/build-tools/34.0.0')
+Observed package id 'build-tools;35.0.0' in inconsistent location '/home/toon/android-sdk/build-tools/35.0.0-2' (Expected '/home/toon/android-sdk/build-tools/35.0.0')
+Observed package id 'platforms;android-35' in inconsistent location '/home/toon/android-sdk/platforms/android-36' (Expected '/home/toon/android-sdk/platforms/android-35')
+Already observed package id 'platforms;android-35' in '/home/toon/android-sdk/platforms/android-35'. Skipping duplicate at '/home/toon/android-sdk/platforms/android-36'
+Observed package id 'platforms;android-36' in inconsistent location '/home/toon/android-sdk/platforms/android-36-2' (Expected '/home/toon/android-sdk/platforms/android-36')
+[=========                              ] 25%                                   > Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED

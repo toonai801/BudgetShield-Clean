@@ -42,20 +42,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.PurpleAccent
+import com.toonai.budgetshield.theme.DangerDot
+import com.toonai.budgetshield.theme.TextPrimary
+import com.toonai.budgetshield.theme.TextMuted
+
 // Premium dark fantasy gamified theme - Treasure Hub Edition
-private val BackgroundDark = Color(0xFF02070D)
-private val BackgroundDeeper = Color(0xFF010509)
-private val PanelDark = Color(0xFF06121D)
-private val CyanAccent = Color(0xFF17E8F2)
-private val CyanDark = Color(0xFF0D4B5C)
-private val GoldAccent = Color(0xFFFFC545)
-private val GoldDark = Color(0xFFB8860B)
-private val GoldGlow = Color(0xFFFFE066)
-private val PurpleAccent = Color(0xFF9D4EDD)
-private val RedAccent = Color(0xFFFF6B6B)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
-private val TextDim = Color(0xFF6B7B8C)
 
 // Section expansion states - all five sections
 private data class TreasureSections(
@@ -85,7 +81,7 @@ fun TreasureScreen(
                             BackgroundDark,
                             Color(0xFF06121D),
                             Color(0xFF081525),
-                            BackgroundDeeper
+                            BackgroundDark
                         )
                     )
                 )
@@ -195,7 +191,7 @@ private fun TreasureHeader(onNavigateToHome: () -> Unit) {
                         Brush.radialGradient(
                             colors = listOf(
                                 GoldAccent.copy(alpha = 0.25f),
-                                GoldDark.copy(alpha = 0.15f),
+                                GoldAccent.copy(alpha = 0.15f),
                                 Color.Transparent
                             )
                         )
@@ -220,14 +216,14 @@ private fun TreasureHeader(onNavigateToHome: () -> Unit) {
                             )
                             // Chest lid line
                             drawLine(
-                                color = GoldDark,
+                                color = GoldAccent,
                                 start = Offset(0f, size.height * 0.35f),
                                 end = Offset(size.width, size.height * 0.35f),
                                 strokeWidth = 2.dp.toPx()
                             )
                             // Lock
                             drawCircle(
-                                color = GoldGlow,
+                                color = GoldAccent,
                                 radius = 4.dp.toPx(),
                                 center = Offset(size.width / 2, size.height * 0.55f)
                             )
@@ -306,11 +302,11 @@ private fun ExpandableTreasureSection(
                             .clip(RoundedCornerShape(10.dp))
                             .background(
                                 when (icon) {
-                                    SectionIcon.XP -> CyanDark.copy(alpha = 0.3f)
+                                    SectionIcon.XP -> CyanAccent.copy(alpha = 0.3f)
                                     SectionIcon.STREAK -> PurpleAccent.copy(alpha = 0.2f)
-                                    SectionIcon.CHEST -> GoldDark.copy(alpha = 0.3f)
-                                    SectionIcon.ACHIEVEMENT -> GoldDark.copy(alpha = 0.2f)
-                                    SectionIcon.HISTORY -> CyanDark.copy(alpha = 0.2f)
+                                    SectionIcon.CHEST -> GoldAccent.copy(alpha = 0.3f)
+                                    SectionIcon.ACHIEVEMENT -> GoldAccent.copy(alpha = 0.2f)
+                                    SectionIcon.HISTORY -> CyanAccent.copy(alpha = 0.2f)
                                 }
                             ),
                         contentAlignment = Alignment.Center
@@ -351,7 +347,7 @@ private fun ExpandableTreasureSection(
                                             }
                                             drawPath(
                                                 path = flamePath,
-                                                color = RedAccent.copy(alpha = 0.6f)
+                                                color = DangerDot.copy(alpha = 0.6f)
                                             )
                                         }
                                         SectionIcon.CHEST -> {
@@ -362,7 +358,7 @@ private fun ExpandableTreasureSection(
                                                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx())
                                             )
                                             drawLine(
-                                                color = GoldDark,
+                                                color = GoldAccent,
                                                 start = Offset(0f, size.height * 0.35f),
                                                 end = Offset(size.width, size.height * 0.35f),
                                                 strokeWidth = 2.dp.toPx()
@@ -495,7 +491,7 @@ private fun StreakContent() {
                         }
                         drawPath(
                             path = flamePath,
-                            color = RedAccent.copy(alpha = 0.4f)
+                            color = DangerDot.copy(alpha = 0.4f)
                         )
                     }
             )
@@ -534,7 +530,7 @@ private fun ChestsContent() {
                             cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx())
                         )
                         drawLine(
-                            color = GoldDark,
+                            color = GoldAccent,
                             start = Offset(0f, size.height * 0.35f),
                             end = Offset(size.width, size.height * 0.35f),
                             strokeWidth = 2.dp.toPx()

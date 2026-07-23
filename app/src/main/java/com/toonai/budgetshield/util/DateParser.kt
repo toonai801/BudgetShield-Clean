@@ -156,4 +156,36 @@ object DateParser {
     fun formatMonthYear(yearMonth: java.time.YearMonth): String {
         return yearMonth.format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy"))
     }
+
+    /**
+     * Get today's date as ISO string (YYYY-MM-DD).
+     */
+    fun today(): String {
+        return java.time.LocalDate.now().toString()
+    }
+
+    /**
+     * Format an ISO date string to a short display format (e.g., "Jul 6").
+     */
+    fun formatShortDate(isoDate: String?): String {
+        if (isoDate.isNullOrEmpty()) return ""
+        return try {
+            val date = java.time.LocalDate.parse(isoDate, ISO_FORMATTER)
+            date.format(java.time.format.DateTimeFormatter.ofPattern("MMM d"))
+        } catch (e: Exception) {
+            isoDate
+        }
+    }
+
+    /**
+     * Get last day of month for a month key (YYYY-MM).
+     * Returns "YYYY-MM-DD" format.
+     */
+    fun getLastDayOfMonth(monthKey: String): String {
+        val parts = monthKey.split("-")
+        val year = parts[0].toInt()
+        val month = parts[1].toInt()
+        val daysInMonth = java.time.YearMonth.of(year, month).lengthOfMonth()
+        return "$monthKey-$daysInMonth"
+    }
 }

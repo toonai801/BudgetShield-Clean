@@ -20,11 +20,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.toonai.budgetshield.ui.viewmodel.SavingsEntryViewModel
 
 // Premium gamified dark theme colors (matching Home)
 private val BackgroundDark = Color(0xFF02070D)
@@ -53,11 +58,22 @@ private val TextMuted = Color(0xFFA6B1BF)
 
 @Composable
 fun SavingsEntryScreen(
+    viewModel: SavingsEntryViewModel,
     onNavigateToGoals: () -> Unit,
     onNavigateToHome: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var selectedGoalId by remember { mutableStateOf<Long?>(null) }
+
+    // Handle success navigation
+    LaunchedEffect(uiState.saveSuccess) {
+        if (uiState.saveSuccess) {
+            onNavigateToGoals()
+            viewModel.resetSuccess()
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -79,7 +95,19 @@ fun SavingsEntryScreen(
                 HeaderSection()
 
                 // Streak Banner
-                StreakBanner()
+                StreakBanner(streakDays = uiState.currentStreak)
+
+                // Error message
+                if (uiState.errorMessage != null) {
+                    ErrorBanner(message = uiState.errorMessage!!) {
+                        viewModel.clearError()
+                    }
+                }
+
+                // XP Preview (shows when about to save)
+                if (uiState.xpEarned > 0) {
+                    XPPreviewCard(xpAmount = uiState.xpEarned)
+                }
 
                 // Form Card
                 FormCard(
@@ -90,16 +118,59 @@ fun SavingsEntryScreen(
                 )
 
                 // Goal Selection
-                GoalSelectionSection()
-
-                // XP Preview
-                XPPreviewCard()
+                GoalSelectionSection(
+                    goals = uiState.goals,
+                    selectedGoalId = selectedGoalId,
+                    onGoalSelected = { selectedGoalId = it }
+                )
 
                 // Action Buttons
                 ActionButtons(
-                    onSave = onNavigateToGoals,
+                    isLoading = uiState.isLoading,
+                    onSave = {
+                        val amountCents = amount.replace("[^0-9.]", "").toDoubleOrNull()?.let {
+                            (it * 100).toLong()
+                        } ?: 0L
+                        viewModel.saveMoney(
+                            amountCents = amountCents,
+                            note = note.takeIf { it.isNotBlank() },
+                            goalId = selectedGoalId
+                        )
+                    },
                     onBackHome = onNavigateToHome
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ErrorBanner(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFF553D).copy(alpha = 0.15f)
+        ),
+        border = BorderStroke(1.dp, Color(0xFFFF553D).copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = message,
+                color = Color(0xFFFF553D),
+                fontSize = 14.sp
+            )
+            TextButton(onClick = onDismiss) {
+                Text("Dismiss", color = Color(0xFFFF553D))
             }
         }
     }
@@ -147,7 +218,7 @@ private fun HeaderSection() {
 }
 
 @Composable
-private fun StreakBanner() {
+private fun StreakBanner(streakDays: Int) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -182,7 +253,7 @@ private fun StreakBanner() {
 
                 Column {
                     Text(
-                        text = "12 Day Streak",
+                        text = "$streakDays Day Streak",
                         color = GoldAccent,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -263,10 +334,10 @@ private fun FormCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                QuickAmountButton("$10", Modifier.weight(1f))
-                QuickAmountButton("$25", Modifier.weight(1f))
-                QuickAmountButton("$50", Modifier.weight(1f))
-                QuickAmountButton("$100", Modifier.weight(1f))
+                QuickAmountButton("$10", Modifier.weight(1f)) { onAmountChange("10") }
+                QuickAmountButton("$25", Modifier.weight(1f)) { onAmountChange("25") }
+                QuickAmountButton("$50", Modifier.weight(1f)) { onAmountChange("50") }
+                QuickAmountButton("$100", Modifier.weight(1f)) { onAmountChange("100") }
             }
 
             // Note
@@ -300,14 +371,19 @@ private fun FormCard(
 }
 
 @Composable
-private fun QuickAmountButton(amount: String, modifier: Modifier = Modifier) {
+private fun QuickAmountButton(
+    amount: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF0D1B26)
         ),
-        border = BorderStroke(1.dp, PanelBorder)
+        border = BorderStroke(1.dp, PanelBorder),
+        onClick = onClick
     ) {
         Box(
             modifier = Modifier
@@ -326,7 +402,11 @@ private fun QuickAmountButton(amount: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun GoalSelectionSection() {
+private fun GoalSelectionSection(
+    goals: List<com.toonai.budgetshield.data.model.SavingsGoal>,
+    selectedGoalId: Long?,
+    onGoalSelected: (Long?) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -345,30 +425,35 @@ private fun GoalSelectionSection() {
                 fontWeight = FontWeight.Bold
             )
 
-            // Goal options
-            GoalOption(
-                icon = "🚨",
-                name = "Emergency Fund",
-                current = "$2,500",
-                target = "$5,000",
-                selected = true
-            )
+            if (goals.isEmpty()) {
+                Text(
+                    text = "No savings goals yet. Create one in the Goals tab!",
+                    color = TextMuted,
+                    fontSize = 14.sp
+                )
+            } else {
+                // General Savings option
+                GoalOption(
+                    icon = "💰",
+                    name = "General Savings",
+                    current = "",
+                    target = "",
+                    selected = selectedGoalId == null,
+                    onClick = { onGoalSelected(null) }
+                )
 
-            GoalOption(
-                icon = "✈️",
-                name = "Vacation",
-                current = "$800",
-                target = "$2,000",
-                selected = false
-            )
-
-            GoalOption(
-                icon = "💰",
-                name = "General Savings",
-                current = "$350",
-                target = "—",
-                selected = false
-            )
+                // Individual goals
+                goals.forEach { goal ->
+                    GoalOption(
+                        icon = goal.icon,
+                        name = goal.name,
+                        current = "${goal.currentAmountCents / 100}.${goal.currentAmountCents % 100}",
+                        target = "${goal.targetAmountCents / 100}.${goal.targetAmountCents % 100}",
+                        selected = selectedGoalId == goal.id,
+                        onClick = { onGoalSelected(goal.id) }
+                    )
+                }
+            }
         }
     }
 }
@@ -379,7 +464,8 @@ private fun GoalOption(
     name: String,
     current: String,
     target: String,
-    selected: Boolean
+    selected: Boolean,
+    onClick: () -> Unit
 ) {
     val borderColor = if (selected) GoldAccent else PanelBorder
     val bgColor = if (selected) GoldAccent.copy(alpha = 0.1f) else Color(0xFF0D1B26)
@@ -390,7 +476,8 @@ private fun GoalOption(
         colors = CardDefaults.cardColors(
             containerColor = bgColor
         ),
-        border = BorderStroke(1.dp, borderColor)
+        border = BorderStroke(1.dp, borderColor),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
@@ -425,11 +512,13 @@ private fun GoalOption(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    Text(
-                        text = "$current of $target",
-                        color = TextMuted,
-                        fontSize = 12.sp
-                    )
+                    if (target.isNotEmpty()) {
+                        Text(
+                            text = "$$current of $$target",
+                            color = TextMuted,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
 
@@ -461,7 +550,7 @@ private fun GoalOption(
 }
 
 @Composable
-private fun XPPreviewCard() {
+private fun XPPreviewCard(xpAmount: Int) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -502,7 +591,7 @@ private fun XPPreviewCard() {
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "+25 XP for saving today",
+                        text = "+$xpAmount XP for saving today",
                         color = TextMuted,
                         fontSize = 12.sp
                     )
@@ -510,7 +599,7 @@ private fun XPPreviewCard() {
             }
 
             Text(
-                text = "+25 XP",
+                text = "+$xpAmount XP",
                 color = GreenAccent,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -521,6 +610,7 @@ private fun XPPreviewCard() {
 
 @Composable
 private fun ActionButtons(
+    isLoading: Boolean,
     onSave: () -> Unit,
     onBackHome: () -> Unit
 ) {
@@ -534,6 +624,7 @@ private fun ActionButtons(
             colors = CardDefaults.cardColors(
                 containerColor = GoldAccent
             ),
+            enabled = !isLoading,
             onClick = onSave
         ) {
             Box(
@@ -542,12 +633,19 @@ private fun ActionButtons(
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "💰 Save Money",
-                    color = BackgroundDark,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = BackgroundDark,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = "💰 Save Money",
+                        color = BackgroundDark,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
 

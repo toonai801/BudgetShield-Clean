@@ -15,13 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,32 +38,52 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.BudgetShieldTheme
+import com.toonai.budgetshield.theme.CardHeroBackground
+import com.toonai.budgetshield.theme.CardPadding
+import com.toonai.budgetshield.theme.CardPaddingLarge
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.CyanAccent05
+import com.toonai.budgetshield.theme.CyanAccent15
+import com.toonai.budgetshield.theme.CyanAccent20
+import com.toonai.budgetshield.theme.CyanAccent30
+import com.toonai.budgetshield.theme.DangerDot
+import com.toonai.budgetshield.theme.DangerDot20
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.GoldAccent20
+import com.toonai.budgetshield.theme.GradientCyanEnd
+import com.toonai.budgetshield.theme.GradientCyanStart
+import com.toonai.budgetshield.theme.GreenAccent
+import com.toonai.budgetshield.theme.GreenAccent20
+import com.toonai.budgetshield.theme.IconContainerHero
+import com.toonai.budgetshield.theme.IconContainerLarge
+import com.toonai.budgetshield.theme.IconContainerMedium
+import com.toonai.budgetshield.theme.IconContainerSmall
+import com.toonai.budgetshield.theme.IconContainerStandard
+import com.toonai.budgetshield.theme.IconSizes
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.ShapeCircular
+import com.toonai.budgetshield.theme.ShapeLarge
+import com.toonai.budgetshield.theme.ShapeXLarge
+import com.toonai.budgetshield.theme.ShapeXXLarge
+import com.toonai.budgetshield.theme.Spacing
+import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.theme.TextPrimary
 import com.toonai.budgetshield.ui.viewmodel.HomeViewModel
 import com.toonai.budgetshield.util.DateParser
 import com.toonai.budgetshield.util.MoneyParser
 import java.time.YearMonth
-
-// Premium gamified dark theme colors
-private val BackgroundDark = Color(0xFF02070D)
-private val PanelDark = Color(0xFF06121D)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val CyanSoft = Color(0xFF10CDD9)
-private val GreenAccent = Color(0xFF2FE6A7)
-private val GoldAccent = Color(0xFFFFC545)
-private val BlueAccent = Color(0xFF1678B9)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
-private val DangerDot = Color(0xFFFF553D)
 
 @Composable
 fun HomeScreen(
@@ -80,11 +102,11 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     LaunchedEffect(Unit) {
         viewModel.loadHomeData()
     }
-    
+
     Box(modifier = Modifier
         .fillMaxSize()
         .testTag("budgetshield_root")
@@ -101,56 +123,132 @@ fun HomeScreen(
                     CircularProgressIndicator(color = CyanAccent)
                 }
             } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 16.dp, bottom = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        HeaderSection(
-                            onRewardClick = onNavigateToRewardScreen,
-                            onMenuClick = onNavigateToMenu,
-                            hasUnreadRewards = uiState.hasUnreadRewards
-                        )
+                HomeContent(
+                    uiState = uiState,
+                    onNavigateToTreasure = onNavigateToTreasure,
+                    onNavigateToSettings = onNavigateToSettings,
+                    onNavigateToRewardScreen = onNavigateToRewardScreen,
+                    onNavigateToMenu = onNavigateToMenu,
+                    onNavigateToCalendar = onNavigateToCalendar,
+                    onNavigateToShieldProgression = onNavigateToShieldProgression,
+                    onNavigateToIncomeEntry = onNavigateToIncomeEntry,
+                    onNavigateToBillEntry = onNavigateToBillEntry,
+                    onNavigateToSavingsEntry = onNavigateToSavingsEntry,
+                    onNavigateToTransactionDetails = onNavigateToTransactionDetails,
+                    viewModel = viewModel
+                )
+            }
+        }
+    }
+}
 
-                        MonthSelector(
-                            selectedMonth = uiState.selectedMonth,
-                            onPreviousMonth = viewModel::goToPreviousMonth,
-                            onNextMonth = viewModel::goToNextMonth,
-                            onMonthPickerClick = onNavigateToSettings,
-                            onCalendarClick = onNavigateToCalendar
-                        )
-
-                        HeroCard(
-                            safeAmountCents = uiState.safeNowCents,
-                            onNavigateToShieldProgression = onNavigateToShieldProgression
-                        )
-
-                        StatsCardsRow(
-                            streakCount = uiState.currentStreak,
-                            shieldPower = uiState.shieldPower,
-                            totalShielded = uiState.totalShieldedCents
-                        )
-
-                        DailyActionsSection(
-                            onAddIncome = onNavigateToIncomeEntry,
-                            onPayBill = onNavigateToBillEntry,
-                            onSaveMoney = onNavigateToSavingsEntry
-                        )
-
-                        RecentActivitySection(
-                            recentTransactions = uiState.recentTransactions,
-                            onViewAll = onNavigateToTransactionDetails
-                        )
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeContent(
+    uiState: com.toonai.budgetshield.ui.viewmodel.HomeUiState,
+    onNavigateToTreasure: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToRewardScreen: () -> Unit,
+    onNavigateToMenu: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToShieldProgression: () -> Unit,
+    onNavigateToIncomeEntry: () -> Unit,
+    onNavigateToBillEntry: () -> Unit,
+    onNavigateToSavingsEntry: () -> Unit,
+    onNavigateToTransactionDetails: () -> Unit,
+    viewModel: HomeViewModel
+) {
+    // State for month picker dialog
+    var showMonthPicker by remember { mutableStateOf(false) }
+    var tempSelectedMonth by remember { mutableStateOf(uiState.selectedMonth) }
+    
+    // Month picker dialog
+    if (showMonthPicker) {
+        // Convert YearMonth to millis for the date picker
+        val yearMonthMillis = tempSelectedMonth.atDay(1)
+            .atStartOfDay(java.time.ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+        
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = yearMonthMillis
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showMonthPicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val date = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            val newMonth = YearMonth.of(date.year, date.month)
+                            viewModel.setSelectedMonth(newMonth)
+                        }
+                        showMonthPicker = false
                     }
+                ) {
+                    Text("Select")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showMonthPicker = false }) {
+                    Text("Cancel")
                 }
             }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.screenHorizontal)
+                .padding(top = Spacing.screenTop, bottom = Spacing.screenBottom),
+            verticalArrangement = Arrangement.spacedBy(Spacing.large)
+        ) {
+            HeaderSection(
+                onRewardClick = onNavigateToRewardScreen,
+                onMenuClick = onNavigateToMenu,
+                hasUnreadRewards = uiState.hasUnreadRewards
+            )
+
+            MonthSelector(
+                selectedMonth = uiState.selectedMonth,
+                onPreviousMonth = viewModel::goToPreviousMonth,
+                onNextMonth = viewModel::goToNextMonth,
+                onMonthPickerClick = { showMonthPicker = true },
+                onCalendarClick = onNavigateToCalendar
+            )
+
+            HeroCard(
+                safeAmountCents = uiState.safeNowCents,
+                onNavigateToShieldProgression = onNavigateToShieldProgression
+            )
+
+            StatsCardsRow(
+                streakCount = uiState.currentStreak,
+                shieldPower = uiState.shieldPower,
+                totalShielded = uiState.totalShieldedCents
+            )
+
+            DailyActionsSection(
+                onAddIncome = onNavigateToIncomeEntry,
+                onPayBill = onNavigateToBillEntry,
+                onSaveMoney = onNavigateToSavingsEntry
+            )
+
+            RecentActivitySection(
+                recentTransactions = uiState.recentTransactions,
+                onViewAll = onNavigateToTransactionDetails
+            )
         }
     }
 }
@@ -168,16 +266,16 @@ private fun HeaderSection(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small)
         ) {
             Box(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(CyanAccent.copy(alpha = 0.15f)),
+                    .size(IconContainerSmall)
+                    .clip(ShapeCircular)
+                    .background(CyanAccent20),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "🛡️", fontSize = 18.sp)
+                Text(text = "🛡️", fontSize = IconSizes.header)
             }
 
             Row {
@@ -197,9 +295,10 @@ private fun HeaderSection(
         }
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            /* Reward button hidden until rewards system implemented
             Box(contentAlignment = Alignment.TopEnd) {
                 IconButton(
                     onClick = onRewardClick,
@@ -207,9 +306,9 @@ private fun HeaderSection(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(GoldAccent.copy(alpha = 0.2f)),
+                            .size(IconContainerMedium)
+                            .clip(ShapeCircular)
+                            .background(GoldAccent20),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = "🪙", fontSize = 18.sp)
@@ -219,11 +318,12 @@ private fun HeaderSection(
                     Box(
                         modifier = Modifier
                             .size(10.dp)
-                            .clip(CircleShape)
+                            .clip(ShapeCircular)
                             .background(DangerDot)
                     )
                 }
             }
+            */
 
             IconButton(
                 onClick = onMenuClick,
@@ -245,7 +345,7 @@ private fun MonthSelector(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = ShapeXLarge,
         colors = CardDefaults.cardColors(containerColor = PanelDark)
     ) {
         Row(
@@ -298,17 +398,8 @@ private fun MonthSelector(
                 )
             }
 
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = PanelDark)
-            ) {
-                IconButton(
-                    onClick = onCalendarClick,
-                    modifier = Modifier.testTag("home_calendar_button")
-                ) {
-                    Text(text = "📅", fontSize = 18.sp)
-                }
-            }
+            // Calendar button removed - month picker now handles calendar functionality
+            /* Removed: Calendar icon button that was going to Settings */
         }
     }
 }
@@ -320,13 +411,13 @@ private fun HeroCard(
 ) {
     val hasShortage = safeAmountCents < 0
     val displayAmount = MoneyParser.formatCents(if (hasShortage) 0 else safeAmountCents)
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("home_safe_now_card"),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0A1F2C)),
+        shape = ShapeXXLarge,
+        colors = CardDefaults.cardColors(containerColor = CardHeroBackground),
         onClick = onNavigateToShieldProgression
     ) {
         Box(
@@ -339,29 +430,29 @@ private fun HeroCard(
                         alpha = 0.3f
                     )
                 }
-                .padding(20.dp)
+                .padding(CardPaddingLarge)
         ) {
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(IconContainerHero)
+                    .clip(ShapeLarge)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                CyanAccent.copy(alpha = 0.2f),
-                                CyanAccent.copy(alpha = 0.05f)
+                                GradientCyanStart,
+                                GradientCyanEnd
                             )
                         )
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "🗡️", fontSize = 48.sp)
+                Text(text = "🗡️", fontSize = IconSizes.hero)
             }
 
             Column(
                 modifier = Modifier.align(Alignment.CenterStart),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(Spacing.xSmall)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -432,21 +523,21 @@ private fun StatCard(
     icon: String,
     value: String,
     label: String,
-    accentColor: Color,
+    accentColor: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = ShapeXLarge,
         colors = CardDefaults.cardColors(containerColor = PanelDark)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(CardPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = icon, fontSize = 20.sp)
+            Text(text = icon, fontSize = IconSizes.card)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
@@ -471,10 +562,10 @@ private fun DailyActionsSection(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = ShapeXLarge,
         colors = CardDefaults.cardColors(containerColor = PanelDark)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(CardPadding)) {
             Text(
                 text = "Daily Actions",
                 color = TextPrimary,
@@ -500,12 +591,12 @@ private fun ActionButton(icon: String, label: String, onClick: () -> Unit, testT
         IconButton(
             onClick = onClick,
             modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(CyanAccent.copy(alpha = 0.15f))
+                .size(IconContainerLarge)
+                .clip(ShapeCircular)
+                .background(CyanAccent15)
                 .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
         ) {
-            Text(text = icon, fontSize = 24.sp)
+            Text(text = icon, fontSize = IconSizes.action)
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
@@ -523,10 +614,10 @@ private fun RecentActivitySection(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = ShapeXLarge,
         colors = CardDefaults.cardColors(containerColor = PanelDark)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(CardPadding)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -581,13 +672,13 @@ private fun ActivityItem(transaction: TransactionUiModel) {
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
+                .size(IconContainerStandard)
+                .clip(ShapeCircular)
                 .background(
                     when (transaction.type) {
-                        TransactionType.INCOME -> GreenAccent.copy(alpha = 0.2f)
-                        TransactionType.BILL_PAYMENT -> DangerDot.copy(alpha = 0.2f)
-                        TransactionType.SAVINGS -> GoldAccent.copy(alpha = 0.2f)
+                        TransactionType.INCOME -> GreenAccent20
+                        TransactionType.BILL_PAYMENT -> DangerDot20
+                        TransactionType.SAVINGS -> GoldAccent20
                     }
                 ),
             contentAlignment = Alignment.Center
@@ -636,4 +727,191 @@ data class TransactionUiModel(
 
 enum class TransactionType {
     INCOME, BILL_PAYMENT, SAVINGS
+}
+
+// ============================================
+// PREVIEWS
+// ============================================
+
+@Preview(
+    name = "Home Screen - Normal State",
+    showBackground = true,
+    backgroundColor = 0xFF02070D,
+    device = "id:pixel_5"
+)
+@Composable
+fun HomeScreenNormalPreview() {
+    BudgetShieldTheme {
+        Surface(color = BackgroundDark) {
+            PreviewHomeContent(
+                safeNowCents = 245000L,
+                currentStreak = 12,
+                shieldPower = 85,
+                totalShieldedCents = 125000L,
+                hasUnreadRewards = true,
+                transactions = listOf(
+                    TransactionUiModel(
+                        id = 1,
+                        name = "Salary Deposit",
+                        amountDisplay = "+$3,500.00",
+                        date = "Jan 15, 2026",
+                        type = TransactionType.INCOME,
+                        icon = "💰"
+                    ),
+                    TransactionUiModel(
+                        id = 2,
+                        name = "Electric Bill",
+                        amountDisplay = "-$125.00",
+                        date = "Jan 14, 2026",
+                        type = TransactionType.BILL_PAYMENT,
+                        icon = "⚡"
+                    ),
+                    TransactionUiModel(
+                        id = 3,
+                        name = "Emergency Fund",
+                        amountDisplay = "+$200.00",
+                        date = "Jan 13, 2026",
+                        type = TransactionType.SAVINGS,
+                        icon = "💎"
+                    )
+                )
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Home Screen - Empty State",
+    showBackground = true,
+    backgroundColor = 0xFF02070D,
+    device = "id:pixel_5"
+)
+@Composable
+fun HomeScreenEmptyPreview() {
+    BudgetShieldTheme {
+        Surface(color = BackgroundDark) {
+            PreviewHomeContent(
+                safeNowCents = 0,
+                currentStreak = 0,
+                shieldPower = 0,
+                totalShieldedCents = 0,
+                hasUnreadRewards = false,
+                transactions = emptyList()
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Home Screen - Shortage",
+    showBackground = true,
+    backgroundColor = 0xFF02070D,
+    device = "id:pixel_5"
+)
+@Composable
+fun HomeScreenShortagePreview() {
+    BudgetShieldTheme {
+        Surface(color = BackgroundDark) {
+            PreviewHomeContent(
+                safeNowCents = -50000L,
+                currentStreak = 0,
+                shieldPower = 45,
+                totalShieldedCents = 50000L,
+                hasUnreadRewards = true,
+                transactions = listOf(
+                    TransactionUiModel(
+                        id = 1,
+                        name = "Rent Payment",
+                        amountDisplay = "-$1,200.00",
+                        date = "Jan 10, 2026",
+                        type = TransactionType.BILL_PAYMENT,
+                        icon = "🏠"
+                    )
+                )
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Home Screen - Loading",
+    showBackground = true,
+    backgroundColor = 0xFF02070D,
+    device = "id:pixel_5"
+)
+@Composable
+fun HomeScreenLoadingPreview() {
+    BudgetShieldTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = BackgroundDark
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = CyanAccent)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PreviewHomeContent(
+    safeNowCents: Long,
+    currentStreak: Int,
+    shieldPower: Int,
+    totalShieldedCents: Long,
+    hasUnreadRewards: Boolean,
+    transactions: List<TransactionUiModel>
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.screenHorizontal)
+                .padding(top = Spacing.screenTop, bottom = Spacing.screenBottom),
+            verticalArrangement = Arrangement.spacedBy(Spacing.large)
+        ) {
+            HeaderSection(
+                onRewardClick = {},
+                onMenuClick = {},
+                hasUnreadRewards = hasUnreadRewards
+            )
+
+            MonthSelector(
+                selectedMonth = YearMonth.of(2026, 1),
+                onPreviousMonth = {},
+                onNextMonth = {},
+                onMonthPickerClick = {},
+                onCalendarClick = {}
+            )
+
+            HeroCard(
+                safeAmountCents = safeNowCents,
+                onNavigateToShieldProgression = {}
+            )
+
+            StatsCardsRow(
+                streakCount = currentStreak,
+                shieldPower = shieldPower,
+                totalShielded = totalShieldedCents
+            )
+
+            DailyActionsSection(
+                onAddIncome = {},
+                onPayBill = {},
+                onSaveMoney = {}
+            )
+
+            RecentActivitySection(
+                recentTransactions = transactions,
+                onViewAll = {}
+            )
+        }
+    }
 }

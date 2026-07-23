@@ -46,17 +46,17 @@ import com.toonai.budgetshield.ui.viewmodel.BillPaymentViewModel
 import com.toonai.budgetshield.util.MoneyParser
 import kotlinx.coroutines.launch
 
-// Premium gamified dark theme colors (matching Home)
-private val BackgroundDark = Color(0xFF02070D)
-private val PanelDark = Color(0xFF06121D)
-private val PanelBorder = Color(0xFF14364A)
-private val CyanAccent = Color(0xFF17E8F2)
-private val GreenAccent = Color(0xFF2FE6A7)
-private val GoldAccent = Color(0xFFFFC545)
-private val BlueAccent = Color(0xFF1678B9)
-private val DangerColor = Color(0xFFFF553D)
-private val TextPrimary = Color(0xFFF4F7FB)
-private val TextMuted = Color(0xFFA6B1BF)
+import com.toonai.budgetshield.theme.BackgroundDark
+import com.toonai.budgetshield.theme.PanelDark
+import com.toonai.budgetshield.theme.PanelBorder
+import com.toonai.budgetshield.theme.CyanAccent
+import com.toonai.budgetshield.theme.GreenAccent
+import com.toonai.budgetshield.theme.GoldAccent
+import com.toonai.budgetshield.theme.BlueAccent
+import com.toonai.budgetshield.theme.TextPrimary
+import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.theme.DangerDot
+
 
 @Composable
 fun BillPaymentScreen(
@@ -192,9 +192,9 @@ private fun ErrorBanner(message: String) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = DangerColor.copy(alpha = 0.15f)
+            containerColor = DangerDot.copy(alpha = 0.15f)
         ),
-        border = BorderStroke(1.dp, DangerColor.copy(alpha = 0.5f))
+        border = BorderStroke(1.dp, DangerDot.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier
@@ -206,7 +206,7 @@ private fun ErrorBanner(message: String) {
             Text("⚠️", fontSize = 20.sp)
             Text(
                 text = message,
-                color = DangerColor,
+                color = DangerDot,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -282,7 +282,7 @@ private fun BillNotFoundState(onCancel: () -> Unit) {
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape)
-                    .background(DangerColor.copy(alpha = 0.1f)),
+                    .background(DangerDot.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
