@@ -43,7 +43,9 @@ import com.toonai.budgetshield.navigation.createBudgetShieldEntryProvider
 import com.toonai.budgetshield.theme.BudgetShieldTheme
 import com.toonai.budgetshield.ui.LocalBillRepository
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * MainActivity with non-bypassable first-run gate.
@@ -69,8 +71,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BudgetShieldAppWithLoading(
                 billRepository = billRepository,
-                userSettingsRepository = userSettingsRepository,
-                coroutineScope = lifecycleScope
+                userSettingsRepository = userSettingsRepository
             )
         }
     }
@@ -79,8 +80,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun BudgetShieldAppWithLoading(
     billRepository: BillRepository,
-    userSettingsRepository: UserSettingsRepository,
-    coroutineScope: kotlinx.coroutines.CoroutineScope
+    userSettingsRepository: UserSettingsRepository
 ) {
     BudgetShieldTheme {
         var isLoading by remember { mutableStateOf(true) }
@@ -89,12 +89,12 @@ private fun BudgetShieldAppWithLoading(
         
         LaunchedEffect(Unit) {
             try {
-                // Move database access off main thread to avoid ANR under power management
-                coroutineScope.launch {
-                    val settings = userSettingsRepository.getSettings()
-                    isFirstRunComplete = settings?.isFirstRunComplete == true
-                    isLoading = false
-                }.join() // Wait for completion
+                // Move database access to IO dispatcher to avoid ANR under power management
+                val settings = withContext(Dispatchers.IO) {
+                    userSettingsRepository.getSettings()
+                }
+                isFirstRunComplete = settings?.isFirstRunComplete == true
+                isLoading = false
             } catch (e: Exception) {
                 hasError = true
                 isLoading = false
