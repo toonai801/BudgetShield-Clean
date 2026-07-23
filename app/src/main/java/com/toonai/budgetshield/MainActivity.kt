@@ -1,5 +1,6 @@
 package com.toonai.budgetshield
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,12 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -44,7 +43,6 @@ import com.toonai.budgetshield.theme.BudgetShieldTheme
 import com.toonai.budgetshield.ui.LocalBillRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -56,46 +54,44 @@ import kotlinx.coroutines.withContext
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     
-    private lateinit var billRepository: BillRepository
-    private lateinit var userSettingsRepository: UserSettingsRepository
-    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Initialize repositories
-        val database = BudgetShieldDatabase.getDatabase(this)
-        billRepository = BillRepository(database.billDao())
-        userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
-        
         setContent {
-            BudgetShieldAppWithLoading(
-                billRepository = billRepository,
-                userSettingsRepository = userSettingsRepository
-            )
+            BudgetShieldAppWithLoading()
         }
     }
 }
 
 @Composable
-private fun BudgetShieldAppWithLoading(
-    billRepository: BillRepository,
-    userSettingsRepository: UserSettingsRepository
-) {
+private fun BudgetShieldAppWithLoading() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
     BudgetShieldTheme {
         var isLoading by remember { mutableStateOf(true) }
         var isFirstRunComplete by remember { mutableStateOf(false) }
         var hasError by remember { mutableStateOf(false) }
+        var billRepository by remember { mutableStateOf<BillRepository?>(null) }
+        var userSettingsRepository by remember { mutableStateOf<UserSettingsRepository?>(null) }
         
         LaunchedEffect(Unit) {
             try {
-                // Move database access to IO dispatcher to avoid ANR under power management
-                val settings = withContext(Dispatchers.IO) {
-                    userSettingsRepository.getSettings()
+                // Initialize database and repositories on IO thread
+                val (billRepo, userSettingsRepo, settings) = withContext(Dispatchers.IO) {
+                    val database = BudgetShieldDatabase.getDatabase(context)
+                    val billRepo = BillRepository(database.billDao())
+                    val userSettingsRepo = UserSettingsRepository(database.userSettingsDao())
+                    val settings = userSettingsRepo.getSettings()
+                    Triple(billRepo, userSettingsRepo, settings)
                 }
+                
+                billRepository = billRepo
+                userSettingsRepository = userSettingsRepo
                 isFirstRunComplete = settings?.isFirstRunComplete == true
                 isLoading = false
             } catch (e: Exception) {
+                e.printStackTrace()
                 hasError = true
                 isLoading = false
             }
@@ -104,11 +100,12 @@ private fun BudgetShieldAppWithLoading(
         when {
             isLoading -> ThemedLoadingScreen()
             hasError -> ErrorScreen()
-            else -> BudgetShieldApp(
-                billRepository = billRepository,
-                userSettingsRepository = userSettingsRepository,
+            billRepository != null && userSettingsRepository != null -> BudgetShieldApp(
+                billRepository = billRepository!!,
+                userSettingsRepository = userSettingsRepository!!,
                 initialDestination = if (isFirstRunComplete) Home else SetupQuest
             )
+            else -> ThemedLoadingScreen()
         }
     }
 }
