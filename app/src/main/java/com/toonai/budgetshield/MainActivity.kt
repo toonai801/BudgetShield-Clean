@@ -56,7 +56,9 @@ import com.toonai.budgetshield.ui.LocalXpRepository
 import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
 import com.toonai.budgetshield.ui.LocalBudgetRepository
 import com.toonai.budgetshield.ui.LocalUserSettingsRepository
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private lateinit var repositories: AppRepositories

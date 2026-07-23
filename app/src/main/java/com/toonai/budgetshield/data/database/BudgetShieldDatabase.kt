@@ -242,10 +242,10 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     BudgetShieldDatabase::class.java,
-                    "budget_shield_database"
+                    "budget_shield_db_v4"
                 )
                 .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigrationOnDowngrade()
                 .build()
                 INSTANCE = instance
                 instance
