@@ -114,7 +114,13 @@ private fun BudgetShieldAppWithLoading(
         
         LaunchedEffect(Unit) {
             try {
-                val settings = repositories.userSettingsRepository.getSettings()
+                val settings = try {
+                    repositories.userSettingsRepository.getSettings()
+                } catch (e: Exception) {
+                    // If settings can't be loaded, initialize defaults
+                    repositories.userSettingsRepository.initializeDefaultSettings()
+                    repositories.userSettingsRepository.getSettings()
+                }
                 isFirstRunComplete = settings?.isFirstRunComplete == true
                 isLoading = false
             } catch (e: Exception) {
