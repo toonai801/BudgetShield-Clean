@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
@@ -53,7 +55,6 @@ import com.toonai.budgetshield.ui.LocalXpRepository
 import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
 import com.toonai.budgetshield.ui.LocalBudgetRepository
 import com.toonai.budgetshield.ui.LocalUserSettingsRepository
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 /**
@@ -76,7 +77,6 @@ data class AppRepositories(
  * Shows SetupQuest on first launch until user completes setup.
  * Footer is completely hidden during setup - no Home flash.
  */
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     
     private lateinit var repositories: AppRepositories
@@ -85,20 +85,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Initialize repositories
-        val database = BudgetShieldDatabase.getDatabase(this)
-        repositories = AppRepositories(
-            billRepository = BillRepository(database.billDao()),
-            incomeRepository = IncomeRepository(database.incomeScheduleDao()),
-            transactionRepository = TransactionRepository(database.transactionDao()),
-            xpRepository = XpRepository(database.xpEntryDao(), database.achievementDao()),
-            savingsGoalRepository = SavingsGoalRepository(database.savingsGoalDao(), database.userStreakDao()),
-            budgetRepository = BudgetRepository(database.budgetCategoryDao()),
-            userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
-        )
-        
-        setContent {
-            BudgetShieldAppWithLoading(repositories = repositories)
+        try {
+            // Initialize repositories
+            val database = BudgetShieldDatabase.getDatabase(this)
+            repositories = AppRepositories(
+                billRepository = BillRepository(database.billDao()),
+                incomeRepository = IncomeRepository(database.incomeScheduleDao()),
+                transactionRepository = TransactionRepository(database.transactionDao()),
+                xpRepository = XpRepository(database.xpEntryDao(), database.achievementDao()),
+                savingsGoalRepository = SavingsGoalRepository(database.savingsGoalDao(), database.userStreakDao()),
+                budgetRepository = BudgetRepository(database.budgetCategoryDao()),
+                userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
+            )
+            
+            setContent {
+                BudgetShieldAppWithLoading(repositories = repositories)
+            }
+        } catch (e: Exception) {
+            // Database initialization failed - show simple error UI
+            setContent {
+                BudgetShieldTheme {
+                    ErrorScreenWithRetry(error = e.message ?: "Unknown error")
+                }
+            }
         }
     }
 }
@@ -162,6 +171,39 @@ private fun ThemedLoadingScreen() {
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun ErrorScreenWithRetry(error: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "⚠️ Error",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Please restart the app",
+                color = MaterialTheme.colorScheme.error
             )
         }
     }
