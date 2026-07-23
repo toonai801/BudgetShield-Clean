@@ -143,6 +143,9 @@ class SetupQuestViewModel @Inject constructor(
     }
 
     fun updateIncomeAmount(input: String) {
+        // Always update the input field so user sees what they type
+        _uiState.value = _uiState.value.copy(incomeAmountInput = input)
+        
         MoneyParser.parseToCents(input).fold(
             onSuccess = { cents ->
                 _uiState.value = _uiState.value.copy(
@@ -151,7 +154,7 @@ class SetupQuestViewModel @Inject constructor(
                 )
                 saveDraft()
             },
-            onFailure = {}
+            onFailure = { /* Don't block typing, validate on Next */ }
         )
     }
 

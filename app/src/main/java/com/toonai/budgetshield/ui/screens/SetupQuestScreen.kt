@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -24,6 +25,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.toonai.budgetshield.data.model.IncomeFrequency
 import com.toonai.budgetshield.ui.viewmodel.SetupQuestUiState
 import com.toonai.budgetshield.ui.viewmodel.SetupQuestViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun SetupQuestScreen(
@@ -280,6 +283,36 @@ private fun ChapterPayday(
     onUpdateFrequency: (String) -> Unit,
     onToggleIncomeConfirmation: () -> Unit
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    // Date picker dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = { 
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val localDate = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                        onUpdatePaydayDate(localDate.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")))
+                    }
+                    showDatePicker = false 
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -319,11 +352,20 @@ private fun ChapterPayday(
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = paydayDate,
-            onValueChange = onUpdatePaydayDate,
-            label = { Text("Next Payday (MM/DD/YYYY)") },
+            onValueChange = { /* Read-only, user picks from calendar */ },
+            label = { Text("Next Payday") },
+            placeholder = { Text("Tap to pick a date") },
+            readOnly = true,
             isError = paydayErrors.containsKey("paydayDate"),
             supportingText = paydayErrors["paydayDate"]?.let { { Text(it) } },
-            modifier = Modifier.fillMaxWidth()
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.CalendarToday, contentDescription = "Pick date")
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDatePicker = true }
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
