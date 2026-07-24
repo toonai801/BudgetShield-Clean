@@ -3,7 +3,9 @@ package com.toonai.budgetshield.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.toonai.budgetshield.data.model.BudgetCategory
+import com.toonai.budgetshield.data.model.TransactionCategories
 import com.toonai.budgetshield.data.repository.BudgetRepository
+import com.toonai.budgetshield.data.repository.TransactionRepository
 import com.toonai.budgetshield.util.MoneyParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -30,7 +32,8 @@ data class LogSpendingUiState(
 
 @HiltViewModel
 class LogSpendingViewModel @Inject constructor(
-    private val budgetRepository: BudgetRepository
+    private val budgetRepository: BudgetRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LogSpendingUiState())
@@ -99,8 +102,21 @@ class LogSpendingViewModel @Inject constructor(
             try {
                 // Add spending to the budget category
                 budgetRepository.addSpending(budget.id, amountCents)
-                
-                _uiState.update { 
+
+                // Create a transaction record for history
+                val category = when (budget.name) {
+                    "Food" -> TransactionCategories.FOOD
+                    "Wants" -> TransactionCategories.WANTS
+                    else -> TransactionCategories.OTHER
+                }
+                transactionRepository.createSpendingTransaction(
+                    title = state.note.ifBlank { budget.name },
+                    amountCents = amountCents,
+                    category = category,
+                    description = state.note
+                )
+
+                _uiState.update {
                     it.copy(
                         isLoading = false,
                         isSaved = true
