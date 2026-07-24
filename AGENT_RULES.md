@@ -72,3 +72,36 @@ Working tree must be clean before starting a task.
 
 ### Push Required
 Commits must be pushed to remote and verified.
+
+---
+
+## Workspace Verification Rule (Added 2026-07-24)
+
+Every agent must begin by running:
+```bash
+pwd
+git rev-parse --show-toplevel
+```
+
+**Required result:** `/home/toon/.openclaw/workspace/BudgetShield_CLEAN`
+
+If either command reports another path:
+- **STOP immediately**
+- **DO NOT** create a project
+- **DO NOT** copy the repository
+- **DO NOT** code
+- **DO NOT** build
+- **DO NOT** test
+- Report the workspace mismatch and recover the existing canonical project
+
+### Never create or use BudgetShield in these locations:
+- `/home/toon/projects/`
+- `/home/toon/workspace/`
+- `/tmp/`
+- Home directory (`/home/toon/`)
+- Any alternate OpenClaw workspace
+
+### Canonical Path Only
+`/home/toon/.openclaw/workspace/BudgetShield_CLEAN`
+
+See archive at `/home/toon/.openclaw/workspace/BudgetShield_CLEAN/archive/workspace_recovery/` for history of wrong locations.
