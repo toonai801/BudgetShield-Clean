@@ -222,6 +222,14 @@ class SetupQuestViewModel @Inject constructor(
         saveDraft()
     }
 
+    fun updateBillIcon(billId: Long, icon: String) {
+        val updatedBills = _uiState.value.bills.map { bill ->
+            if (bill.id == billId) bill.copy(icon = icon) else bill
+        }
+        _uiState.value = _uiState.value.copy(bills = updatedBills)
+        saveDraft()
+    }
+
     fun toggleBillProtection(billId: Long) {
         val updatedBills = _uiState.value.bills.map { bill ->
             if (bill.id == billId) bill.copy(isProtected = !bill.isProtected) else bill
@@ -297,7 +305,9 @@ class SetupQuestViewModel @Inject constructor(
             val nextChapter = _uiState.value.currentChapter + 1
             android.util.Log.d("SetupQuest", "Validation passed, advancing to chapter $nextChapter")
             if (nextChapter <= 6) {
-                _uiState.value = _uiState.value.copy(currentChapter = nextChapter)
+                val newState = _uiState.value.copy(currentChapter = nextChapter)
+                _uiState.value = newState
+                android.util.Log.d("SetupQuest", "State updated to chapter ${newState.currentChapter}")
                 saveDraft()
             }
         } else {
@@ -316,14 +326,21 @@ class SetupQuestViewModel @Inject constructor(
     private fun validateCurrentChapter(): Boolean {
         val state = _uiState.value
         return when (state.currentChapter) {
-            1 -> state.cashOnHandError == null && state.cashOnHandInput.isNotBlank()
+            1 -> {
+                val isValid = state.cashOnHandError == null && state.cashOnHandInput.isNotBlank()
+                android.util.Log.d("SetupQuest", "Chapter 1 validation: isValid=$isValid, error=${state.cashOnHandError}, input='${state.cashOnHandInput}'")
+                isValid
+            }
             2 -> {
                 val errors = mutableMapOf<String, String>()
                 if (state.incomeName.isBlank()) errors["incomeName"] = "Required"
-                if (state.incomeAmountCents <= 0) errors["incomeAmount"] = "Required: got ${state.incomeAmountCents}"
+                // Check for valid amount - must have positive value
+                if (state.incomeAmountCents <= 0) {
+                    errors["incomeAmount"] = "Amount must be greater than 0"
+                }
                 if (state.paydayDate.isBlank()) errors["paydayDate"] = "Required"
                 if (!state.isIncomeConfirmed) errors["confirmation"] = "Must confirm income"
-                android.util.Log.d("SetupQuest", "Chapter 2 validation: incomeName='${state.incomeName}', incomeAmountCents=${state.incomeAmountCents}, paydayDate='${state.paydayDate}', isIncomeConfirmed=${state.isIncomeConfirmed}, errors=$errors")
+                android.util.Log.d("SetupQuest", "Chapter 2 validation: name='${state.incomeName}', amountCents=${state.incomeAmountCents}, date='${state.paydayDate}', isConfirmed=${state.isIncomeConfirmed}, errors=$errors")
                 _uiState.value = state.copy(paydayErrors = errors)
                 errors.isEmpty()
             }
@@ -369,7 +386,7 @@ class SetupQuestViewModel @Inject constructor(
                     if (draftBill.name.isNotBlank() && draftBill.amountCents > 0) {
                         billRepository.createBill(
                             name = draftBill.name,
-                            icon = "📝",
+                            icon = draftBill.icon.ifBlank { "📄" },
                             amountCents = draftBill.amountCents,
                             dueDate = draftBill.dueDateInput,
                             isProtected = draftBill.isProtected

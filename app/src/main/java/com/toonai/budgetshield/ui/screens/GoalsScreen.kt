@@ -49,11 +49,17 @@ import com.toonai.budgetshield.ui.LocalXpRepository
 import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
 import com.toonai.budgetshield.data.model.ShieldLevels
 
+
 @Composable
 fun GoalsScreen(
     onNavigateToSavingsEntry: () -> Unit,
     onNavigateToTransactionDetails: () -> Unit,
-    onNavigateToShieldProgression: () -> Unit
+    onNavigateToShieldProgression: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToTreasure: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToGoals: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val xpRepository = LocalXpRepository.current
     val savingsGoalRepository = LocalSavingsGoalRepository.current
@@ -113,6 +119,8 @@ fun GoalsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+
+
     }
 }
 

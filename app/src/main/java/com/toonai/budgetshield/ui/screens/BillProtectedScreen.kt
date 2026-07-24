@@ -23,6 +23,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.flowOf
 
 import com.toonai.budgetshield.theme.BackgroundDark
 import com.toonai.budgetshield.theme.PanelDark
@@ -41,14 +44,35 @@ import com.toonai.budgetshield.theme.GoldAccent
 import com.toonai.budgetshield.theme.BlueAccent
 import com.toonai.budgetshield.theme.TextPrimary
 import com.toonai.budgetshield.theme.TextMuted
+import com.toonai.budgetshield.ui.LocalBillRepository
+import com.toonai.budgetshield.data.model.Bill as BillEntity
 
 
 @Composable
 fun BillProtectedScreen(
+    billId: Long? = null,
     onNavigateToHome: () -> Unit,
     onNavigateToTreasure: () -> Unit,
     onNavigateToShieldProgression: () -> Unit
 ) {
+    val billRepository = LocalBillRepository.current
+    val billFlow = if (billId != null) {
+        billRepository.getBillByIdFlow(billId)
+    } else {
+        flowOf(null)
+    }
+    val billState = billFlow.collectAsState(initial = null)
+    val bill = billState.value
+    
+    // Default values for when bill is not found
+    val billName = bill?.name ?: "Protected Bill"
+    val amountCents = bill?.amountCents ?: 0L
+    val billAmount = if (amountCents > 0) {
+        "${'$'}${amountCents / 100}.${(amountCents % 100).toString().padStart(2, '0')}"
+    } else {
+        "$0.00"
+    }
+    
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = BackgroundDark
@@ -70,7 +94,7 @@ fun BillProtectedScreen(
                 SuccessIcon()
 
                 // Achievement Card
-                AchievementCard()
+                AchievementCard(bill = bill)
 
                 // XP Earned
                 XPEarnedCard()
@@ -152,7 +176,11 @@ private fun SuccessIcon() {
 }
 
 @Composable
-private fun AchievementCard() {
+private fun AchievementCard(bill: BillEntity? = null) {
+    // Default values for when bill is not found
+    val billName = bill?.name ?: "Protected Bill"
+    val billAmount = bill?.let { "${'$'}${it.amountCents / 100}.${(it.amountCents % 100).toString().padStart(2, '0')}" } ?: "$0.00"
+    
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -165,14 +193,14 @@ private fun AchievementCard() {
         )
 
         Text(
-            text = "Rent Payment",
+            text = billName,
             color = TextPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold
         )
 
         Text(
-            text = "$950.00 paid on time",
+            text = "$billAmount paid on time",
             color = TextMuted,
             fontSize = 16.sp
         )

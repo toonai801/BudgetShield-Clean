@@ -44,6 +44,8 @@ import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.ui.viewmodel.BillsUiState
 import com.toonai.budgetshield.ui.viewmodel.BillsViewModel
 
+
+
 import com.toonai.budgetshield.theme.BackgroundDark
 import com.toonai.budgetshield.theme.PanelDark
 import com.toonai.budgetshield.theme.PanelBorder
@@ -66,7 +68,11 @@ fun BillsScreen(
     onNavigateToBillEntry: () -> Unit,
     onNavigateToBillPayment: (Long) -> Unit,
     onNavigateToTransactionDetails: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    onNavigateToTreasure: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToGoals: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -135,6 +141,8 @@ fun BillsScreen(
                 HistorySection(onViewHistory = onNavigateToTransactionDetails)
             }
         }
+
+
     }
 }
 

@@ -54,12 +54,18 @@ import com.toonai.budgetshield.theme.TextMuted
 import com.toonai.budgetshield.ui.LocalBillRepository
 import com.toonai.budgetshield.ui.LocalIncomeRepository
 import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
+
 import java.time.YearMonth
 
 
 @Composable
 fun StatsScreen(
-    onNavigateToTransactionDetails: () -> Unit
+    onNavigateToTransactionDetails: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToTreasure: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToGoals: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val billRepository = LocalBillRepository.current
     val incomeRepository = LocalIncomeRepository.current
@@ -128,6 +134,8 @@ fun StatsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+
+
     }
 }
 

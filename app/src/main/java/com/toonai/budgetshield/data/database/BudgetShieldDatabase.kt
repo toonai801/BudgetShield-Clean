@@ -59,7 +59,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
          * Migration from version 1 to 2.
          * Adds setup/profile tables while preserving existing bills.
          */
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 // UserSettings - first run completion
                 database.execSQL("""
@@ -119,7 +119,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
          * Migration from version 2 to 3.
          * Adds SetupDraft table for process-death resume.
          */
-        private val MIGRATION_2_3 = object : Migration(2, 3) {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 // SetupDraft - incomplete setup progress
                 database.execSQL("""
@@ -145,7 +145,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
          * Migration from version 3 to 4.
          * Adds Transaction, XP, Achievement, SavingsGoal, and Streak tables.
          */
-        private val MIGRATION_3_4 = object : Migration(3, 4) {
+        val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 // Transactions
                 database.execSQL("""

@@ -1,7 +1,7 @@
 package com.toonai.budgetshield
 
 import android.content.Intent
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
@@ -29,7 +29,7 @@ class SetupQuestFlowTest {
     var hiltRule = HiltAndroidRule(this)
 
     @get:Rule
-    val composeTestRule = createEmptyComposeRule()
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Inject
     lateinit var database: BudgetShieldDatabase

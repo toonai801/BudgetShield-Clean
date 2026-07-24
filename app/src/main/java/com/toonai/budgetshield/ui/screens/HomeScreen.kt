@@ -123,20 +123,26 @@ fun HomeScreen(
                     CircularProgressIndicator(color = CyanAccent)
                 }
             } else {
-                HomeContent(
-                    uiState = uiState,
-                    onNavigateToTreasure = onNavigateToTreasure,
-                    onNavigateToSettings = onNavigateToSettings,
-                    onNavigateToRewardScreen = onNavigateToRewardScreen,
-                    onNavigateToMenu = onNavigateToMenu,
-                    onNavigateToCalendar = onNavigateToCalendar,
-                    onNavigateToShieldProgression = onNavigateToShieldProgression,
-                    onNavigateToIncomeEntry = onNavigateToIncomeEntry,
-                    onNavigateToBillEntry = onNavigateToBillEntry,
-                    onNavigateToSavingsEntry = onNavigateToSavingsEntry,
-                    onNavigateToTransactionDetails = onNavigateToTransactionDetails,
-                    viewModel = viewModel
-                )
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    HomeContent(
+                        uiState = uiState,
+                        onNavigateToTreasure = onNavigateToTreasure,
+                        onNavigateToSettings = onNavigateToSettings,
+                        onNavigateToRewardScreen = onNavigateToRewardScreen,
+                        onNavigateToMenu = onNavigateToMenu,
+                        onNavigateToCalendar = onNavigateToCalendar,
+                        onNavigateToShieldProgression = onNavigateToShieldProgression,
+                        onNavigateToIncomeEntry = onNavigateToIncomeEntry,
+                        onNavigateToBillEntry = onNavigateToBillEntry,
+                        onNavigateToSavingsEntry = onNavigateToSavingsEntry,
+                        onNavigateToTransactionDetails = onNavigateToTransactionDetails,
+                        viewModel = viewModel,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                }
             }
         }
     }
@@ -156,7 +162,8 @@ private fun HomeContent(
     onNavigateToBillEntry: () -> Unit,
     onNavigateToSavingsEntry: () -> Unit,
     onNavigateToTransactionDetails: () -> Unit,
-    viewModel: HomeViewModel
+    viewModel: HomeViewModel,
+    modifier: Modifier = Modifier
 ) {
     // State for month picker dialog
     var showMonthPicker by remember { mutableStateOf(false) }
@@ -203,7 +210,7 @@ private fun HomeContent(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {

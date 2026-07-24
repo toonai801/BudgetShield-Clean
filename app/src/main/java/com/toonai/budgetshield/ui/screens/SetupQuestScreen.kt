@@ -20,7 +20,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -91,6 +94,7 @@ fun SetupQuestScreen(
                         onUpdateBillName = { id, name -> viewModel.updateBillName(id, name) },
                         onUpdateBillAmount = { id, amount -> viewModel.updateBillAmount(id, amount) },
                         onUpdateBillDueDate = { id, date -> viewModel.updateBillDueDate(id, date) },
+                        onUpdateBillIcon = { id, icon -> viewModel.updateBillIcon(id, icon) },
                         onToggleBillProtection = { id -> viewModel.toggleBillProtection(id) },
                         onRemoveBill = { viewModel.removeBill(it) },
                         onUpdateFoodBudget = { viewModel.updateFoodBudget(it) },
@@ -119,13 +123,22 @@ private fun SetupQuestContent(
     onUpdateBillName: (Long, String) -> Unit,
     onUpdateBillAmount: (Long, String) -> Unit,
     onUpdateBillDueDate: (Long, String) -> Unit,
+    onUpdateBillIcon: (Long, String) -> Unit,
     onToggleBillProtection: (Long) -> Unit,
     onRemoveBill: (Long) -> Unit,
     onUpdateFoodBudget: (String) -> Unit,
     onUpdateWantsBudget: (String) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
+    
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
     ) {
         SetupProgressHeader(
             currentChapter = uiState.currentChapter,
@@ -163,6 +176,7 @@ private fun SetupQuestContent(
                     onUpdateBillName = onUpdateBillName,
                     onUpdateBillAmount = onUpdateBillAmount,
                     onUpdateBillDueDate = onUpdateBillDueDate,
+                    onUpdateBillIcon = onUpdateBillIcon,
                     onToggleBillProtection = onToggleBillProtection,
                     onRemoveBill = onRemoveBill
                 )
@@ -424,16 +438,20 @@ private fun ChapterPayday(
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = paydayDate,
-            onValueChange = { },
-            readOnly = true,
+            onValueChange = { input ->
+                // Allow direct text input for MM/DD/YYYY format
+                // Filter to only allow digits and slashes
+                val cleaned = input.replace(Regex("[^0-9/]"), "")
+                onUpdatePaydayDate(cleaned)
+            },
             label = { Text("Next Payday") },
             placeholder = { Text("MM/DD/YYYY") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             isError = paydayErrors.containsKey("paydayDate"),
             supportingText = paydayErrors["paydayDate"]?.let { { Text(it) } },
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag("chapter2_date_input")
-                .clickable { showDatePicker = true },
+                .testTag("chapter2_date_input"),
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = true }) {
                     Text("📅")
@@ -491,6 +509,7 @@ private fun ChapterBills(
     onUpdateBillName: (Long, String) -> Unit,
     onUpdateBillAmount: (Long, String) -> Unit,
     onUpdateBillDueDate: (Long, String) -> Unit,
+    onUpdateBillIcon: (Long, String) -> Unit,
     onToggleBillProtection: (Long) -> Unit,
     onRemoveBill: (Long) -> Unit
 ) {
@@ -525,6 +544,7 @@ private fun ChapterBills(
                 onUpdateName = { onUpdateBillName(bill.id, it) },
                 onUpdateAmount = { onUpdateBillAmount(bill.id, it) },
                 onUpdateDueDate = { onUpdateBillDueDate(bill.id, it) },
+                onUpdateIcon = { onUpdateBillIcon(bill.id, it) },
                 onToggleProtection = { onToggleBillProtection(bill.id) },
                 onRemove = { onRemoveBill(bill.id) }
             )
@@ -550,10 +570,24 @@ private fun BillCard(
     onUpdateName: (String) -> Unit,
     onUpdateAmount: (String) -> Unit,
     onUpdateDueDate: (String) -> Unit,
+    onUpdateIcon: (String) -> Unit,
     onToggleProtection: () -> Unit,
     onRemove: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    var showIconPicker by remember { mutableStateOf(false) }
+    
+    // Bill category options with icons
+    val billCategories = listOf(
+        "🏠" to "Housing",
+        "⚡" to "Utilities", 
+        "🍔" to "Food",
+        "🚗" to "Transport",
+        "📱" to "Phone",
+        "📺" to "Streaming",
+        "💊" to "Health",
+        "📄" to "Other"
+    )
     
     // Parse existing date if available
     // Using Locale.US for consistent date formatting
@@ -625,6 +659,44 @@ private fun BillCard(
         }
     }
 
+    // Icon Picker Dialog
+    if (showIconPicker) {
+        AlertDialog(
+            onDismissRequest = { showIconPicker = false },
+            title = { Text("Select Category") },
+            text = {
+                Column {
+                    billCategories.chunked(4).forEach { row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            row.forEach { (icon, label) ->
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .clickable {
+                                            onUpdateIcon(icon)
+                                            showIconPicker = false
+                                        }
+                                        .padding(8.dp)
+                                ) {
+                                    Text(text = icon, fontSize = 24.sp)
+                                    Text(text = label, fontSize = 10.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showIconPicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -640,6 +712,39 @@ private fun BillCard(
                 supportingText = errors["name"]?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            // Icon selector
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Category:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                Card(
+                    onClick = { showIconPicker = true },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Text(text = bill.icon, fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = billCategories.find { it.first == bill.icon }?.second ?: "Other",
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = "▼", fontSize = 10.sp)
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -657,15 +762,13 @@ private fun BillCard(
                 )
                 OutlinedTextField(
                     value = bill.dueDateInput,
-                    onValueChange = { },
-                    readOnly = true,
+                    onValueChange = onUpdateDueDate,
                     label = { Text("Due Date") },
                     placeholder = { Text("MM/DD") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = errors.containsKey("dueDate"),
                     supportingText = errors["dueDate"]?.let { { Text(it) } },
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { showDatePicker = true },
+                    modifier = Modifier.weight(1f),
                     trailingIcon = {
                         IconButton(onClick = { showDatePicker = true }) {
                             Text(text = "📅", fontSize = 12.sp)
@@ -945,5 +1048,6 @@ data class DraftBill(
     val amountInput: String = "",
     val amountCents: Long = 0,
     val dueDateInput: String = "",
-    val isProtected: Boolean = false
+    val isProtected: Boolean = false,
+    val icon: String = "📄"
 )

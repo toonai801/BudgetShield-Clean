@@ -1,0 +1,78 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Exception while marshalling /home/toon/android-sdk/build-tools/35.0.0/package.xml. Probably the SDK is read-only
+Observed package id 'build-tools;34.0.0' in inconsistent location '/home/toon/android-sdk/build-tools/35.0.0' (Expected '/home/toon/android-sdk/build-tools/34.0.0')
+Observed package id 'build-tools;35.0.0' in inconsistent location '/home/toon/android-sdk/build-tools/35.0.0-2' (Expected '/home/toon/android-sdk/build-tools/35.0.0')
+Observed package id 'platforms;android-35' in inconsistent location '/home/toon/android-sdk/platforms/android-36' (Expected '/home/toon/android-sdk/platforms/android-35')
+Already observed package id 'platforms;android-35' in '/home/toon/android-sdk/platforms/android-35'. Skipping duplicate at '/home/toon/android-sdk/platforms/android-36'
+Observed package id 'platforms;android-36' in inconsistent location '/home/toon/android-sdk/platforms/android-36-2' (Expected '/home/toon/android-sdk/platforms/android-36')
+[=========                              ] 25%                                   > Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:packageDebugUnitTestForUnitTest UP-TO-DATE
+> Task :app:processDebugUnitTestManifest UP-TO-DATE
+> Task :app:generateDebugUnitTestConfig UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:kaptGenerateStubsDebugKotlin
+> Task :app:kaptDebugKotlin UP-TO-DATE
+> Task :app:compileDebugKotlin
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/data/database/BudgetShieldDatabase.kt:63:34 The corresponding parameter in the supertype 'Migration' is named 'db'. This may cause problems when calling this function with named arguments.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/data/database/BudgetShieldDatabase.kt:123:34 The corresponding parameter in the supertype 'Migration' is named 'db'. This may cause problems when calling this function with named arguments.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/data/database/BudgetShieldDatabase.kt:149:34 The corresponding parameter in the supertype 'Migration' is named 'db'. This may cause problems when calling this function with named arguments.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/data/database/BudgetShieldDatabase.kt:248:18 'fun fallbackToDestructiveMigrationOnDowngrade(): RoomDatabase.Builder<BudgetShieldDatabase>' is deprecated. Replace by overloaded version with parameter to indicate if all tables should be dropped or not.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/data/database/DatabaseMigrations.kt:19:26 The corresponding parameter in the supertype 'Migration' is named 'db'. This may cause problems when calling this function with named arguments.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/theme/BudgetShieldTheme.kt:149:20 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/theme/BudgetShieldTheme.kt:150:20 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/ui/screens/TransactionDetailsScreen.kt:323:25 Condition is always 'true'.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/ui/screens/TreasureScreen.kt:344:49 'fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo().
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/ui/screens/TreasureScreen.kt:359:49 'fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo().
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/ui/screens/TreasureScreen.kt:361:49 'fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo().
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/ui/screens/TreasureScreen.kt:460:29 'fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo().
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/ui/screens/TreasureScreen.kt:503:29 'fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo().
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/main/java/com/toonai/budgetshield/ui/screens/TreasureScreen.kt:505:29 'fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo().
+
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:hiltAggregateDepsDebug UP-TO-DATE
+> Task :app:hiltJavaCompileDebug UP-TO-DATE
+> Task :app:transformDebugClassesWithAsm UP-TO-DATE
+> Task :app:bundleDebugClassesToRuntimeJar UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:bundleDebugClassesToCompileJar UP-TO-DATE
+> Task :app:kaptGenerateStubsDebugUnitTestKotlin
+> Task :app:kaptDebugUnitTestKotlin UP-TO-DATE
+
+> Task :app:compileDebugUnitTestKotlin
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/test/java/com/toonai/budgetshield/data/database/MigrationTest.kt:51:14 'fun fallbackToDestructiveMigration(): RoomDatabase.Builder<BudgetShieldDatabase>' is deprecated. Replace by overloaded version with parameter to indicate if all tables should be dropped or not.
+w: file:///home/toon/workspace/BudgetShield-Clean/app/src/test/java/com/toonai/budgetshield/navigation/RouteCompletenessTest.kt:52:17 Check for instance is always 'true'.
+
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:hiltAggregateDepsDebugUnitTest UP-TO-DATE
+> Task :app:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes UP-TO-DATE
+> Task :app:transformDebugUnitTestClassesWithAsm UP-TO-DATE
+> Task :app:testDebugUnitTest
+
+BUILD SUCCESSFUL in 1m 34s
+40 actionable tasks: 5 executed, 35 up-to-date

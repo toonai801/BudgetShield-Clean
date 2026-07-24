@@ -51,6 +51,7 @@ import com.toonai.budgetshield.theme.DangerDot
 import com.toonai.budgetshield.theme.TextPrimary
 import com.toonai.budgetshield.theme.TextMuted
 
+
 // Premium dark fantasy gamified theme - Treasure Hub Edition
 
 // Section expansion states - all five sections
@@ -64,7 +65,11 @@ private data class TreasureSections(
 
 @Composable
 fun TreasureScreen(
-    onNavigateToHome: () -> Unit = {}
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToTreasure: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToGoals: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     var sections by remember { mutableStateOf(TreasureSections()) }
 
@@ -168,6 +173,8 @@ fun TreasureScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+
+
     }
 }
 

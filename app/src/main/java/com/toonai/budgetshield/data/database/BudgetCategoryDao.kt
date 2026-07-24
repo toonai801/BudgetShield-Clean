@@ -37,8 +37,17 @@ interface BudgetCategoryDao {
     suspend fun insertBudget(budget: BudgetCategory): Long
 
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCategory(category: BudgetCategory): Long
+
+    @Query("SELECT * FROM budget_categories WHERE id = :id LIMIT 1")
+    suspend fun getCategoryById(id: Long): BudgetCategory?
+
+    @Query("SELECT * FROM budget_categories WHERE id = :id LIMIT 1")
+    suspend fun getBudgetById(id: Long): BudgetCategory?
+
     @Update
-    suspend fun update(budget: BudgetCategory)
+    suspend fun updateCategory(category: BudgetCategory)
 
     @Update
     suspend fun updateBudget(budget: BudgetCategory)

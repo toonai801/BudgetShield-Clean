@@ -2,7 +2,7 @@ package com.toonai.budgetshield
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -32,7 +32,7 @@ class NavigationSmokeTest {
     var hiltRule = HiltAndroidRule(this)
 
     @get:Rule
-    val composeTestRule = createEmptyComposeRule()
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Inject
     lateinit var database: BudgetShieldDatabase

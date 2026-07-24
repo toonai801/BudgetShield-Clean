@@ -53,9 +53,15 @@ import com.toonai.budgetshield.theme.TextMuted
 import com.toonai.budgetshield.theme.DangerDot
 
 
+
 @Composable
 fun SettingsScreen(
-    onNavigateToSetupQuest: () -> Unit
+    onNavigateToSetupQuest: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToTreasure: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToGoals: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier
@@ -92,8 +98,13 @@ fun SettingsScreen(
 
                 // Danger Zone
                 DangerZoneSection(onRestartSetup = onNavigateToSetupQuest)
+
+                // Bottom spacer
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
+
+
     }
 }
 
