@@ -1,13 +1,18 @@
 # Project State
 
 ## Current Task
-**OpenClaw Rebuild Preservation Checkpoint** — PAUSED
-- Project preserved for complete OpenClaw wipe/rebuild
-- Current implementation is WIP, not complete
-- Connected tests: 20/23 passing (3 failures unresolved)
-- Unit tests: 130 tests passing
+**Active Development** — IN PROGRESS
+- Workspace recovered and canonical at `/home/toon/.openclaw/workspace/BudgetShield_CLEAN`
+- Build: SUCCESS (Kotlin compilation fixed)
+- Version 1.2.0-beta-intake-home-v8 (versionCode 8)
+- 17 screens, 8 entities, 19 test files
 
 ## Previous Work
+**Workspace Recovery (2026-07-24)** — COMPLETE
+- Merged divergent repositories (3 sources)
+- Fixed HomeScreen parameter passing bug
+- Committed new BudgetsScreen and LogSpendingScreen
+
 **Functional Beta (2026-07-21)** — COMPLETE BUT NOT RELEASED
 - 6-chapter Setup Quest, Themed Loading Gate, Safe Now Calculation
 - 130 Unit Tests, 20/23 Connected Tests (87%)
@@ -21,13 +26,20 @@
 - **Repo:** toonai801/BudgetShield-Clean
 - **Branch:** main
 - **Package:** com.toonai.budgetshield
-- **Version:** 1.2.0-beta-20260721-211030 (versionCode 7)
+- **Version:** 1.2.0-beta-intake-home-v8 (versionCode 8)
+- **APK:** app-debug.apk (23.3 MB, SHA256: 148a94f8...)
 
-## Status: PAUSED for OpenClaw Rebuild
+## Status: ACTIVE DEVELOPMENT
 
-This checkpoint preserves the current beta implementation state before a complete OpenClaw environment rebuild. The codebase is functional but not production-ready.
+This is the canonical BudgetShield workspace. The codebase is functional and actively developed.
 
 ### Implementation Summary
+
+#### 0. New Screens (v8)
+- **BudgetsScreen** — Category-based budget management with month navigation
+- **LogSpendingScreen** — Transaction logging with category selection and XP rewards
+- **BudgetsViewModel** — State management for budget categories and month-keyed queries
+- **LogSpendingViewModel** — Transaction creation and XP entry coordination
 
 #### 1. Setup Quest (6 Chapters)
 - **Chapter 1: Cash on Hand** — Starting cleared cash balance entry
@@ -36,6 +48,7 @@ This checkpoint preserves the current beta implementation state before a complet
 - **Chapter 4: Savings** — Existing savings balance
 - **Chapter 5: Monthly Budgets** — Food/essentials and wants/extras budget limits
 - **Chapter 6: Shield Review** — Final confirmation with Activate button
+- **Bug Fixed:** Chapter 2 date field IsEditable bug (Jul 23)
 
 #### 2. First-Run Gate (Non-Bypassable)
 - ThemedLoadingScreen shows while checking first-run status
@@ -44,16 +57,19 @@ This checkpoint preserves the current beta implementation state before a complet
 - Process-death resume via SetupDraftDao
 - SetupDraft persistence for incomplete setup
 
-#### 3. Room Migration (Version 2 → 3)
-- Added SetupDraft table for process-death resume
-- Preserves all existing data
+#### 3. Room Migration (Version 3 → 4)
+- Added Transaction table for spending logging
+- Added XpEntry table for XP tracking
+- Added SavingsGoal table for savings targets
+- MIGRATION_3_4 implemented (non-destructive)
+- **Note:** Repo 2 had destructive migration — NOT used in canonical
 
 #### 4. Safe Now Calculation
 - Cleared cash + confirmed income up to each date
 - Minus protected bills due on or before that date
 - Planning horizon: through latest protected obligation
 - Returns safeNowCents, firstFailingDate, shortageCents
-- All 9 documented examples verified (130 unit tests passing)
+- All 9 documented examples verified
 
 #### 5. Home Screen (Live Data)
 - Current month navigation with previous/next controls
