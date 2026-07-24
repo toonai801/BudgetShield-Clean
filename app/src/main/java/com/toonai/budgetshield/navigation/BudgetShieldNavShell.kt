@@ -24,6 +24,8 @@ import com.toonai.budgetshield.ui.screens.BudgetMenuScreen
 import com.toonai.budgetshield.ui.screens.GoalsScreen
 import com.toonai.budgetshield.ui.screens.HomeScreen
 import com.toonai.budgetshield.ui.screens.IncomeEntryScreen
+import com.toonai.budgetshield.ui.screens.LogSpendingScreen
+import com.toonai.budgetshield.ui.screens.BudgetsScreen
 import com.toonai.budgetshield.ui.screens.SavingsEntryScreen
 import com.toonai.budgetshield.ui.screens.SettingsScreen
 import com.toonai.budgetshield.ui.screens.SetupQuestScreen
@@ -38,6 +40,8 @@ import com.toonai.budgetshield.ui.viewmodel.SavingsEntryViewModel
 import com.toonai.budgetshield.ui.viewmodel.SettingsViewModel
 import com.toonai.budgetshield.ui.viewmodel.StatsViewModel
 import com.toonai.budgetshield.ui.viewmodel.TransactionViewModel
+import com.toonai.budgetshield.ui.viewmodel.LogSpendingViewModel
+import com.toonai.budgetshield.ui.viewmodel.BudgetsViewModel
 
 // Premium gamified dark theme - Background
 private val BackgroundDark = Color(0xFF02070D)
@@ -65,6 +69,8 @@ fun getMainDestinationForKey(key: NavKey): MainDestination? {
         is BillProtected -> MainDestination.HOME
         is ShieldProgression -> MainDestination.HOME
         is BudgetMenu -> MainDestination.HOME
+        is LogSpending -> MainDestination.HOME
+        is Budgets -> MainDestination.HOME
         // SetupQuest has no selected tab but still shows footer
         is SetupQuest -> null  // SetupQuest has no footer
         else -> null
@@ -102,7 +108,9 @@ private fun BudgetShieldScreenContent(
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) },
                 onNavigateToRewardScreen = { /* Rewards not implemented - button hidden in UI */ },
                 onNavigateToMenu = { onNavigate(BudgetMenu) },
-                onNavigateToCalendar = { /* Calendar button removed - use month picker */ }
+                onNavigateToCalendar = { /* Calendar button removed - use month picker */ },
+                onNavigateToLogSpending = { onNavigate(LogSpending) },
+                onNavigateToBudgets = { onNavigate(Budgets) }
             )
         }
         is BudgetMenu -> {
@@ -212,6 +220,18 @@ private fun BudgetShieldScreenContent(
         }
         is ShieldProgression -> {
             ShieldProgressionScreen()
+        }
+        is LogSpending -> {
+            LogSpendingScreen(
+                onComplete = { onNavigateBack() },
+                onBack = { onNavigateBack() }
+            )
+        }
+        is Budgets -> {
+            BudgetsScreen(
+                onBack = { onNavigateBack() },
+                onLogSpending = { onNavigate(LogSpending) }
+            )
         }
         else -> {
             androidx.compose.material3.Text("Unknown screen: ${key::class.simpleName}")

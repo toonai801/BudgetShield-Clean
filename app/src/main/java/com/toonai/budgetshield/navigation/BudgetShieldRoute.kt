@@ -54,3 +54,9 @@ object ShieldProgression : NavKey
 
 @Serializable
 object BudgetMenu : NavKey
+
+@Serializable
+object LogSpending : NavKey
+
+@Serializable
+object Budgets : NavKey

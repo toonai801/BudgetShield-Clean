@@ -99,6 +99,8 @@ fun HomeScreen(
     onNavigateToRewardScreen: () -> Unit,
     onNavigateToMenu: () -> Unit,
     onNavigateToCalendar: () -> Unit,
+    onNavigateToLogSpending: () -> Unit,
+    onNavigateToBudgets: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -138,6 +140,8 @@ fun HomeScreen(
                         onNavigateToBillEntry = onNavigateToBillEntry,
                         onNavigateToSavingsEntry = onNavigateToSavingsEntry,
                         onNavigateToTransactionDetails = onNavigateToTransactionDetails,
+                        onNavigateToLogSpending = onNavigateToLogSpending,
+                        onNavigateToBudgets = onNavigateToBudgets,
                         viewModel = viewModel,
                         modifier = Modifier.weight(1f)
                     )
@@ -162,6 +166,8 @@ private fun HomeContent(
     onNavigateToBillEntry: () -> Unit,
     onNavigateToSavingsEntry: () -> Unit,
     onNavigateToTransactionDetails: () -> Unit,
+    onNavigateToLogSpending: () -> Unit,
+    onNavigateToBudgets: () -> Unit,
     viewModel: HomeViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -249,7 +255,9 @@ private fun HomeContent(
             DailyActionsSection(
                 onAddIncome = onNavigateToIncomeEntry,
                 onPayBill = onNavigateToBillEntry,
-                onSaveMoney = onNavigateToSavingsEntry
+                onSaveMoney = onNavigateToSavingsEntry,
+                onLogSpending = onNavigateToLogSpending,
+                onViewBudgets = onNavigateToBudgets
             )
 
             RecentActivitySection(
@@ -565,7 +573,9 @@ private fun StatCard(
 private fun DailyActionsSection(
     onAddIncome: () -> Unit,
     onPayBill: () -> Unit,
-    onSaveMoney: () -> Unit
+    onSaveMoney: () -> Unit,
+    onLogSpending: () -> Unit,
+    onViewBudgets: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -587,6 +597,19 @@ private fun DailyActionsSection(
                 ActionButton(icon = "💰", label = "Add Income", onClick = onAddIncome, testTag = "home_action_add_income")
                 ActionButton(icon = "💳", label = "Pay Bill", onClick = onPayBill, testTag = "home_action_pay_bill")
                 ActionButton(icon = "💎", label = "Save Money", onClick = onSaveMoney, testTag = "home_action_save_money")
+                ActionButton(icon = "🧾", label = "Log Spending", onClick = onLogSpending, testTag = "home_action_log_spending")
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                TextButton(
+                    onClick = onViewBudgets,
+                    modifier = Modifier.testTag("home_action_view_budgets")
+                ) {
+                    Text("📊 View Budgets", color = CyanAccent)
+                }
             }
         }
     }
@@ -912,7 +935,9 @@ private fun PreviewHomeContent(
             DailyActionsSection(
                 onAddIncome = {},
                 onPayBill = {},
-                onSaveMoney = {}
+                onSaveMoney = {},
+                onLogSpending = {},
+                onViewBudgets = {}
             )
 
             RecentActivitySection(

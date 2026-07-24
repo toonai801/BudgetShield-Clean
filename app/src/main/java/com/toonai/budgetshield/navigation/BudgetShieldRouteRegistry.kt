@@ -10,7 +10,7 @@ import androidx.navigation3.runtime.NavKey
 object BudgetShieldRouteRegistry {
 
     /**
-     * All 14 production destinations in approved order.
+     * All production destinations in approved order.
      * This is the authoritative list. If a route is missing from here,
      * it is not part of the production app.
      */
@@ -29,13 +29,15 @@ object BudgetShieldRouteRegistry {
         TransactionDetails(),
         BillProtected,
         ShieldProgression,
-        BudgetMenu
+        BudgetMenu,
+        LogSpending,
+        Budgets
     )
 
     /**
      * Count of production destinations.
      */
-    const val DESTINATION_COUNT: Int = 15
+    const val DESTINATION_COUNT: Int = 17
 
     /**
      * Check if a given key is a valid production destination.
@@ -57,7 +59,9 @@ object BudgetShieldRouteRegistry {
             is TransactionDetails,
             is BillProtected,
             is ShieldProgression,
-            is BudgetMenu -> true
+            is BudgetMenu,
+            is LogSpending,
+            is Budgets -> true
             else -> false
         }
     }
