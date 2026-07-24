@@ -57,3 +57,4 @@ Never use, reference, or recover:
 - `docs/SCREEN_MAP.md` — Screen inventory
 - `docs/DATA_MODEL_PLAN.md` — Data architecture
 - `docs/TEST_PLAN.md` — Testing strategy
+# Release trigger Fri Jul 24 05:52:13 PM MDT 2026
