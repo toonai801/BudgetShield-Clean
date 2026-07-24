@@ -120,7 +120,7 @@ class BudgetShieldNavShellTest {
         val allRoutes = BudgetShieldRouteRegistry.allDestinations
 
         // All 15 routes should either map to a destination OR SetupQuest (which has footer but no selected tab)
-        assertEquals("Should have 15 registered routes", 15, allRoutes.size)
+        assertEquals("Should have 17 registered routes", 17, allRoutes.size)
 
         for (route in allRoutes) {
             val destination = getMainDestinationForKey(route)
@@ -145,11 +145,12 @@ class BudgetShieldNavShellTest {
     }
 
     @Test
-    fun `all 14 routes have correct ownership mapping`() {
+    fun `all 16 routes have correct ownership mapping`() {
         // Home-owned routes highlight HOME
         val homeOwnedRoutes = listOf(
             Home, Bills, IncomeEntry, BillEntry, BillPayment,
-            TransactionDetails(), BillProtected, ShieldProgression
+            TransactionDetails(), BillProtected, ShieldProgression,
+            LogSpending, Budgets
         )
         for (route in homeOwnedRoutes) {
             assertEquals("$route should be owned by HOME", MainDestination.HOME, getMainDestinationForKey(route))
