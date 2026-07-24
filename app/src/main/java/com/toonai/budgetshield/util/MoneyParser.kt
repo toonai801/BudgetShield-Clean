@@ -104,6 +104,17 @@ object MoneyParser {
     }
 
     /**
+     * Format cents to decimal string for input fields: "X.YY"
+     * Returns empty string if cents is 0
+     */
+    fun centsToDollarsString(cents: Long): String {
+        if (cents == 0L) return ""
+        val dollars = cents / 100
+        val remainder = kotlin.math.abs(cents % 100)
+        return String.format("%d.%02d", dollars, remainder)
+    }
+
+    /**
      * Validate that input only contains allowed characters as user types.
      * Allows: digits, at most one decimal point, at most 2 digits after decimal.
      */

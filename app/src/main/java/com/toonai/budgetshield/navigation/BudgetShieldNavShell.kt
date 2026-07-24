@@ -26,6 +26,7 @@ import com.toonai.budgetshield.ui.screens.HomeScreen
 import com.toonai.budgetshield.ui.screens.IncomeEntryScreen
 import com.toonai.budgetshield.ui.screens.LogSpendingScreen
 import com.toonai.budgetshield.ui.screens.BudgetsScreen
+import com.toonai.budgetshield.ui.screens.TransactionHistoryScreen
 import com.toonai.budgetshield.ui.screens.SavingsEntryScreen
 import com.toonai.budgetshield.ui.screens.SettingsScreen
 import com.toonai.budgetshield.ui.screens.SetupQuestScreen
@@ -71,6 +72,7 @@ fun getMainDestinationForKey(key: NavKey): MainDestination? {
         is BudgetMenu -> MainDestination.HOME
         is LogSpending -> MainDestination.HOME
         is Budgets -> MainDestination.HOME
+        is TransactionHistory -> MainDestination.HOME
         // SetupQuest has no selected tab but still shows footer
         is SetupQuest -> null  // SetupQuest has no footer
         else -> null
@@ -149,7 +151,8 @@ private fun BudgetShieldScreenContent(
         }
         is Settings -> {
             SettingsScreen(
-                onNavigateToSetupQuest = { onNavigate(SetupQuest) }
+                onNavigateToSetupQuest = { onNavigate(SetupQuest) },
+                onNavigateToTransactionHistory = { onNavigate(TransactionHistory) }
             )
         }
         is IncomeEntry -> {
@@ -231,6 +234,11 @@ private fun BudgetShieldScreenContent(
             BudgetsScreen(
                 onBack = { onNavigateBack() },
                 onLogSpending = { onNavigate(LogSpending) }
+            )
+        }
+        is TransactionHistory -> {
+            TransactionHistoryScreen(
+                onBack = { onNavigateBack() }
             )
         }
         else -> {

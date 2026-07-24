@@ -1,34 +1,14 @@
 package com.toonai.budgetshield.ui.screens
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,23 +16,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.toonai.budgetshield.BuildConfig
-
-import com.toonai.budgetshield.theme.BackgroundDark
-import com.toonai.budgetshield.theme.PanelDark
-import com.toonai.budgetshield.theme.PanelBorder
-import com.toonai.budgetshield.theme.CyanAccent
-import com.toonai.budgetshield.theme.GreenAccent
-import com.toonai.budgetshield.theme.GoldAccent
-import com.toonai.budgetshield.theme.BlueAccent
-import com.toonai.budgetshield.theme.PurpleAccent
-import com.toonai.budgetshield.theme.TextPrimary
-import com.toonai.budgetshield.theme.TextMuted
-import com.toonai.budgetshield.theme.DangerDot
-
-
+import com.toonai.budgetshield.data.model.BudgetCategory
+import com.toonai.budgetshield.theme.*
+import com.toonai.budgetshield.ui.viewmodel.SettingsViewModel
+import com.toonai.budgetshield.util.MoneyParser
 
 @Composable
 fun SettingsScreen(
@@ -61,8 +33,17 @@ fun SettingsScreen(
     onNavigateToTreasure: () -> Unit = {},
     onNavigateToStats: () -> Unit = {},
     onNavigateToGoals: () -> Unit = {},
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToTransactionHistory: () -> Unit = {},
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadBudgets()
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -72,7 +53,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
         ) {
             Column(
                 modifier = Modifier
@@ -86,6 +67,15 @@ fun SettingsScreen(
 
                 // Profile Card
                 ProfileCard()
+
+                // Budget Setup Section
+                BudgetSetupSection(
+                    budgets = uiState.budgets,
+                    onUpdateBudget = { categoryId, amount ->
+                        viewModel.updateBudgetAmount(categoryId, amount)
+                    },
+                    onNavigateToTransactionHistory = onNavigateToTransactionHistory
+                )
 
                 // Preferences
                 PreferencesSection()
@@ -103,8 +93,164 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+}
 
+@Composable
+private fun BudgetSetupSection(
+    budgets: List<BudgetCategory>,
+    onUpdateBudget: (Long, Long) -> Unit,
+    onNavigateToTransactionHistory: () -> Unit
+) {
+    var foodAmount by remember { mutableStateOf("") }
+    var wantsAmount by remember { mutableStateOf("") }
+    var otherAmount by remember { mutableStateOf("") }
 
+    // Initialize from existing budgets
+    LaunchedEffect(budgets) {
+        budgets.find { it.name == "Food" }?.let {
+            foodAmount = MoneyParser.centsToDollarsString(it.plannedAmountCents)
+        }
+        budgets.find { it.name == "Wants" }?.let {
+            wantsAmount = MoneyParser.centsToDollarsString(it.plannedAmountCents)
+        }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Monthly Budgets",
+                    color = TextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                TextButton(onClick = onNavigateToTransactionHistory) {
+                    Text(
+                        text = "View History →",
+                        color = CyanAccent,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+
+            // Food Budget
+            BudgetInputRow(
+                icon = "🍽️",
+                label = "Food Budget",
+                value = foodAmount,
+                onValueChange = { foodAmount = it },
+                onSave = {
+                    val cents = MoneyParser.parseToCents(foodAmount).getOrNull() ?: 0L
+                    budgets.find { it.name == "Food" }?.let { onUpdateBudget(it.id, cents) }
+                }
+            )
+
+            // Wants Budget
+            BudgetInputRow(
+                icon = "🎁",
+                label = "Wants Budget",
+                value = wantsAmount,
+                onValueChange = { wantsAmount = it },
+                onSave = {
+                    val cents = MoneyParser.parseToCents(wantsAmount).getOrNull() ?: 0L
+                    budgets.find { it.name == "Wants" }?.let { onUpdateBudget(it.id, cents) }
+                }
+            )
+
+            // Summary
+            val totalBudgeted = budgets.sumOf { it.plannedAmountCents }
+            if (totalBudgeted > 0) {
+                Text(
+                    text = "Total Budgeted: ${MoneyParser.formatCents(totalBudgeted)}",
+                    color = CyanAccent,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BudgetInputRow(
+    icon: String,
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSave: () -> Unit
+) {
+    var isEditing by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(CyanAccent.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = icon, fontSize = 20.sp)
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                color = TextPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            OutlinedTextField(
+                value = value,
+                onValueChange = { newValue ->
+                    val cleaned = newValue.replace(Regex("[^0-9.]"), "")
+                    onValueChange(cleaned)
+                },
+                prefix = { Text("$") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = LocalTextStyle.current.copy(
+                    color = TextPrimary,
+                    fontSize = 16.sp
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = CyanAccent,
+                    unfocusedBorderColor = PanelBorder,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
+                )
+            )
+        }
+
+        TextButton(
+            onClick = {
+                onSave()
+                isEditing = false
+            },
+            colors = ButtonDefaults.textButtonColors(contentColor = GreenAccent)
+        ) {
+            Text("Save", fontWeight = FontWeight.Bold)
+        }
     }
 }
 

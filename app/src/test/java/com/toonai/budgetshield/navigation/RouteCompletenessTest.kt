@@ -11,10 +11,10 @@ import org.junit.Assert.*
 class RouteCompletenessTest {
 
     @Test
-    fun `all 17 production destinations exist in registry`() {
+    fun `all 18 production destinations exist in registry`() {
         val destinations = BudgetShieldRouteRegistry.allDestinations
 
-        assertEquals("Should have 17 destinations", 17, destinations.size)
+        assertEquals("Should have 18 destinations", 18, destinations.size)
 
         // Verify each required destination type exists
         assertTrue("Should contain SetupQuest", destinations.any { it is SetupQuest })
@@ -34,11 +34,12 @@ class RouteCompletenessTest {
         assertTrue("Should contain BudgetMenu", destinations.any { it is BudgetMenu })
         assertTrue("Should contain LogSpending", destinations.any { it is LogSpending })
         assertTrue("Should contain Budgets", destinations.any { it is Budgets })
+        assertTrue("Should contain TransactionHistory", destinations.any { it is TransactionHistory })
     }
 
     @Test
-    fun `registry destination count is exactly 17`() {
-        assertEquals("DESTINATION_COUNT should be 17", 17, BudgetShieldRouteRegistry.DESTINATION_COUNT)
+    fun `registry destination count is exactly 18`() {
+        assertEquals("DESTINATION_COUNT should be 18", 18, BudgetShieldRouteRegistry.DESTINATION_COUNT)
         assertEquals("allDestinations size should match DESTINATION_COUNT",
             BudgetShieldRouteRegistry.DESTINATION_COUNT,
             BudgetShieldRouteRegistry.allDestinations.size
@@ -78,10 +79,11 @@ class RouteCompletenessTest {
             ShieldProgression::class,
             BudgetMenu::class,
             LogSpending::class,
-            Budgets::class
+            Budgets::class,
+            TransactionHistory::class
         )
 
-        assertEquals("Should have 17 serializable route classes", 17, serializableClasses.size)
+        assertEquals("Should have 18 serializable route classes", 18, serializableClasses.size)
     }
 
     @Test
@@ -128,6 +130,7 @@ class RouteCompletenessTest {
         assertTrue("BudgetMenu should be valid", BudgetShieldRouteRegistry.isValidDestination(BudgetMenu))
         assertTrue("LogSpending should be valid", BudgetShieldRouteRegistry.isValidDestination(LogSpending))
         assertTrue("Budgets should be valid", BudgetShieldRouteRegistry.isValidDestination(Budgets))
+        assertTrue("TransactionHistory should be valid", BudgetShieldRouteRegistry.isValidDestination(TransactionHistory))
     }
 
     @Test
@@ -150,6 +153,7 @@ class RouteCompletenessTest {
         assertEquals("BudgetMenu index", 14, BudgetShieldRouteRegistry.getDestinationIndex(BudgetMenu))
         assertEquals("LogSpending index", 15, BudgetShieldRouteRegistry.getDestinationIndex(LogSpending))
         assertEquals("Budgets index", 16, BudgetShieldRouteRegistry.getDestinationIndex(Budgets))
+        assertEquals("TransactionHistory index", 17, BudgetShieldRouteRegistry.getDestinationIndex(TransactionHistory))
     }
 
     @Test
@@ -161,12 +165,12 @@ class RouteCompletenessTest {
     }
 
     @Test
-    fun `all destinations are distinct types`() {
+    fun `all 18 destinations are distinct types`() {
         val destinationClasses = BudgetShieldRouteRegistry.allDestinations.map { it::class }
         val distinctClasses = destinationClasses.distinct()
 
-        assertEquals("All 17 destinations should have distinct types",
-            17, distinctClasses.size)
+        assertEquals("All 18 destinations should have distinct types",
+            18, distinctClasses.size)
     }
 
     @Test
@@ -182,7 +186,7 @@ class RouteCompletenessTest {
     }
 
     @Test
-    fun `deliberate mutation test - removing route causes registry size mismatch`() {
+    fun `deliberate mutation test - removing route causes registry 18 size mismatch`() {
         // This test proves the suite would fail if a production route was removed
         // The registry size check would catch it
 
@@ -192,8 +196,8 @@ class RouteCompletenessTest {
         // If these don't match, something is wrong
         assertEquals("Registry size must match DESTINATION_COUNT", expectedSize, actualSize)
 
-        // Also verify we have exactly 17 by counting types
-        val uniqueTypes = BudgetShieldRouteRegistry.allDestinations.map { it::class.simpleName }.distinct()
-        assertEquals("Should have 17 unique destination types", 17, uniqueTypes.size)
+        // Also verify we have exactly 18 by counting types
+        val uniqueTypes = BudgetShieldRouteRegistry.allDestinations.map { it::class.simpleName }.toSet()
+        assertEquals("Should have 18 unique destination types", 18, uniqueTypes.size)
     }
 }
