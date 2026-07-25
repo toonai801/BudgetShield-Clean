@@ -8,17 +8,19 @@
 
 ---
 
+## Resolved — 2026-07-24 (QA Controller Run)
+
+| Defect | Description | Severity | Status | Resolution |
+|--------|-------------|----------|--------|------------|
+| CT-001 | `SetupQuestFlowTest.setupPersistsAcrossProcessDeath` returns null draft | HIGH | ✅ FIXED | Root cause was Hilt DI missing TransactionRepository in TestDatabaseModule |
+| CT-002 | `NavigationSmokeTest.endToEndSetupQuestCompletes` Chapter 2→3 timing | HIGH | ✅ FIXED | Root cause was Hilt DI missing TransactionRepository in TestDatabaseModule |
+| CT-003 | `PersistentFooterTest.footerHiddenDuringSetupAppearsAfter` visibility timing | HIGH | ✅ FIXED | Root cause was Hilt DI missing TransactionRepository in TestDatabaseModule |
+
+---
+
 ## Active — Release Blockers (UNRESOLVED)
 
-### Connected Test Failures (3 of 23)
-
-| Defect | Description | Severity | Status | Details |
-|--------|-------------|----------|--------|---------|
-| CT-001 | `SetupQuestFlowTest.setupPersistsAcrossProcessDeath` returns null draft | HIGH | ❌ FAILING | `setupDraftDao.getDraftSync()` returns null in test environment even after data seeded |
-| CT-002 | `NavigationSmokeTest.endToEndSetupQuestCompletes` Chapter 2→3 timing | HIGH | ❌ FAILING | Test advances before validation completes, assertion on Chapter 3 fails |
-| CT-003 | `PersistentFooterTest.footerHiddenDuringSetupAppearsAfter` visibility timing | HIGH | ❌ FAILING | Footer visibility assertion fails after setup completion |
-
-**Impact:** Release v1.2.0-beta is **REJECTED** until these 3 connected tests pass.
+**NONE — All blockers resolved 2026-07-24**
 
 ---
 
@@ -83,4 +85,4 @@
 
 ---
 
-*Last updated: 2026-07-22 — OpenClaw Rebuild Checkpoint*
+*Last updated: 2026-07-24 — All connected tests passing (23/23), QA Gate PASSED, Ready for Release*
