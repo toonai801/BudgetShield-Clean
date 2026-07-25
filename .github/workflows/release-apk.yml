@@ -1,16 +1,24 @@
 name: Build and Release APK
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
+  qa-gate-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require manual QA verification
+        run: |
+          echo "This workflow requires manual QA gate completion."
+          echo "Run qa-gate.yml first and verify all tests pass before release."
+
   build-release:
     runs-on: ubuntu-latest
+    needs: qa-gate-check
+    permissions:
+      contents: write
+
+    steps:
 
     steps:
       - name: Checkout code
