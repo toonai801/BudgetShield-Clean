@@ -20,6 +20,5 @@ out/
 Thumbs.db
 qa-evidence/
 runtime-evidence/
-releases/
 *_verification.png
 /archive/
