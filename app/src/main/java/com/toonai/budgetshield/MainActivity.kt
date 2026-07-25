@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
 private fun BudgetShieldAppWithLoading(
     repositories: AppRepositories
 ) {
-    BudgetShieldTheme {
+    BudgetShieldTheme(darkTheme = true) {
         var isLoading by remember { mutableStateOf(true) }
         var isFirstRunComplete by remember { mutableStateOf(false) }
         var hasError by remember { mutableStateOf(false) }

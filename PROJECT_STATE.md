@@ -1,139 +1,280 @@
 # Project State
 
-## Current Status
-**BETA CANDIDATE** — QA VERIFICATION IN PROGRESS
+## Current Task
+**OpenClaw Rebuild Preservation Checkpoint** — PAUSED
+- Project preserved for complete OpenClaw wipe/rebuild
+- Current implementation is WIP, not complete
+- Connected tests: 20/23 passing (3 failures unresolved)
+- Unit tests: 130 tests passing
 
-- Workspace: `/home/toon/.openclaw/workspace/BudgetShield_CLEAN`
-- Repository: `toonai801/BudgetShield-Clean`
-- Branch: `main`
-- Package: `com.toonai.budgetshield`
-- Build: **SUCCESS**
-- Connected Tests: **23/23 PASSING (100%)**
+## Previous Work
+**Functional Beta (2026-07-21)** — COMPLETE BUT NOT RELEASED
+- 6-chapter Setup Quest, Themed Loading Gate, Safe Now Calculation
+- 130 Unit Tests, 20/23 Connected Tests (87%)
+- Build clean, lint clean (deprecation warnings only)
+
+**Treasure Persistence Correction (2026-07-18)** — COMPLETE  
+**Setup Quest & Connected Test Fixes (2026-07-21)** — COMPLETE
+
+## Project Identity
+- **Folder:** BudgetShield_CLEAN
+- **Repo:** toonai801/BudgetShield-Clean
+- **Branch:** main
+- **Package:** com.toonai.budgetshield
+- **Version:** 1.2.0-beta-20260721-211030 (versionCode 7)
+
+## Status: PAUSED for OpenClaw Rebuild
+
+This checkpoint preserves the current beta implementation state before a complete OpenClaw environment rebuild. The codebase is functional but not production-ready.
+
+### Implementation Summary
+
+#### 1. Setup Quest (6 Chapters)
+- **Chapter 1: Cash on Hand** — Starting cleared cash balance entry
+- **Chapter 2: Payday** — Recurring income with frequency and next payday
+- **Chapter 3: Bills** — Protected obligations with amounts and due dates
+- **Chapter 4: Savings** — Existing savings balance
+- **Chapter 5: Monthly Budgets** — Food/essentials and wants/extras budget limits
+- **Chapter 6: Shield Review** — Final confirmation with Activate button
+
+#### 2. First-Run Gate (Non-Bypassable)
+- ThemedLoadingScreen shows while checking first-run status
+- Shows SetupQuest first if `isFirstRunComplete` is false
+- Navigation footer completely hidden during setup (no Home flash)
+- Process-death resume via SetupDraftDao
+- SetupDraft persistence for incomplete setup
+
+#### 3. Room Migration (Version 2 → 3)
+- Added SetupDraft table for process-death resume
+- Preserves all existing data
+
+#### 4. Safe Now Calculation
+- Cleared cash + confirmed income up to each date
+- Minus protected bills due on or before that date
+- Planning horizon: through latest protected obligation
+- Returns safeNowCents, firstFailingDate, shortageCents
+- All 9 documented examples verified (130 unit tests passing)
+
+#### 5. Home Screen (Live Data)
+- Current month navigation with previous/next controls
+- Safe Now card with real calculation result
+- "Budget Shield" branding (not "Budget Buddy")
+- Budget Menu navigation from Home
+- **No hardcoded values** — all data from Room
+
+#### 6. Budget Menu Screen
+- Bills, Add Income, Save Money, Settings options
+- Full Navigation 3 integration
+- Routed from Home menu button
+
+#### 7. Hilt Dependency Injection
+- DatabaseModule provides all DAOs including SetupDraftDao
+- ViewModels use constructor injection
+- AppModule provides ApplicationScope
+
+#### 8. Connected Test Infrastructure
+- Deterministic test harness with reflection-based INSTANCE clearing
+- Database file deletion and SharedPreferences clearing
+- `createEmptyComposeRule()` + explicit `ActivityScenario.launch()`
+- 20/23 connected tests passing (87%)
+
+### Unresolved Failures (Blocking Release)
+
+The following 3 connected tests remain failed. Release is **REJECTED** until these pass:
+
+1. **SetupQuestFlowTest.setupPersistsAcrossProcessDeath** — Draft resume returns null in test environment
+2. **NavigationSmokeTest.endToEndSetupQuestCompletes** — Chapter 2→3 navigation timing issue
+3. **PersistentFooterTest.footerHiddenDuringSetupAppearsAfter** — Footer visibility timing assertion
+
+### Verification Results at Checkpoint
+
+#### Build & Tests
+- Build: ✅ SUCCESS
+- Unit Tests: ✅ 130 tests PASSED
+- Connected Tests: ⚠️ 20/23 PASSED (87%) — 3 FAILURES UNRESOLVED
+- Lint: ✅ SUCCESS (only deprecation warnings)
+
+#### Functional Verification
+- First-run gate: ✅ Themed loading screen, non-bypassable
+- Setup Quest: ✅ 6 chapters functional with persistence
+- Room migration: ✅ Version 2 → 3 preserves data
+- Safe Now: ✅ All 9 documented examples
+- Home data: ✅ All from Room, no hardcoded values
+- Budget Menu: ✅ Navigation working
+
+### Architecture
+- Single MainActivity with Hilt
+- Navigation 3 with 15 destinations
+- MVVM with Hilt DI
+- Room persistence with migrations
+- Safe Now calculation engine
+
+### Technical Foundation
+- **AGP:** 8.13.2
+- **Gradle:** 8.13
+- **Kotlin:** 2.2.21
+- **Java:** 17
+- **compileSdk:** 36
+- **targetSdk:** 35
+- **minSdk:** 26
+- **Compose BOM:** 2026.06.00
+- **Navigation 3:** 1.1.4
+- **Room:** 2.7.1
+- **Hilt:** 2.56.1
+
+### Post-Rebuild Restoration Steps
+
+After OpenClaw is rebuilt:
+
+1. Clone `toonai801/BudgetShield-Clean` repository
+2. Open in Android Studio (or IDE with Android plugin)
+3. Configure `local.properties` with Android SDK path
+4. Run `./gradlew clean build test connectedDebugAndroidTest`
+5. Address the 3 remaining connected test failures
+6. Create verified release APK when all tests pass
 
 ---
 
-## Version Information
+## OpenClaw Role-Based Reconfiguration Checkpoint — 2026-07-25 00:36 MST
 
-| Property | Value |
-|----------|-------|
-| versionName | 1.2.0-beta |
-| versionCode | 8 |
-| Database Version | 4 |
-| Routes | 18 |
-| Screens | 17 |
-| Entities | 10 |
+**Status:** Configuration checkpoint saved before agent model routing reconfiguration
 
----
+**Pre-Restart Inventory:**
+- Main session: `agent:main:main` (sessionId: 8fda4d1c-df51-4694-9b1d-33a9c253a4ac)
+- Current HEAD: d7ad4fcca711b761108d6b4380462044789a3ce1
+- Unit tests: 130 passing
+- Connected tests: 20/23 passing (3 failures unresolved)
+- Git status: Navigation and home screen modifications in progress
+- Task 16 (Signed beta APK): IN PROGRESS
 
-## Quality Gates Status
+**Blocked Task Flows (Terminal):**
+1. `b979b4a2-6e06-4a8b-9f74-ef7db86bce25` — FINAL FUNCTIONAL QA RECHECK (blocked: completion delivery failed)
+2. `30761f53-23a9-4f1f-948e-49b263a37e42` — Backend verification mandate (blocked: progress-only response)
 
-| Gate | Status | Evidence |
-|------|--------|----------|
-| Clean Build | ✅ PASS | `./gradlew clean` SUCCESS |
-| Compile | ✅ PASS | `compileDebugKotlin` SUCCESS |
-| JVM Unit Tests | ✅ PASS | All unit tests PASS |
-| Lint | ✅ PASS | 0 errors, 37 warnings (DefaultLocale) |
-| Debug APK | ✅ PASS | APK generated (23.3MB) |
-| Android Test APK | ✅ PASS | Test APK generated (1.1MB) |
-| Connected Tests | ✅ PASS | 23/23 tests PASS |
+**Active Work:** None (0 running tasks, 0 queued tasks)
+
+**Safety:** No uncheckpointed writes. Configuration backup saved.
 
 ---
 
-## Navigation Routes (18 Total)
+## OpenClaw Role-Based Configuration Complete — 2026-07-25 00:53 MST
 
-1. Home
-2. Bills
-3. Bill Entry
-4. Bill Payment
-5. Income Entry
-6. Savings Entry
-7. Budgets
-8. Log Spending
-9. Transaction History
-10. Transaction Details
-11. Stats
-12. Goals
-13. Settings
-14. Treasure
-15. Shield Progression
-16. Setup Quest
-17. Budget Menu
-18. Unknown (fallback)
+**Status:** Configuration successfully applied
 
----
+**Applied Changes:**
 
-## Database Entities (10 Total)
+### Main Assistant (`main`)
+- **Primary:** `ollama-cloud/kimi-k2.6`
+- **Fallbacks:** `ollama-cloud/kimi-k2.5:cloud`, `ollama-cloud/mistral-large-3:675b`
+- **Function:** Personal assistant, conversation, request classification, automation and routing
 
-1. Bill
-2. UserSettings
-3. IncomeSchedule
-4. BudgetCategory
-5. SetupDraft
-6. Transaction
-7. XpEntry
-8. Achievement
-9. SavingsGoal
-10. UserStreak
+### New Role-Based Agents (BudgetShield)
 
----
+1. **budgetshield-pm** (Project Manager)
+   - Primary: `ollama-cloud/nemotron-3-ultra`
+   - Fallbacks: `ollama-cloud/minimax-m2.7`, `ollama-cloud/qwen3.5:397b`
+   - Workspace: `/home/toon/workspace/BudgetShield-Clean`
+   - Can delegate to: architect, coder-general, android-specialist, qa-worker, visual-specialist, research-worker, release-auditor
 
-## Test Summary
+2. **architect** (Technical Architect)
+   - Primary: `ollama-cloud/glm-5.2:cloud`
+   - Fallbacks: `ollama-cloud/deepseek-v4-pro`, `ollama-cloud/glm-5.1:cloud`
+   - Cannot spawn children
 
-| Test Type | Count | Status |
-|-----------|-------|--------|
-| JVM Unit Tests | 16 files | ✅ PASS |
-| Connected Tests | 23 tests | ✅ PASS |
-| **Total** | 39+ | **100%** |
+3. **coder-general** (General Coding Worker)
+   - Primary: `ollama-cloud/kimi-k2.7-code`
+   - Fallbacks: `ollama-cloud/glm-5.2:cloud`, `ollama-cloud/minimax-m2.5`
+   - Cannot spawn children
 
-### Connected Test Details
+4. **android-specialist** (Android Specialist)
+   - Primary: `ollama-cloud/minimax-m2.5`
+   - Fallbacks: `ollama-cloud/kimi-k2.7-code`, `ollama-cloud/glm-5.2:cloud`
+   - Cannot spawn children
 
-All 23 connected tests now passing:
-- NavigationSmokeTest: 10 tests ✅
-- PersistentFooterTest: 8 tests ✅
-- SetupQuestFlowTest: 5 tests ✅
+5. **qa-worker** (QA Worker)
+   - Primary: `ollama-cloud/minimax-m2.7`
+   - Fallbacks: `ollama-cloud/nemotron-3-super`, `ollama-cloud/deepseek-v4-flash`
+   - Cannot spawn children (independent from implementation)
 
-Previously failing tests (now resolved):
-- CT-001: SetupQuestFlowTest.setupPersistsAcrossProcessDeath ✅
-- CT-002: NavigationSmokeTest.endToEndSetupQuestCompletes ✅
-- CT-003: PersistentFooterTest.footerHiddenDuringSetupAppearsAfter ✅
+6. **release-auditor** (Release Auditor)
+   - Primary: `ollama-cloud/deepseek-v4-pro`
+   - Fallbacks: NONE (fail-closed)
+   - Secondary reviewer: `ollama-cloud/gpt-oss:120b`
+   - Cannot spawn children
+   - Cannot edit production code
+   - Cannot waive gates or dispatch repair
 
-Root cause: Hilt DI missing TransactionRepository in TestDatabaseModule.
+7. **visual-specialist** (Visual/UI Specialist)
+   - Primary: `ollama-cloud/minimax-m3`
+   - Fallbacks: `ollama-cloud/gemma4:31b`, `ollama-cloud/kimi-k2.6`
+   - Cannot spawn children
+   - **Note:** Visual input requires separate probe verification
 
----
+8. **research-worker** (Research and Specification Worker)
+   - Primary: `ollama-cloud/qwen3.5:397b`
+   - Fallbacks: `ollama-cloud/mistral-large-3:675b`, `ollama-cloud/deepseek-v4-flash`
+   - Cannot spawn children
 
-## Technical Foundation
+9. **utility-worker** (Utility Worker)
+   - Primary: `ollama-cloud/nemotron-3-nano:30b`
+   - Fallbacks: `ollama-cloud/gpt-oss:20b`
+   - Cannot spawn children
 
-| Component | Version |
-|-----------|---------|
-| AGP | 8.13.2 |
-| Gradle | 8.13 |
-| Kotlin | 2.2.21 |
-| Java | 17 |
-| compileSdk | 36 |
-| targetSdk | 35 |
-| minSdk | 26 |
-| Compose BOM | 2026.06.00 |
-| Navigation 3 | 1.1.4 |
-| Room | 2.7.1 |
-| Hilt | 2.56.1 |
+### Delegation Hierarchy
+```
+User → main (kimi-k2.6) → budgetshield-pm (nemotron-3-ultra) → specialists
+                                      ↓
+                              release-auditor (deepseek-v4-pro)
+```
+- Maximum depth: 2
+- Maximum concurrent subagents: 4
+- Maximum children per agent: 3
+- Specialist workers cannot spawn children
 
----
+### Safety Preserved
+- Existing `main` agent: session, credentials, bindings, workspace, memory preserved
+- BudgetShield codebase: unchanged
+- Configuration backup: `/home/toon/.openclaw/backups/openclaw-pre-reconfig-20260725-003642.json`
 
-## Known Issues
+### Verification Results
+- Configuration validation: ✅ PASS
+- Model list: 21 agents configured
+- Cron jobs: preserved (0 jobs)
+- Task flows: 2 stale blocked (previously checkpointed)
 
-### Resolved (2026-07-24)
-- CT-001: SetupQuestFlowTest.setupPersistsAcrossProcessDeath ✅
-- CT-002: NavigationSmokeTest.endToEndSetupQuestCompletes ✅
-- CT-003: PersistentFooterTest.footerHiddenDuringSetupAppearsAfter ✅
+**Configuration Backup:** `/home/toon/.openclaw/backups/openclaw-pre-reconfig-20260725-003642.json`
 
-### Active — Release Blockers
-**NONE**
-
-### Technical Debt
-- TD-001: Blocking DAO methods for test synchronization
-- TD-002: ExecutorService in SetupQuestViewModel (should use coroutines)
+**Gateway Restart:** Safe restart deferred (active session). Will complete after current conversation ends.
 
 ---
 
-## Last Updated
-2026-07-24 — Post-QA Run
+*Last updated: 2026-07-22 00:23 MST — PRE-REBUILD CHECKPOINT*
+
+---
+
+## OpenClaw Role-Based Configuration Restart — 2026-07-25 00:46 MST
+
+**Status:** Gateway restart initiated after role-based agent configuration
+
+**Configuration Changes Applied:**
+- Main assistant: `kimi-k2.6` with fallbacks `kimi-k2.5:cloud`, `mistral-large-3:675b`
+- BudgetShield PM: `nemotron-3-ultra` with fallbacks `minimax-m2.7`, `qwen3.5:397b`
+- New specialist agents added with role-based models:
+  - architect: `glm-5.2:cloud`
+  - coder-general: `kimi-k2.7-code`
+  - android-specialist: `minimax-m2.5`
+  - qa-worker: `minimax-m2.7`
+  - release-auditor: `deepseek-v4-pro` (no fallbacks)
+  - visual-specialist: `minimax-m3`
+  - research-worker: `qwen3.5:397b`
+  - utility-worker: `nemotron-3-nano:30b`
+- Delegation hierarchy enforced
+
+**Pre-Restart State:**
+- Gateway: running (pid 205660)
+- Config: validated
+- Sessions: 54 active
+- Tasks: 0 running, 0 queued
+- Blocked flows: 0 (previously checkpointed flows cleared)
+
+**Configuration Backup:** `/home/toon/.openclaw/backups/openclaw-pre-reconfig-20260725-003642.json`

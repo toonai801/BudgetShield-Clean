@@ -31,14 +31,13 @@ object BudgetShieldRouteRegistry {
         ShieldProgression,
         BudgetMenu,
         LogSpending,
-        Budgets,
-        TransactionHistory
+        Budgets
     )
 
     /**
      * Count of production destinations.
      */
-    const val DESTINATION_COUNT: Int = 18
+    const val DESTINATION_COUNT: Int = 17
 
     /**
      * Check if a given key is a valid production destination.
@@ -62,8 +61,7 @@ object BudgetShieldRouteRegistry {
             is ShieldProgression,
             is BudgetMenu,
             is LogSpending,
-            is Budgets,
-            is TransactionHistory -> true
+            is Budgets -> true
             else -> false
         }
     }

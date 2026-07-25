@@ -60,6 +60,3 @@ object LogSpending : NavKey
 
 @Serializable
 object Budgets : NavKey
-
-@Serializable
-object TransactionHistory : NavKey
