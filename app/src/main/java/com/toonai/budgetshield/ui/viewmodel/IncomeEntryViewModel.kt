@@ -3,6 +3,7 @@ package com.toonai.budgetshield.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.toonai.budgetshield.data.model.IncomeSchedule
 import com.toonai.budgetshield.data.repository.IncomeRepository
 import com.toonai.budgetshield.data.repository.XpRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,10 @@ data class IncomeEntryUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val saveSuccess: Boolean = false,
-    val incomeId: Long? = null
+    val incomeId: Long? = null,
+    val primaryIncome: IncomeSchedule? = null,
+    val hasPrimaryIncome: Boolean = false,
+    val isAddingNew: Boolean = false
 )
 
 /**
@@ -97,6 +101,99 @@ class IncomeEntryViewModel(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = "Failed to save income: ${e.message}"
+                )
+            }
+        }
+    }
+
+    /**
+     * Load the primary (first active) income schedule for pre-fill.
+     */
+    fun loadPrimaryIncome() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                incomeRepository.getActiveSchedule().collect { schedule ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        primaryIncome = schedule,
+                        hasPrimaryIncome = schedule != null
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to load income: ${e.message}"
+                )
+            }
+        }
+    }
+
+    /**
+     * Toggle between editing primary and adding new income.
+     */
+    fun setAddingNew(isAddingNew: Boolean) {
+        _uiState.value = _uiState.value.copy(isAddingNew = isAddingNew)
+    }
+
+    /**
+     * Update existing primary income schedule.
+     */
+    fun updateIncome(
+        incomeId: Long,
+        name: String,
+        amountCents: Long,
+        nextPayday: String,
+        frequency: String = "semimonthly"
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+
+            when {
+                name.isBlank() -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Please enter an income name"
+                    )
+                    return@launch
+                }
+                amountCents <= 0 -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Please enter a valid amount"
+                    )
+                    return@launch
+                }
+                nextPayday.isBlank() -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Please select a payday"
+                    )
+                    return@launch
+                }
+            }
+
+            try {
+                val updated = IncomeSchedule(
+                    id = incomeId,
+                    name = name.trim(),
+                    amountCents = amountCents,
+                    nextPayday = nextPayday,
+                    frequency = frequency,
+                    isConfirmed = true,
+                    isActive = true
+                )
+                incomeRepository.updateIncomeSchedule(updated)
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    saveSuccess = true,
+                    incomeId = incomeId
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to update income: ${e.message}"
                 )
             }
         }

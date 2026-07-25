@@ -69,6 +69,23 @@ fun IncomeEntryScreen(
     var payday by remember { mutableStateOf("") }
     var selectedFrequency by remember { mutableStateOf("semimonthly") }
 
+    // Load primary income on first launch
+    LaunchedEffect(Unit) {
+        viewModel.loadPrimaryIncome()
+    }
+
+    // Pre-fill from primary income when loaded
+    LaunchedEffect(uiState.primaryIncome) {
+        uiState.primaryIncome?.let { income ->
+            if (!uiState.isAddingNew) {
+                name = income.name
+                amount = (income.amountCents / 100.0).toString()
+                payday = income.nextPayday
+                selectedFrequency = income.frequency
+            }
+        }
+    }
+
     // Handle success navigation
     LaunchedEffect(uiState.saveSuccess) {
         if (uiState.saveSuccess) {
@@ -93,8 +110,20 @@ fun IncomeEntryScreen(
                     .padding(top = 16.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header
-                HeaderSection()
+                // Header - show Manage Income if primary exists, else Add Income
+                HeaderSection(
+                    hasPrimaryIncome = uiState.hasPrimaryIncome,
+                    isAddingNew = uiState.isAddingNew
+                )
+
+                // Toggle: Edit Primary vs Add New
+                if (uiState.hasPrimaryIncome) {
+                    IncomeModeToggle(
+                        isAddingNew = uiState.isAddingNew,
+                        onToggle = { viewModel.setAddingNew(!uiState.isAddingNew) },
+                        primaryName = uiState.primaryIncome?.name ?: ""
+                    )
+                }
 
                 // Error message
                 if (uiState.errorMessage != null) {
@@ -122,16 +151,32 @@ fun IncomeEntryScreen(
                 // Action Buttons
                 ActionButtons(
                     isLoading = uiState.isLoading,
+                    isAddingNew = uiState.isAddingNew,
+                    hasPrimaryIncome = uiState.hasPrimaryIncome,
                     onSave = {
                         val amountCents = amount.replace("[^0-9.]", "").toDoubleOrNull()?.let {
                             (it * 100).toLong()
                         } ?: 0L
-                        viewModel.saveIncome(
-                            name = name,
-                            amountCents = amountCents,
-                            nextPayday = payday.ifBlank { DateParser.today() },
-                            frequency = selectedFrequency
-                        )
+                        if (uiState.hasPrimaryIncome && !uiState.isAddingNew) {
+                            // Update existing primary income
+                            uiState.primaryIncome?.id?.let { id ->
+                                viewModel.updateIncome(
+                                    incomeId = id,
+                                    name = name,
+                                    amountCents = amountCents,
+                                    nextPayday = payday.ifBlank { DateParser.today() },
+                                    frequency = selectedFrequency
+                                )
+                            }
+                        } else {
+                            // Create new income
+                            viewModel.saveIncome(
+                                name = name,
+                                amountCents = amountCents,
+                                nextPayday = payday.ifBlank { DateParser.today() },
+                                frequency = selectedFrequency
+                            )
+                        }
                     },
                     onBackSetup = onNavigateToSetupQuest
                 )
@@ -173,7 +218,10 @@ private fun ErrorBanner(
 }
 
 @Composable
-private fun HeaderSection() {
+private fun HeaderSection(
+    hasPrimaryIncome: Boolean = false,
+    isAddingNew: Boolean = false
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -191,22 +239,84 @@ private fun HeaderSection() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "⬇️",
+                    text = if (hasPrimaryIncome && !isAddingNew) "✏️" else "⬇️",
                     fontSize = 20.sp
                 )
             }
 
             Column {
                 Text(
-                    text = "Add Income",
+                    text = when {
+                        hasPrimaryIncome && !isAddingNew -> "Manage Income"
+                        hasPrimaryIncome && isAddingNew -> "Add New Income"
+                        else -> "Add Income"
+                    },
                     color = TextPrimary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Track money coming in",
+                    text = when {
+                        hasPrimaryIncome && !isAddingNew -> "Update your primary income"
+                        else -> "Track money coming in"
+                    },
                     color = TextMuted,
                     fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun IncomeModeToggle(
+    isAddingNew: Boolean,
+    onToggle: () -> Unit,
+    primaryName: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PanelDark
+        ),
+        border = BorderStroke(1.dp, PanelBorder)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (!isAddingNew) {
+                // Showing primary income summary
+                Text(
+                    text = "Primary Income",
+                    color = CyanAccent,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = primaryName.ifBlank { "Income saved during setup" },
+                    color = TextPrimary,
+                    fontSize = 16.sp
+                )
+                Text(
+                    text = "Tap below to add another income stream",
+                    color = TextMuted,
+                    fontSize = 12.sp
+                )
+            }
+            
+            TextButton(
+                onClick = onToggle,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = if (isAddingNew) "← Back to Primary Income" else "+ Add New Income Stream",
+                    color = if (isAddingNew) TextMuted else CyanAccent,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -488,6 +598,8 @@ private fun IncomeTypeCard(
 @Composable
 private fun ActionButtons(
     isLoading: Boolean,
+    isAddingNew: Boolean,
+    hasPrimaryIncome: Boolean,
     onSave: () -> Unit,
     onBackSetup: () -> Unit
 ) {
@@ -517,7 +629,7 @@ private fun ActionButtons(
                     )
                 } else {
                     Text(
-                        text = "💾 Save Income",
+                        text = if (isAddingNew) "💾 Save New Income" else "💾 Update Income",
                         color = BackgroundDark,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
