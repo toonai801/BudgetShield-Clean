@@ -6,6 +6,7 @@ import com.toonai.budgetshield.data.database.*
 import com.toonai.budgetshield.data.repository.BillRepository
 import com.toonai.budgetshield.data.repository.BudgetRepository
 import com.toonai.budgetshield.data.repository.IncomeRepository
+import com.toonai.budgetshield.data.repository.TransactionRepository
 import com.toonai.budgetshield.data.repository.UserSettingsRepository
 import dagger.Module
 import dagger.Provides
@@ -62,6 +63,11 @@ object TestDatabaseModule {
         return database.setupDraftDao()
     }
 
+    @Provides
+    fun provideTransactionDao(database: BudgetShieldDatabase): TransactionDao {
+        return database.transactionDao()
+    }
+
     // Repository providers
     @Provides
     @Singleton
@@ -85,5 +91,11 @@ object TestDatabaseModule {
     @Singleton
     fun provideBudgetRepository(budgetCategoryDao: BudgetCategoryDao): BudgetRepository {
         return BudgetRepository(budgetCategoryDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransactionRepository(transactionDao: TransactionDao): TransactionRepository {
+        return TransactionRepository(transactionDao)
     }
 }
