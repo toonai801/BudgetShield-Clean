@@ -54,7 +54,10 @@ import com.toonai.budgetshield.theme.TextMuted
 import com.toonai.budgetshield.ui.LocalBillRepository
 import com.toonai.budgetshield.ui.LocalIncomeRepository
 import com.toonai.budgetshield.ui.LocalSavingsGoalRepository
+import com.toonai.budgetshield.ui.LocalBudgetRepository
 
+import com.toonai.budgetshield.data.model.BudgetCategory
+import com.toonai.budgetshield.data.model.IncomeSchedule
 import java.time.YearMonth
 
 
@@ -71,11 +74,15 @@ fun StatsScreen(
     val incomeRepository = LocalIncomeRepository.current
     val savingsGoalRepository = LocalSavingsGoalRepository.current
 
+    val budgetRepository = LocalBudgetRepository.current
+    val currentMonthKey = YearMonth.now().toString()
+
     // Collect real data from repositories
     val bills by billRepository.allBills.collectAsState(initial = emptyList())
     val incomes by incomeRepository.getAllActiveSchedules().collectAsState(initial = emptyList())
     val savingsGoals by savingsGoalRepository.allGoals.collectAsState(initial = emptyList())
     val totalSavings by savingsGoalRepository.totalSavings.collectAsState(initial = 0L)
+    val budgets by budgetRepository.getBudgetsForMonth(currentMonthKey).collectAsState(initial = emptyList<BudgetCategory>())
 
     // Calculate real stats
     val totalBillsAmount = bills.sumOf { it.amountCents }
@@ -110,6 +117,16 @@ fun StatsScreen(
                     totalIncome = totalIncome,
                     protectedCount = protectedBillsCount,
                     billsCount = bills.size
+                )
+
+                // Budgets Overview - shows Food/Wants budgets from onboarding
+                BudgetsSectionReal(
+                    budgets = budgets
+                )
+
+                // Income Schedules - shows active income streams
+                IncomeSchedulesSectionReal(
+                    incomes = incomes
                 )
 
                 // Bills Breakdown - shows real bills grouped by icon/category
@@ -583,6 +600,197 @@ private fun LegendItem(color: Color, label: String) {
             color = TextMuted,
             fontSize = 12.sp
         )
+    }
+}
+
+@Composable
+private fun BudgetsSectionReal(
+    budgets: List<BudgetCategory>
+) {
+    if (budgets.isEmpty()) {
+        // No budgets set yet - show placeholder
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = PanelDark)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Budgets",
+                    color = CyanAccent,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "No budgets set for this month. Complete Setup Quest to set Food and Wants budgets.",
+                    color = TextMuted,
+                    fontSize = 14.sp
+                )
+            }
+        }
+        return
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PanelDark)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Monthly Budgets",
+                color = CyanAccent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            budgets.forEach { budget ->
+                val spentPercent = if (budget.plannedAmountCents > 0) {
+                    (budget.spentAmountCents * 100 / budget.plannedAmountCents).toInt()
+                } else 0
+                val remaining = budget.plannedAmountCents - budget.spentAmountCents
+                val isOverBudget = remaining < 0
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = budget.icon ?: "💰",
+                                fontSize = 18.sp
+                            )
+                            Text(
+                                text = budget.name,
+                                color = TextPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        Text(
+                            text = if (isOverBudget) "Over by $${kotlin.math.abs(remaining / 100)}" else "$${remaining / 100} left",
+                            color = if (isOverBudget) Color(0xFFFF553D) else GreenAccent,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Progress bar
+                    val progress = (spentPercent.coerceIn(0, 100)).toFloat() / 100f
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(BackgroundDark)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progress)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    if (isOverBudget) Color(0xFFFF553D)
+                                    else if (spentPercent > 80) GoldAccent
+                                    else GreenAccent
+                                )
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Spent: $${budget.spentAmountCents / 100}",
+                            color = TextMuted,
+                            fontSize = 12.sp
+                        )
+                        Text(
+                            text = "Budget: $${budget.plannedAmountCents / 100}",
+                            color = TextMuted,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IncomeSchedulesSectionReal(
+    incomes: List<IncomeSchedule>
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PanelDark)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Income Streams",
+                color = GoldAccent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            if (incomes.isEmpty()) {
+                Text(
+                    text = "No active income schedules. Add income in Setup Quest or Income Entry.",
+                    color = TextMuted,
+                    fontSize = 14.sp
+                )
+            } else {
+                incomes.forEach { income ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = income.name,
+                                color = TextPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "${income.frequency.replaceFirstChar { it.uppercase() }} • Next: ${income.nextPayday}",
+                                color = TextMuted,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Text(
+                            text = "$${income.amountCents / 100}",
+                            color = GreenAccent,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
