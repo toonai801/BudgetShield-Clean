@@ -1,5 +1,11 @@
 # BudgetShield Consolidated Defect Register
 
+## Recovery Revalidation Notice — 2026-08-02
+
+This 2026-07-23 register is preserved as an input, not accepted as current truth. Some entries remain directly reproducible, some have changed, and some are obsolete. The recovery baseline verified two current connected release blockers, missing contracts, production placeholders, release-pipeline gaps, and repository-governance problems. Every historical defect must be revalidated against the current commit before it is closed, reprioritized, or implemented.
+
+Current authoritative evidence: `RECOVERY_BASELINE_2026-08-02.md`.
+
 ## Register Metadata
 - **Created:** 2026-07-23
 - **Audits Merged:** Architect, Design, QA, Data

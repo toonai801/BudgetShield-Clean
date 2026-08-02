@@ -1,5 +1,17 @@
 # Known Bugs
 
+## Current Recovery Blockers — 2026-08-02
+
+| Defect | Description | Severity | Status | Current Evidence |
+|---|---|---|---|---|
+| REC-CT-001 | Setup completion does not navigate to Home and replace the setup stack within 20 seconds | CRITICAL | OPEN | `NavigationSmokeTest.completeSetupQuestNavigatesToHomeAndReplacesStack`; latest CI at `575a9d5` |
+| REC-CT-002 | Persistent footer does not appear after setup completion within 20 seconds | CRITICAL | OPEN | `PersistentFooterTest.footerShowsAfterSetupCompletion`; latest CI at `575a9d5` |
+| REC-DOC-001 | Five README-authoritative contracts are absent | HIGH | OPEN | Missing Product, Safe Now, Screen Map, Data Model, and Test Plan documents |
+| REC-DATA-001 | Production placeholders remain in schedules, streaks, transactions, and controls | HIGH | OPEN | Confirmed directly in current production code; see recovery baseline |
+| REC-REL-001 | Release pipeline can publish without connected-test success and has no release signing configuration | CRITICAL | OPEN | Current workflow/build configuration |
+
+**Current connected result:** 21/23 pass. The historical “no active blockers” section below is superseded but preserved for audit history.
+
 ## OpenClaw Rebuild Checkpoint Status
 
 **Preservation Commit:** chore(recovery): preserve beta work before OpenClaw rebuild  

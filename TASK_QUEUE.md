@@ -1,5 +1,16 @@
 # Task Queue
 
+## Recovery Status Override — 2026-08-02
+
+The historical task table below is preserved, but its completion claims are not current acceptance evidence. The latest CI run for audited commit `575a9d5` executed 23 connected tests and failed 2. Tasks 13–16 are therefore reopened or blocked until their gates are reproduced on the recovery branch.
+
+| Recovery Task | Deliverable | Status | Evidence / Notes |
+|---|---|---|---|
+| TASK 17 | Verified recovery baseline and documentation truth reconciliation | COMPLETE | `RECOVERY_BASELINE_2026-08-02.md`; local clean/compile/226 unit/lint/assemble gates reproduced |
+| TASK 18 | Repair setup completion, Home stack replacement, and post-setup footer | NEXT | Current CI: 21/23; two Compose timeouts |
+| TASK 19 | Reconstruct and approve missing product, Safe Now, screen, data, and test contracts | BLOCKED ON REVIEW | README references five absent authoritative contracts |
+| TASK 20 | Full financial, persistence, navigation, visual, accessibility, device, and release recovery | NOT STARTED | Must follow verified repair order in baseline |
+
 | Task | Deliverable | Status | Evidence / Notes |
 |------|-------------|--------|------------------|
 | TASK 1 | Clean project shell | COMPLETE | Commit 6ce7d9af3753f070a2d842d2064ca3ccafcfb629 |
@@ -14,10 +25,10 @@
 | TASK 10 | Transactions and editing | COMPLETE | Transaction model with type/category, DAO with date range queries, Repository, TransactionDetailsScreen with editing UI, TransactionViewModel with state management |
 | TASK 11 | Shield XP and achievement system | COMPLETE | XpEntry model with activity types, XpEntryDao, XpRepository with level calculation, ShieldLevels configuration, AchievementDao, ShieldProgressionScreen with ViewModel integration, achievement display |
 | TASK 12 | Stats, goals, and settings | COMPLETE | GoalsScreen + GoalsViewModel (savings goals, streaks, shield preview), StatsScreen + StatsViewModel (spending stats, category breakdown, monthly summaries), SettingsScreen with budget setup and profile |
-| TASK 13 | Full navigation and interaction QA | COMPLETE | 23/23 connected tests PASS, all 18 routes verified, interaction flows tested |
-| TASK 14 | Visual accuracy pass | COMPLETE | Screenshots captured for all primary screens, reference images in docs/reference/ |
-| TASK 15 | Fresh-install beta QA | COMPLETE | Fresh install verified, setup quest tested, process death persistence validated |
-| TASK 16 | Signed beta APK and GitHub release | IN PROGRESS | APK built, workflow fixed, awaiting final release trigger |
+| TASK 13 | Full navigation and interaction QA | REOPENED | Historical 23/23 claim contradicted by latest CI result: 21/23 |
+| TASK 14 | Visual accuracy pass | UNVERIFIED | Historical screenshots exist, but current screenshot matrix and premium-design acceptance evidence are incomplete |
+| TASK 15 | Fresh-install beta QA | REOPENED | Setup completion/Home and footer connected tests currently fail |
+| TASK 16 | Signed beta APK and GitHub release | BLOCKED | Connected tests fail; release signing, shrinking, and final release gates are incomplete |
 
 ## Acceptance Criteria Policy
 Each future task must have acceptance criteria before its status changes to IN PROGRESS. Preserve every existing task and evidence entry.

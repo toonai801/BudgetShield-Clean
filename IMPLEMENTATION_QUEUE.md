@@ -1,5 +1,19 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Priority Override — 2026-08-02
+
+This historical queue is preserved, but “Final” is no longer a current status. The verified recovery order is:
+
+1. Reconcile documentation truth and restore missing approved contracts.
+2. Make connected-test success mandatory for CI/release truth.
+3. Repair the two current setup-completion/Home-stack/footer failures.
+4. Verify Safe Now, exact money/date rules, Room migrations, and process-death persistence.
+5. Remove production placeholders and dead controls.
+6. Verify every financial and gamification feature.
+7. Complete design, accessibility, device, upgrade, signing, shrinking, and independent release gates.
+
+See `RECOVERY_BASELINE_2026-08-02.md` for evidence and acceptance order. Do not implement an old defect solely because it appears below; reproduce it first.
+
 **Generated:** 2026-07-23  
 **Lead Architect Review:** COMPLETE  
 **Total Defects:** 71  

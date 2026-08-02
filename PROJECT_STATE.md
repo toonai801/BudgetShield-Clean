@@ -1,5 +1,19 @@
 # Project State
 
+## Recovery Baseline — 2026-08-02 (Current Authority)
+
+- **Status:** RED — recovery in progress; not release-ready
+- **Repository:** `toonai801/BudgetShield-Clean`
+- **Working branch:** `recovery/full-audit-2026-08-02` (never repair directly on `main`)
+- **Audited commit:** `575a9d516fc8f64432ff62bb7438240b83214e14`
+- **Local gates:** clean, compile, 226/226 JVM tests, lint with 38 warnings, and debug assembly pass
+- **Connected tests:** 21/23 pass in the latest CI run for the audited commit
+- **Active connected failures:** setup completion does not reach/replace Home stack; footer does not appear after setup completion
+- **Release status:** blocked pending connected-test repair, contract recovery, financial/data verification, device QA, and release hardening
+- **Baseline report:** `RECOVERY_BASELINE_2026-08-02.md`
+
+All status sections below this recovery baseline are preserved as historical checkpoints. Where they conflict, this section and current reproducible evidence take precedence.
+
 ## Current Task
 **OpenClaw Rebuild Preservation Checkpoint** — PAUSED
 - Project preserved for complete OpenClaw wipe/rebuild

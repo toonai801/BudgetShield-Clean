@@ -1,5 +1,21 @@
 # Changelog
 
+## [Recovery Baseline] — 2026-08-02
+
+### Verified
+
+- Established protected recovery branch `recovery/full-audit-2026-08-02` at `575a9d5`.
+- Reproduced clean, Kotlin compilation, 226 JVM tests, lint, and debug APK assembly locally with Java 17 and Android API 36.
+- Verified latest connected CI result is 21/23, not 23/23.
+- Recorded the two active setup-completion/footer test failures.
+- Inventoried missing authoritative contracts, current production placeholders, migration/release risks, unprotected `main`, and repository APK bloat.
+
+### Documentation only
+
+- Added `RECOVERY_BASELINE_2026-08-02.md`.
+- Reconciled current status headers while preserving historical entries.
+- No product code, generated build output, APK, credential, signing material, or SDK path is included in this recovery baseline change.
+
 ## [1.2.0-beta-intake-home] — Functional Beta Intake and Home (2026-07-21)
 **Version:** 1.2.0-beta-intake-home (versionCode 7)
 **Status:** COMPLETE — Pending owner phone review

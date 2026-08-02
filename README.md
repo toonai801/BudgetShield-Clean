@@ -28,7 +28,13 @@ Do not rename Safe Now to:
 `toonai801/BudgetShield-Clean`
 
 ## Active Branch
-`main`
+Recovery work: `recovery/full-audit-2026-08-02`
+
+`main` remains the default branch and must not receive direct repair commits.
+
+## Recovery Status
+
+The current evidence-backed status is maintained in `RECOVERY_BASELINE_2026-08-02.md`. Historical completion claims in project-control files do not override current build, test, runtime, and affected-file evidence.
 
 ## Forbidden Legacy
 Never use, reference, or recover:
@@ -57,4 +63,8 @@ Never use, reference, or recover:
 - `docs/SCREEN_MAP.md` — Screen inventory
 - `docs/DATA_MODEL_PLAN.md` — Data architecture
 - `docs/TEST_PLAN.md` — Testing strategy
+### Missing Contract Warning — 2026-08-02
+
+The repository currently contains only `docs/DESIGN_CONTRACT.md` from the contract list above. `PRODUCT_CONTRACT.md`, `SAFE_NOW_RULES.md`, `SCREEN_MAP.md`, `DATA_MODEL_PLAN.md`, and `TEST_PLAN.md` must be reconstructed from current approved requirements and current code; do not recover them from forbidden legacy sources.
+
 # Release trigger Fri Jul 24 05:52:13 PM MDT 2026
