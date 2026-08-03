@@ -39,14 +39,18 @@ class SafeNowContractComplianceTest {
         nextPayday: String,
         frequency: String,
         confirmed: Boolean = true,
-        active: Boolean = true
+        active: Boolean = true,
+        anchorOne: Int? = null,
+        anchorTwo: Int? = null
     ) = IncomeSchedule(
         name = "Income",
         amountCents = amount,
         nextPayday = nextPayday,
         frequency = frequency,
         isConfirmed = confirmed,
-        isActive = active
+        isActive = active,
+        paydayAnchorDayOne = anchorOne,
+        paydayAnchorDayTwo = anchorTwo
     )
 
     @Test
@@ -140,6 +144,92 @@ class SafeNowContractComplianceTest {
 
         assertTrue(result.hasShortage)
         assertEquals(1_000L, result.shortageCents)
+    }
+
+    @Test
+    fun `semimonthly income uses both configured anchors`() {
+        val result = SafeNowCalculator.calculate(
+            userSettings = settings(cash = 10_000L),
+            bills = listOf(bill(25_000L, "2024-02-20")),
+            incomeSchedules = listOf(
+                income(
+                    amount = 5_000L,
+                    nextPayday = "2024-01-15",
+                    frequency = IncomeFrequency.SEMIMONTHLY,
+                    anchorOne = 15,
+                    anchorTwo = 31
+                )
+            ),
+            selectedMonth = "2024-01",
+            today = "2024-01-15"
+        )
+
+        assertEquals(20_000L, result.projectedBalances["2024-01-31"])
+        assertEquals(25_000L, result.projectedBalances["2024-02-15"])
+        assertEquals(0L, result.projectedBalances["2024-02-20"])
+    }
+
+    @Test
+    fun `semimonthly missing anchor day clamps to leap month end`() {
+        val result = SafeNowCalculator.calculate(
+            userSettings = settings(cash = 1_000L),
+            bills = emptyList(),
+            incomeSchedules = listOf(
+                income(
+                    amount = 1_000L,
+                    nextPayday = "2024-02-15",
+                    frequency = IncomeFrequency.TWICE_MONTHLY,
+                    anchorOne = 15,
+                    anchorTwo = 31
+                )
+            ),
+            selectedMonth = "2024-02",
+            today = "2024-02-01"
+        )
+
+        assertEquals(2_000L, result.projectedBalances["2024-02-15"])
+        assertEquals(3_000L, result.projectedBalances["2024-02-29"])
+    }
+
+    @Test
+    fun `semimonthly anchors that collide in a short month are rejected`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            SafeNowCalculator.calculate(
+                userSettings = settings(),
+                bills = emptyList(),
+                incomeSchedules = listOf(
+                    income(
+                        amount = 1_000L,
+                        nextPayday = "2024-01-30",
+                        frequency = IncomeFrequency.SEMIMONTHLY,
+                        anchorOne = 30,
+                        anchorTwo = 31
+                    )
+                ),
+                selectedMonth = "2024-01",
+                today = "2024-01-01"
+            )
+        }
+    }
+
+    @Test
+    fun `semimonthly schedule without both persisted anchors is rejected`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            SafeNowCalculator.calculate(
+                userSettings = settings(),
+                bills = emptyList(),
+                incomeSchedules = listOf(
+                    income(
+                        amount = 1_000L,
+                        nextPayday = "2024-01-15",
+                        frequency = IncomeFrequency.SEMIMONTHLY,
+                        anchorOne = 15
+                    )
+                ),
+                selectedMonth = "2024-01",
+                today = "2024-01-01"
+            )
+        }
     }
 
     @Test

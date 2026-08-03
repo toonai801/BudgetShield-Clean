@@ -342,6 +342,11 @@ object SafeNowCalculator {
             require(income.frequency in SUPPORTED_FREQUENCIES) {
                 "Unsupported income frequency: ${income.frequency}"
             }
+            IncomeRecurrencePolicy.validateAnchors(
+                frequency = income.frequency,
+                anchorDayOne = income.paydayAnchorDayOne,
+                anchorDayTwo = income.paydayAnchorDayTwo
+            )
         }
     }
 
@@ -355,13 +360,8 @@ object SafeNowCalculator {
             return if (firstPayday in today..horizonEnd) listOf(firstPayday) else emptyList()
         }
 
-        // The current schema has only one anchor for semimonthly schedules. Keep the
-        // recorded next payday as a single occurrence until the approved two-anchor
-        // migration is implemented in the next data-model increment.
-        if (income.frequency == IncomeFrequency.SEMIMONTHLY ||
-            income.frequency == IncomeFrequency.TWICE_MONTHLY
-        ) {
-            return if (firstPayday in today..horizonEnd) listOf(firstPayday) else emptyList()
+        if (IncomeRecurrencePolicy.isSemimonthly(income.frequency)) {
+            return generateSemimonthlyOccurrences(income, firstPayday, today, horizonEnd)
         }
 
         val occurrences = mutableListOf<LocalDate>()
@@ -373,6 +373,31 @@ object SafeNowCalculator {
         while (occurrence <= horizonEnd) {
             occurrences.add(occurrence)
             occurrence = nextOccurrence(occurrence, income.frequency, monthlyAnchorDay)
+        }
+        return occurrences
+    }
+
+    private fun generateSemimonthlyOccurrences(
+        income: IncomeSchedule,
+        firstPayday: LocalDate,
+        today: LocalDate,
+        horizonEnd: LocalDate
+    ): List<LocalDate> {
+        val anchorOne = requireNotNull(income.paydayAnchorDayOne)
+        val anchorTwo = requireNotNull(income.paydayAnchorDayTwo)
+        val firstMonth = YearMonth.from(firstPayday)
+        val lastMonth = YearMonth.from(horizonEnd)
+        val lowerBound = maxOf(firstPayday, today)
+        val occurrences = mutableListOf<LocalDate>()
+        var month = firstMonth
+
+        while (month <= lastMonth) {
+            val monthDates = listOf(
+                IncomeRecurrencePolicy.resolveDay(month, anchorOne),
+                IncomeRecurrencePolicy.resolveDay(month, anchorTwo)
+            ).sorted()
+            occurrences += monthDates.filter { it in lowerBound..horizonEnd }
+            month = month.plusMonths(1)
         }
         return occurrences
     }

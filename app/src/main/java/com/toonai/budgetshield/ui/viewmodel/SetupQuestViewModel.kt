@@ -2,6 +2,7 @@ package com.toonai.budgetshield.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.toonai.budgetshield.data.calculator.IncomeRecurrencePolicy
 import com.toonai.budgetshield.data.database.SetupDraftDao
 import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.data.model.IncomeSchedule
@@ -95,7 +96,9 @@ class SetupQuestViewModel @Inject constructor(
             incomeAmountCents = draft.incomeAmountCents,
             incomeAmountInput = MoneyParser.formatCents(draft.incomeAmountCents).replace("$", ""),
             paydayDate = draft.nextPaydayDate,
-            frequency = draft.frequency.ifBlank { "BIWEEKLY" },
+            frequency = draft.frequency.ifBlank { com.toonai.budgetshield.data.model.IncomeFrequency.BIWEEKLY },
+            paydayAnchorOneInput = draft.paydayAnchorDayOne?.toString().orEmpty(),
+            paydayAnchorTwoInput = draft.paydayAnchorDayTwo?.toString().orEmpty(),
             isIncomeConfirmed = draft.isIncomeConfirmed,
             foodBudgetCents = draft.foodBudgetCents,
             foodBudgetInput = MoneyParser.formatCents(draft.foodBudgetCents).replace("$", ""),
@@ -164,6 +167,22 @@ class SetupQuestViewModel @Inject constructor(
         // Clear frequency error if present, then update
         val currentErrors = _uiState.value.paydayErrors.filterKeys { it != "frequency" }
         _uiState.value = _uiState.value.copy(frequency = frequency, paydayErrors = currentErrors)
+        saveDraft()
+    }
+
+    fun updatePaydayAnchorOne(value: String) {
+        _uiState.value = _uiState.value.copy(
+            paydayAnchorOneInput = value.filter(Char::isDigit).take(2),
+            paydayErrors = _uiState.value.paydayErrors - "paydayAnchors"
+        )
+        saveDraft()
+    }
+
+    fun updatePaydayAnchorTwo(value: String) {
+        _uiState.value = _uiState.value.copy(
+            paydayAnchorTwoInput = value.filter(Char::isDigit).take(2),
+            paydayErrors = _uiState.value.paydayErrors - "paydayAnchors"
+        )
         saveDraft()
     }
 
@@ -339,6 +358,18 @@ class SetupQuestViewModel @Inject constructor(
                     errors["incomeAmount"] = "Amount must be greater than 0"
                 }
                 if (state.paydayDate.isBlank()) errors["paydayDate"] = "Required"
+                DateParser.parseToIsoDate(state.paydayDate).exceptionOrNull()?.let {
+                    errors["paydayDate"] = it.message ?: "Enter a valid payday"
+                }
+                runCatching {
+                    IncomeRecurrencePolicy.validateAnchors(
+                        state.frequency,
+                        state.paydayAnchorOneInput.toIntOrNull(),
+                        state.paydayAnchorTwoInput.toIntOrNull()
+                    )
+                }.exceptionOrNull()?.let {
+                    errors["paydayAnchors"] = it.message ?: "Enter two valid payday days"
+                }
                 if (!state.isIncomeConfirmed) errors["confirmation"] = "Must confirm income"
                 android.util.Log.d("SetupQuest", "Chapter 2 validation: name='${state.incomeName}', amountCents=${state.incomeAmountCents}, date='${state.paydayDate}', isConfirmed=${state.isIncomeConfirmed}, errors=$errors")
                 _uiState.value = state.copy(paydayErrors = errors)
@@ -362,13 +393,17 @@ class SetupQuestViewModel @Inject constructor(
             try {
                 // 1. Save income schedule
                 if (_uiState.value.incomeName.isNotBlank() && _uiState.value.incomeAmountCents > 0) {
+                    val nextPayday = DateParser.parseToIsoDate(_uiState.value.paydayDate).getOrThrow()
                     incomeRepository.saveSchedule(
                         IncomeSchedule(
                             id = 0L,
                             name = _uiState.value.incomeName,
                             amountCents = _uiState.value.incomeAmountCents,
-                            nextPaydayDate = _uiState.value.paydayDate,
+                            nextPayday = nextPayday,
+                            nextPaydayDate = nextPayday,
                             frequency = _uiState.value.frequency,
+                            paydayAnchorDayOne = _uiState.value.paydayAnchorOneInput.toIntOrNull(),
+                            paydayAnchorDayTwo = _uiState.value.paydayAnchorTwoInput.toIntOrNull(),
                             isConfirmed = _uiState.value.isIncomeConfirmed
                         )
                     )
@@ -433,6 +468,8 @@ class SetupQuestViewModel @Inject constructor(
                     incomeAmountCents = state.incomeAmountCents,
                     nextPaydayDate = state.paydayDate,
                     frequency = state.frequency,
+                    paydayAnchorDayOne = state.paydayAnchorOneInput.toIntOrNull(),
+                    paydayAnchorDayTwo = state.paydayAnchorTwoInput.toIntOrNull(),
                     isIncomeConfirmed = state.isIncomeConfirmed,
                     savingsBalanceCents = state.savingsCents,
                     foodBudgetCents = state.foodBudgetCents,
@@ -463,7 +500,9 @@ data class SetupQuestUiState(
     val incomeAmountInput: String = "",
     val incomeAmountCents: Long = 0,
     val paydayDate: String = "",
-    val frequency: String = "BIWEEKLY",
+    val frequency: String = com.toonai.budgetshield.data.model.IncomeFrequency.BIWEEKLY,
+    val paydayAnchorOneInput: String = "",
+    val paydayAnchorTwoInput: String = "",
     val isIncomeConfirmed: Boolean = false,
     val paydayErrors: Map<String, String> = emptyMap(),
 

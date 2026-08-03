@@ -33,6 +33,12 @@ data class IncomeSchedule(
     /** Frequency of income (weekly, biweekly, twice_monthly, monthly, one_time) */
     val frequency: String,
 
+    /** First user-configured day-of-month anchor for semimonthly income. */
+    val paydayAnchorDayOne: Int? = null,
+
+    /** Second user-configured day-of-month anchor for semimonthly income. */
+    val paydayAnchorDayTwo: Int? = null,
+
     /** Whether this income is confirmed and should be used in calculations */
     val isConfirmed: Boolean = true,
 

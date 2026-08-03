@@ -2,6 +2,9 @@ package com.toonai.budgetshield.data.database
 
 import android.content.Context
 import androidx.room.Room
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteOpenHelper
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -58,7 +61,8 @@ class MigrationTest {
             .addMigrations(
                 BudgetShieldDatabase.MIGRATION_1_2,
                 BudgetShieldDatabase.MIGRATION_2_3,
-                BudgetShieldDatabase.MIGRATION_3_4
+                BudgetShieldDatabase.MIGRATION_3_4,
+                BudgetShieldDatabase.MIGRATION_4_5
             )
             .allowMainThreadQueries()
             .build()
@@ -101,7 +105,8 @@ class MigrationTest {
         val db2 = Room.databaseBuilder(context, BudgetShieldDatabase::class.java, dbFile.absolutePath)
             .addMigrations(
                 BudgetShieldDatabase.MIGRATION_2_3,
-                BudgetShieldDatabase.MIGRATION_3_4
+                BudgetShieldDatabase.MIGRATION_3_4,
+                BudgetShieldDatabase.MIGRATION_4_5
             )
             .allowMainThreadQueries()
             .build()
@@ -139,7 +144,10 @@ class MigrationTest {
 
         // Migrate to current
         val db2 = Room.databaseBuilder(context, BudgetShieldDatabase::class.java, dbFile.absolutePath)
-            .addMigrations(BudgetShieldDatabase.MIGRATION_3_4)
+            .addMigrations(
+                BudgetShieldDatabase.MIGRATION_3_4,
+                BudgetShieldDatabase.MIGRATION_4_5
+            )
             .allowMainThreadQueries()
             .build()
         database = db2
@@ -202,7 +210,8 @@ class MigrationTest {
             .addMigrations(
                 BudgetShieldDatabase.MIGRATION_1_2,
                 BudgetShieldDatabase.MIGRATION_2_3,
-                BudgetShieldDatabase.MIGRATION_3_4
+                BudgetShieldDatabase.MIGRATION_3_4,
+                BudgetShieldDatabase.MIGRATION_4_5
             )
             .allowMainThreadQueries()
             .build()
@@ -286,11 +295,101 @@ class MigrationTest {
         assertTrue("amountCents column should exist", columns.containsKey("amountCents"))
         assertTrue("frequency column should exist", columns.containsKey("frequency"))
         assertTrue("nextPayday column should exist", columns.containsKey("nextPayday"))
+        assertTrue("first anchor column should exist", columns.containsKey("paydayAnchorDayOne"))
+        assertTrue("second anchor column should exist", columns.containsKey("paydayAnchorDayTwo"))
         assertTrue("isConfirmed column should exist", columns.containsKey("isConfirmed"))
         assertTrue("isActive column should exist", columns.containsKey("isActive"))
 
         db.close()
         database = null
+    }
+
+    @Test
+    fun `migration 4 to 5 preserves income and adds nullable payday anchors`() {
+        val dbName = "test_migration_4_to_5.db"
+        val dbFile = File(context.cacheDir, dbName)
+        if (dbFile.exists()) dbFile.delete()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name(dbFile.absolutePath)
+                .callback(object : SupportSQLiteOpenHelper.Callback(4) {
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        db.execSQL(
+                            """
+                            CREATE TABLE income_schedules (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                name TEXT NOT NULL,
+                                amountCents INTEGER NOT NULL,
+                                nextPaydayDate TEXT NOT NULL,
+                                frequency TEXT NOT NULL,
+                                isConfirmed INTEGER NOT NULL,
+                                isActive INTEGER NOT NULL,
+                                createdAt INTEGER NOT NULL,
+                                updatedAt INTEGER NOT NULL
+                            )
+                            """.trimIndent()
+                        )
+                        db.execSQL(
+                            """
+                            CREATE TABLE setup_drafts (
+                                id INTEGER PRIMARY KEY NOT NULL,
+                                currentChapter INTEGER NOT NULL,
+                                cashOnHandCents INTEGER NOT NULL,
+                                incomeName TEXT NOT NULL,
+                                incomeAmountCents INTEGER NOT NULL,
+                                nextPaydayDate TEXT NOT NULL,
+                                frequency TEXT NOT NULL,
+                                isIncomeConfirmed INTEGER NOT NULL,
+                                savingsBalanceCents INTEGER NOT NULL,
+                                foodBudgetCents INTEGER NOT NULL,
+                                wantsBudgetCents INTEGER NOT NULL,
+                                updatedAt INTEGER NOT NULL
+                            )
+                            """.trimIndent()
+                        )
+                    }
+
+                    override fun onUpgrade(
+                        db: SupportSQLiteDatabase,
+                        oldVersion: Int,
+                        newVersion: Int
+                    ) = Unit
+                })
+                .build()
+        )
+        val db = helper.writableDatabase
+        db.execSQL(
+            """
+            INSERT INTO income_schedules
+            (name, amountCents, nextPaydayDate, frequency,
+             isConfirmed, isActive, createdAt, updatedAt)
+            VALUES ('Legacy pay', 12345, '2026-08-15',
+                    'semimonthly', 1, 1, 10, 20)
+            """.trimIndent()
+        )
+
+        BudgetShieldDatabase.MIGRATION_4_5.migrate(db)
+
+        val columns = mutableSetOf<String>()
+        db.query("PRAGMA table_info(income_schedules)").use { cursor ->
+            while (cursor.moveToNext()) columns += cursor.getString(1)
+        }
+        assertTrue(columns.contains("paydayAnchorDayOne"))
+        assertTrue(columns.contains("paydayAnchorDayTwo"))
+        db.query(
+            "SELECT name, amountCents, nextPayday, nextPaydayDate, " +
+                "paydayAnchorDayOne, paydayAnchorDayTwo " +
+                "FROM income_schedules"
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Legacy pay", cursor.getString(0))
+            assertEquals(12345L, cursor.getLong(1))
+            assertEquals("2026-08-15", cursor.getString(2))
+            assertEquals("2026-08-15", cursor.getString(3))
+            assertTrue(cursor.isNull(4))
+            assertTrue(cursor.isNull(5))
+        }
+        helper.close()
     }
 
     /**

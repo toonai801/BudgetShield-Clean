@@ -19,7 +19,7 @@ import com.toonai.budgetshield.data.model.XpEntry
 
 /**
  * Room database for BudgetShield app.
- * Version 4 adds: Transaction, XP, Achievement, SavingsGoal, Streak tables
+ * Version 5 adds two user-configured semimonthly payday anchors.
  * Migration preserves all existing data.
  */
 @Database(
@@ -35,7 +35,7 @@ import com.toonai.budgetshield.data.model.XpEntry
         SavingsGoal::class,
         UserStreak::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class BudgetShieldDatabase : RoomDatabase() {
@@ -237,6 +237,72 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration from version 4 to 5.
+         *
+         * Rebuilds only the income table so both known v4 shapes are supported:
+         * fresh databases contain both payday aliases, while the historical 1->2
+         * migration created only nextPaydayDate. Existing rows are preserved and
+         * no second semimonthly anchor is invented.
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                val existingColumns = mutableSetOf<String>()
+                database.query("PRAGMA table_info(income_schedules)").use { cursor ->
+                    while (cursor.moveToNext()) existingColumns += cursor.getString(1)
+                }
+                val canonicalPaydayExpression = if ("nextPayday" in existingColumns) {
+                    "CASE WHEN nextPayday <> '' THEN nextPayday ELSE nextPaydayDate END"
+                } else {
+                    "nextPaydayDate"
+                }
+
+                database.execSQL("ALTER TABLE income_schedules RENAME TO income_schedules_v4")
+                database.execSQL(
+                    """
+                    CREATE TABLE income_schedules (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        amountCents INTEGER NOT NULL,
+                        nextPayday TEXT NOT NULL,
+                        nextPaydayDate TEXT NOT NULL,
+                        frequency TEXT NOT NULL,
+                        paydayAnchorDayOne INTEGER,
+                        paydayAnchorDayTwo INTEGER,
+                        isConfirmed INTEGER NOT NULL,
+                        isActive INTEGER NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                database.execSQL(
+                    """
+                    INSERT INTO income_schedules (
+                        id, name, amountCents, nextPayday, nextPaydayDate, frequency,
+                        paydayAnchorDayOne, paydayAnchorDayTwo, isConfirmed, isActive,
+                        createdAt, updatedAt
+                    )
+                    SELECT id, name, amountCents, $canonicalPaydayExpression,
+                        $canonicalPaydayExpression, frequency, NULL, NULL,
+                        isConfirmed, isActive, createdAt, updatedAt
+                    FROM income_schedules_v4
+                    """.trimIndent()
+                )
+                database.execSQL("DROP TABLE income_schedules_v4")
+                database.execSQL(
+                    "CREATE INDEX index_income_schedules_isActive " +
+                        "ON income_schedules(isActive)"
+                )
+                database.execSQL(
+                    "ALTER TABLE setup_drafts ADD COLUMN paydayAnchorDayOne INTEGER"
+                )
+                database.execSQL(
+                    "ALTER TABLE setup_drafts ADD COLUMN paydayAnchorDayTwo INTEGER"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): BudgetShieldDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -244,8 +310,7 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                     BudgetShieldDatabase::class.java,
                     "budget_shield_db_v4"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-                .fallbackToDestructiveMigrationOnDowngrade()
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
                 INSTANCE = instance
                 instance

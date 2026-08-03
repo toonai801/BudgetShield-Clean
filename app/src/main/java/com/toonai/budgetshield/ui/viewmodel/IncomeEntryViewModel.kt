@@ -3,6 +3,7 @@ package com.toonai.budgetshield.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.toonai.budgetshield.data.calculator.IncomeRecurrencePolicy
 import com.toonai.budgetshield.data.model.IncomeSchedule
 import com.toonai.budgetshield.data.repository.IncomeRepository
 import com.toonai.budgetshield.data.repository.XpRepository
@@ -48,7 +49,9 @@ class IncomeEntryViewModel(
         name: String,
         amountCents: Long,
         nextPayday: String,
-        frequency: String = "semimonthly"
+        frequency: String = "semimonthly",
+        paydayAnchorDayOne: Int? = null,
+        paydayAnchorDayTwo: Int? = null
     ) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
@@ -78,6 +81,21 @@ class IncomeEntryViewModel(
                 }
             }
 
+            val anchorError = runCatching {
+                IncomeRecurrencePolicy.validateAnchors(
+                    frequency,
+                    paydayAnchorDayOne,
+                    paydayAnchorDayTwo
+                )
+            }.exceptionOrNull()?.message
+            if (anchorError != null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = anchorError
+                )
+                return@launch
+            }
+
             try {
                 // Create the income schedule
                 val incomeId = incomeRepository.createIncomeSchedule(
@@ -85,6 +103,8 @@ class IncomeEntryViewModel(
                     amountCents = amountCents,
                     nextPayday = nextPayday,
                     frequency = frequency,
+                    paydayAnchorDayOne = paydayAnchorDayOne,
+                    paydayAnchorDayTwo = paydayAnchorDayTwo,
                     isConfirmed = true,
                     isActive = true
                 )
@@ -144,7 +164,9 @@ class IncomeEntryViewModel(
         name: String,
         amountCents: Long,
         nextPayday: String,
-        frequency: String = "semimonthly"
+        frequency: String = "semimonthly",
+        paydayAnchorDayOne: Int? = null,
+        paydayAnchorDayTwo: Int? = null
     ) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
@@ -173,13 +195,31 @@ class IncomeEntryViewModel(
                 }
             }
 
+            val anchorError = runCatching {
+                IncomeRecurrencePolicy.validateAnchors(
+                    frequency,
+                    paydayAnchorDayOne,
+                    paydayAnchorDayTwo
+                )
+            }.exceptionOrNull()?.message
+            if (anchorError != null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = anchorError
+                )
+                return@launch
+            }
+
             try {
                 val updated = IncomeSchedule(
                     id = incomeId,
                     name = name.trim(),
                     amountCents = amountCents,
                     nextPayday = nextPayday,
+                    nextPaydayDate = nextPayday,
                     frequency = frequency,
+                    paydayAnchorDayOne = paydayAnchorDayOne,
+                    paydayAnchorDayTwo = paydayAnchorDayTwo,
                     isConfirmed = true,
                     isActive = true
                 )

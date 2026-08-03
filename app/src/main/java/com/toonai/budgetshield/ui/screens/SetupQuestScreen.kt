@@ -89,6 +89,8 @@ fun SetupQuestScreen(
                         onUpdateIncomeAmount = { viewModel.updateIncomeAmount(it) },
                         onUpdatePaydayDate = { viewModel.updatePaydayDate(it) },
                         onUpdateFrequency = { viewModel.updateFrequency(it) },
+                        onUpdatePaydayAnchorOne = { viewModel.updatePaydayAnchorOne(it) },
+                        onUpdatePaydayAnchorTwo = { viewModel.updatePaydayAnchorTwo(it) },
                         onToggleIncomeConfirmation = { viewModel.toggleIncomeConfirmation() },
                         onAddBill = { viewModel.addBill(it) },
                         onUpdateBillName = { id, name -> viewModel.updateBillName(id, name) },
@@ -118,6 +120,8 @@ private fun SetupQuestContent(
     onUpdateIncomeAmount: (String) -> Unit,
     onUpdatePaydayDate: (String) -> Unit,
     onUpdateFrequency: (String) -> Unit,
+    onUpdatePaydayAnchorOne: (String) -> Unit,
+    onUpdatePaydayAnchorTwo: (String) -> Unit,
     onToggleIncomeConfirmation: () -> Unit,
     onAddBill: (DraftBill) -> Unit,
     onUpdateBillName: (Long, String) -> Unit,
@@ -161,12 +165,16 @@ private fun SetupQuestContent(
                     incomeAmountInput = uiState.incomeAmountInput,
                     paydayDate = uiState.paydayDate,
                     frequency = uiState.frequency,
+                    paydayAnchorOne = uiState.paydayAnchorOneInput,
+                    paydayAnchorTwo = uiState.paydayAnchorTwoInput,
                     isIncomeConfirmed = uiState.isIncomeConfirmed,
                     paydayErrors = uiState.paydayErrors,
                     onUpdateIncomeName = onUpdateIncomeName,
                     onUpdateIncomeAmount = onUpdateIncomeAmount,
                     onUpdatePaydayDate = onUpdatePaydayDate,
                     onUpdateFrequency = onUpdateFrequency,
+                    onUpdatePaydayAnchorOne = onUpdatePaydayAnchorOne,
+                    onUpdatePaydayAnchorTwo = onUpdatePaydayAnchorTwo,
                     onToggleIncomeConfirmation = onToggleIncomeConfirmation
                 )
                 3 -> ChapterBills(
@@ -307,12 +315,16 @@ private fun ChapterPayday(
     incomeAmountInput: String,
     paydayDate: String,
     frequency: String,
+    paydayAnchorOne: String,
+    paydayAnchorTwo: String,
     isIncomeConfirmed: Boolean,
     paydayErrors: Map<String, String>,
     onUpdateIncomeName: (String) -> Unit,
     onUpdateIncomeAmount: (String) -> Unit,
     onUpdatePaydayDate: (String) -> Unit,
     onUpdateFrequency: (String) -> Unit,
+    onUpdatePaydayAnchorOne: (String) -> Unit,
+    onUpdatePaydayAnchorTwo: (String) -> Unit,
     onToggleIncomeConfirmation: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -483,6 +495,55 @@ private fun ChapterPayday(
                 )
                 Text(text = label)
             }
+        }
+        if (frequency == IncomeFrequency.SEMIMONTHLY ||
+            frequency == IncomeFrequency.TWICE_MONTHLY
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Choose both payday days",
+                style = MaterialTheme.typography.labelLarge
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = paydayAnchorOne,
+                    onValueChange = onUpdatePaydayAnchorOne,
+                    label = { Text("First day") },
+                    placeholder = { Text("e.g. 15") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = paydayErrors.containsKey("paydayAnchors"),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("chapter2_anchor_one_input")
+                )
+                OutlinedTextField(
+                    value = paydayAnchorTwo,
+                    onValueChange = onUpdatePaydayAnchorTwo,
+                    label = { Text("Second day") },
+                    placeholder = { Text("e.g. 31") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = paydayErrors.containsKey("paydayAnchors"),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("chapter2_anchor_two_input")
+                )
+            }
+            paydayErrors["paydayAnchors"]?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Text(
+                text = "A missing day moves to month-end. Payday days that could become the same date are not allowed.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(

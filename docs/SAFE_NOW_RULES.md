@@ -133,10 +133,10 @@ Each active, confirmed schedule must generate occurrences deterministically:
 - **weekly:** every 7 days from the stored next payday
 - **biweekly:** every 14 days from the stored next payday
 - **monthly:** same intended day in each following month; short-month adjustment policy requires owner approval
-- **semimonthly/twice monthly:** requires two approved anchor days; a single `nextPayday` field is insufficient as a complete rule
+- **semimonthly/twice monthly:** uses two user-configured anchor days; a missing day clamps to that month's final valid day, and an anchor pair that would collapse onto the same date in any month is invalid and must be rejected
 - **one time:** exactly one occurrence
 
-The current model does not contain enough information to define all semimonthly and short-month behavior without ambiguity. Until those decisions and model changes are approved, the UI must not claim complete recurring projection support.
+The current model does not yet store both anchors. Until the approved model and migration changes are implemented and verified, the UI must not claim complete recurring projection support.
 
 ## 10. Result and explanation contract
 
@@ -241,5 +241,6 @@ The new focused tests and full JVM suite verify the completed portion only. Task
 4. Confirmed income is available before protected bills at date-level precision on the same payday/due date.
 5. Every known protected unpaid bill extends the horizon when later than the configured minimum horizon.
 6. Invalid persisted financial data blocks calculation and presents guided repair; it is never silently ignored or converted to zero.
+7. Semimonthly anchor days clamp to the month's final valid day when necessary; a pair that can collapse onto the same date is invalid and must be rejected rather than double-counted.
 
 The full approval record is in `DECISIONS.md`. Core financial correctness has an initial verified checkpoint, but full conformity remains unverified until the open Task 20 implementation and evidence satisfy this contract.

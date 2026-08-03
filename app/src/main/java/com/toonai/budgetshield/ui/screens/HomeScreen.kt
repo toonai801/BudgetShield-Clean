@@ -124,6 +124,13 @@ fun HomeScreen(
                 ) {
                     CircularProgressIndicator(color = CyanAccent)
                 }
+            } else if (uiState.error != null) {
+                SafeNowRepairPanel(
+                    message = requireNotNull(uiState.error),
+                    onReviewIncome = onNavigateToIncomeEntry,
+                    onReviewBills = onNavigateToBillEntry,
+                    onRetry = viewModel::loadHomeData
+                )
             } else {
                 Column(
                     modifier = Modifier.fillMaxSize()
@@ -146,6 +153,70 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f)
                     )
 
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun SafeNowRepairPanel(
+    message: String,
+    onReviewIncome: () -> Unit,
+    onReviewBills: () -> Unit,
+    onRetry: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(Spacing.large),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("safe_now_repair_panel"),
+            colors = CardDefaults.cardColors(containerColor = PanelDark),
+            shape = ShapeXLarge
+        ) {
+            Column(
+                modifier = Modifier.padding(CardPaddingLarge),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium)
+            ) {
+                Text(
+                    text = "Safe Now needs your attention",
+                    color = TextPrimary,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "We found saved financial information that cannot be projected safely. Safe Now is blocked until it is repaired.",
+                    color = TextMuted,
+                    fontSize = 15.sp
+                )
+                Text(
+                    text = message,
+                    color = DangerDot,
+                    fontSize = 14.sp,
+                    modifier = Modifier.testTag("safe_now_repair_message")
+                )
+                TextButton(
+                    onClick = onReviewIncome,
+                    modifier = Modifier.testTag("safe_now_review_income")
+                ) {
+                    Text("Review income", color = CyanAccent)
+                }
+                TextButton(
+                    onClick = onReviewBills,
+                    modifier = Modifier.testTag("safe_now_review_bills")
+                ) {
+                    Text("Review protected bills", color = CyanAccent)
+                }
+                TextButton(
+                    onClick = onRetry,
+                    modifier = Modifier.testTag("safe_now_retry")
+                ) {
+                    Text("Try Safe Now again", color = TextPrimary)
                 }
             }
         }

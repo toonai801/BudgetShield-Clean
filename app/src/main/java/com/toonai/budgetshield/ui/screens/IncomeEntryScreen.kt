@@ -69,6 +69,8 @@ fun IncomeEntryScreen(
     var name by remember { mutableStateOf("") }
     var payday by remember { mutableStateOf("") }
     var selectedFrequency by remember { mutableStateOf("semimonthly") }
+    var paydayAnchorOne by remember { mutableStateOf("") }
+    var paydayAnchorTwo by remember { mutableStateOf("") }
 
     // Load primary income on first launch
     LaunchedEffect(Unit) {
@@ -80,9 +82,11 @@ fun IncomeEntryScreen(
         uiState.primaryIncome?.let { income ->
             if (!uiState.isAddingNew) {
                 name = income.name
-                amount = (income.amountCents / 100.0).toString()
+                amount = MoneyParser.formatCents(income.amountCents).removePrefix("$")
                 payday = income.nextPayday
                 selectedFrequency = income.frequency
+                paydayAnchorOne = income.paydayAnchorDayOne?.toString().orEmpty()
+                paydayAnchorTwo = income.paydayAnchorDayTwo?.toString().orEmpty()
             }
         }
     }
@@ -143,7 +147,11 @@ fun IncomeEntryScreen(
                     payday = payday,
                     onPaydayChange = { payday = it },
                     selectedFrequency = selectedFrequency,
-                    onFrequencyChange = { selectedFrequency = it }
+                    onFrequencyChange = { selectedFrequency = it },
+                    paydayAnchorOne = paydayAnchorOne,
+                    onPaydayAnchorOneChange = { paydayAnchorOne = it.filter(Char::isDigit).take(2) },
+                    paydayAnchorTwo = paydayAnchorTwo,
+                    onPaydayAnchorTwoChange = { paydayAnchorTwo = it.filter(Char::isDigit).take(2) }
                 )
 
                 // Income Type
@@ -164,7 +172,9 @@ fun IncomeEntryScreen(
                                     name = name,
                                     amountCents = amountCents,
                                     nextPayday = payday.ifBlank { DateParser.today() },
-                                    frequency = selectedFrequency
+                                    frequency = selectedFrequency,
+                                    paydayAnchorDayOne = paydayAnchorOne.toIntOrNull(),
+                                    paydayAnchorDayTwo = paydayAnchorTwo.toIntOrNull()
                                 )
                             }
                         } else {
@@ -173,7 +183,9 @@ fun IncomeEntryScreen(
                                 name = name,
                                 amountCents = amountCents,
                                 nextPayday = payday.ifBlank { DateParser.today() },
-                                frequency = selectedFrequency
+                                frequency = selectedFrequency,
+                                paydayAnchorDayOne = paydayAnchorOne.toIntOrNull(),
+                                paydayAnchorDayTwo = paydayAnchorTwo.toIntOrNull()
                             )
                         }
                     },
@@ -331,7 +343,11 @@ private fun FormCard(
     payday: String,
     onPaydayChange: (String) -> Unit,
     selectedFrequency: String,
-    onFrequencyChange: (String) -> Unit
+    onFrequencyChange: (String) -> Unit,
+    paydayAnchorOne: String,
+    onPaydayAnchorOneChange: (String) -> Unit,
+    paydayAnchorTwo: String,
+    onPaydayAnchorTwoChange: (String) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -418,7 +434,7 @@ private fun FormCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PaydayChip("15th & 30th", selectedFrequency == "semimonthly") {
+                    PaydayChip("Twice monthly", selectedFrequency == "semimonthly") {
                         onFrequencyChange("semimonthly")
                     }
                     PaydayChip("Weekly", selectedFrequency == "weekly") {
@@ -430,6 +446,45 @@ private fun FormCard(
                     PaydayChip("Monthly", selectedFrequency == "monthly") {
                         onFrequencyChange("monthly")
                     }
+                }
+            }
+
+            if (selectedFrequency == "semimonthly" || selectedFrequency == "twice_monthly") {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Payday days",
+                        color = TextPrimary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        TextField(
+                            value = paydayAnchorOne,
+                            onValueChange = onPaydayAnchorOneChange,
+                            label = { Text("First day") },
+                            placeholder = { Text("e.g. 15") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
+                        )
+                        TextField(
+                            value = paydayAnchorTwo,
+                            onValueChange = onPaydayAnchorTwoChange,
+                            label = { Text("Second day") },
+                            placeholder = { Text("e.g. 31") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
+                        )
+                    }
+                    Text(
+                        text = "If a day is missing in a shorter month, it moves to month-end. Days that could become the same date are rejected.",
+                        color = TextMuted,
+                        fontSize = 12.sp
+                    )
                 }
             }
 

@@ -79,9 +79,9 @@ class HomeViewModel @Inject constructor(
                     hasUnreadRewards = false
                 )
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.value = HomeUiState(
                     isLoading = false,
-                    error = "Failed to load: ${e.message}"
+                    error = e.message ?: "Safe Now could not verify the saved financial data"
                 )
             }
         }

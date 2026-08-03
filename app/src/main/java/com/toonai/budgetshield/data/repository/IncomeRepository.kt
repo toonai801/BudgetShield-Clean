@@ -1,7 +1,9 @@
 package com.toonai.budgetshield.data.repository
 
+import com.toonai.budgetshield.data.calculator.IncomeRecurrencePolicy
 import com.toonai.budgetshield.data.database.IncomeScheduleDao
 import com.toonai.budgetshield.data.model.IncomeSchedule
+import com.toonai.budgetshield.util.DateParser
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -37,6 +39,8 @@ class IncomeRepository(private val incomeScheduleDao: IncomeScheduleDao) {
         amountCents: Long,
         nextPayday: String,
         frequency: String,
+        paydayAnchorDayOne: Int? = null,
+        paydayAnchorDayTwo: Int? = null,
         isConfirmed: Boolean = true,
         isActive: Boolean = true
     ): Long {
@@ -46,14 +50,18 @@ class IncomeRepository(private val incomeScheduleDao: IncomeScheduleDao) {
             nextPayday = nextPayday,
             nextPaydayDate = nextPayday,
             frequency = frequency,
+            paydayAnchorDayOne = paydayAnchorDayOne,
+            paydayAnchorDayTwo = paydayAnchorDayTwo,
             isConfirmed = isConfirmed,
             isActive = isActive
         )
+        validateSchedule(incomeSchedule)
         return incomeScheduleDao.insertSchedule(incomeSchedule)
     }
 
     /** Save/update an income schedule (compatible API) */
     suspend fun saveSchedule(schedule: IncomeSchedule): Long {
+        validateSchedule(schedule)
         return if (schedule.id > 0) {
             incomeScheduleDao.updateSchedule(schedule)
             schedule.id
@@ -65,6 +73,7 @@ class IncomeRepository(private val incomeScheduleDao: IncomeScheduleDao) {
 
     /** Update an existing income schedule */
     suspend fun updateIncomeSchedule(incomeSchedule: IncomeSchedule) {
+        validateSchedule(incomeSchedule)
         incomeScheduleDao.updateSchedule(incomeSchedule)
     }
 
@@ -82,5 +91,16 @@ class IncomeRepository(private val incomeScheduleDao: IncomeScheduleDao) {
     suspend fun hasActiveSchedules(): Boolean {
         // This is a simple implementation - could be optimized
         return true
+    }
+
+    private fun validateSchedule(schedule: IncomeSchedule) {
+        require(schedule.name.isNotBlank()) { "Income name is required" }
+        require(schedule.amountCents > 0L) { "Income amount must be positive" }
+        DateParser.parseToIsoDate(schedule.nextPayday).getOrThrow()
+        IncomeRecurrencePolicy.validateAnchors(
+            schedule.frequency,
+            schedule.paydayAnchorDayOne,
+            schedule.paydayAnchorDayTwo
+        )
     }
 }

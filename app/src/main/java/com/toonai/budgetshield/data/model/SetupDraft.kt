@@ -23,6 +23,8 @@ data class SetupDraft(
     val incomeAmountCents: Long = 0,
     val nextPaydayDate: String = "",
     val frequency: String = "",
+    val paydayAnchorDayOne: Int? = null,
+    val paydayAnchorDayTwo: Int? = null,
     val isIncomeConfirmed: Boolean = false,
 
     // Chapter 4: Savings (stored separately from cash)

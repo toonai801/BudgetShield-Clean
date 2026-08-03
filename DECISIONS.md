@@ -1,5 +1,15 @@
 # Decisions
 
+## Task 20 Semimonthly Short-Month Rule — 2026-08-02 (Current Authority)
+
+The owner explicitly approved the recommended short-month rule in the Codex task:
+
+1. Each of the two user-configured semimonthly payday anchors moves to the month's final valid day when its numbered day does not exist.
+2. An anchor pair that would collapse onto the same calendar date in any month is invalid.
+3. The app must reject that pair and guide the user to choose distinct payday anchors; it must never count two paychecks on the same date by assumption.
+
+This decision completes the missing short-month behavior needed to implement the previously approved two-anchor semimonthly contract. It does not waive migration, validation, or test evidence.
+
 ## Task 19 Contract Approval — 2026-08-02 (Current Authority)
 
 The owner explicitly approved all five reconstructed contracts with the recommended decisions in the Codex task on 2026-08-02. This approval makes `docs/PRODUCT_CONTRACT.md`, `docs/SAFE_NOW_RULES.md`, `docs/SCREEN_MAP.md`, `docs/DATA_MODEL_PLAN.md`, and `docs/TEST_PLAN.md` authoritative requirements. It does not claim that the current implementation conforms; implementation gaps remain Task 20 work.
