@@ -1,5 +1,17 @@
 # Project State
 
+## Task 18 Verified Checkpoint — 2026-08-02 (Current Authority)
+
+- **Status:** RED — automated foundation restored; product and release recovery still in progress
+- **Current recovery commit:** `37c49e5328ac085c42d6bc2ba21ee96c0f7fa42c`
+- **Local gates:** compile, 226/226 JVM tests, lint with 38 warnings and 0 errors, debug/test APK assembly, and 23/23 API 34 connected tests pass
+- **GitHub gates:** Android Debug Build and Test run `30776785734` passed both the build/unit-test job and the API 34 instrumentation job
+- **Task 18 result:** COMPLETE — setup flow reaches Chapter 3 reliably, setup completion reaches Home with stack replacement, and the persistent footer appears
+- **Next task:** Task 19 — reconstruct the missing Product, Safe Now, Screen Map, Data Model, and Test Plan contracts for owner review
+- **Release status:** still blocked by missing contracts, financial/data verification, placeholder removal, broader device/upgrade QA, release signing/shrinking, and repository governance
+
+This checkpoint supersedes the older 21/23 connected-test statements retained below for audit history.
+
 ## Recovery Baseline — 2026-08-02 (Current Authority)
 
 - **Status:** RED — recovery in progress; not release-ready

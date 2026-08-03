@@ -1,5 +1,11 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 18 Complete (2026-08-02)
+
+Recovery priority 3 is complete. The setup/Home/footer connected-test blocker is closed with 23/23 tests passing locally and in GitHub Actions run `30776785734` for commit `37c49e5`.
+
+The next executable priority is contract reconstruction: Product, Safe Now, Screen Map, Data Model, and Test Plan. Existing historical defect hypotheses below remain inputs only and must still be reproduced before implementation.
+
 ## Recovery Priority Override — 2026-08-02
 
 This historical queue is preserved, but “Final” is no longer a current status. The verified recovery order is:

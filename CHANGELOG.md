@@ -1,5 +1,22 @@
 # Changelog
 
+## [Task 18 — Connected Test Stabilization] — 2026-08-02
+
+### Fixed
+
+- Removed unintended automatic `MainActivity` launches from the three Hilt connected-test classes so database fixtures are prepared before the single manually controlled activity starts.
+- Migrated those tests to the current Compose empty-rule API with standard coroutine scheduling.
+- Attached the Chapter 2 confirmation test tag to the actual checkbox instead of its surrounding row.
+- Made both end-to-end flows scroll to, display, click, and verify the confirmation checkbox before attempting to continue.
+
+### Verified
+
+- 226/226 JVM tests pass.
+- Android lint reports 0 errors and 38 warnings.
+- Debug and Android-test APKs assemble.
+- All 23/23 API 34 connected tests pass locally with normal animation timing.
+- GitHub Android Debug Build and Test run `30776785734` passes both jobs for commit `37c49e5`.
+
 ## [Recovery Baseline] — 2026-08-02
 
 ### Verified

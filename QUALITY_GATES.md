@@ -1,5 +1,21 @@
 # Quality Gates
 
+## Task 18 Gate Result — 2026-08-02 (Current Authority)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Kotlin compilation | PASS | Current recovery commit `37c49e5` |
+| JVM unit tests | PASS | 226 tests, 0 failures/errors/skips |
+| Lint | PASS WITH WARNINGS | 0 errors, 38 warnings |
+| Debug and Android-test APK assembly | PASS | Local API 36 build environment |
+| Focused setup/Home/footer regression | PASS | Two critical flows plus three additional stress cycles locally |
+| Full connected suite | PASS | 23/23 locally on API 34 with normal animations |
+| GitHub build and connected suite | PASS | Run `30776785734`, commit `37c49e5`, both jobs successful |
+
+**Task 18 gate:** PASS. **Overall release gate:** FAIL — Task 19 contracts and the Task 20 product, device, accessibility, persistence, signing, shrinking, and release gates remain open.
+
+The older 21/23 connected-test row below is retained as baseline history and is no longer the current result.
+
 ## Current Recovery Gate — 2026-08-02
 
 | Gate | Status | Evidence |

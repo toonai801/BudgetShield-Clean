@@ -1,5 +1,16 @@
 # Known Bugs
 
+## Task 18 Resolution — 2026-08-02 (Current Authority)
+
+| Defect | Status | Resolution evidence |
+|---|---|---|
+| REC-CT-001 | CLOSED | Setup/Home-stack flow passes locally and in GitHub run `30776785734` |
+| REC-CT-002 | CLOSED | Post-setup footer flow passes locally and in GitHub run `30776785734` |
+
+Both timeouts were manifestations of nondeterministic test interaction, not a reproduced failure of the production stack-replacement policy. The tests previously auto-launched one activity and manually launched another, then targeted a tagged row while claiming to click the checkbox. On slower CI, the click missed during keyboard/scroll animation, confirmation stayed false, and the tests timed out waiting for Chapter 3. Commits `4daf153` and `37c49e5` remove the competing launch and target, reveal, click, and verify the actual checkbox.
+
+**Current connected result:** 23/23 pass locally and in GitHub Actions. The older open rows and 21/23 statement below are retained as baseline history and are superseded by this section.
+
 ## Current Recovery Blockers — 2026-08-02
 
 | Defect | Description | Severity | Status | Current Evidence |

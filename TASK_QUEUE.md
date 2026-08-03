@@ -1,5 +1,16 @@
 # Task Queue
 
+## Task 18 Closure — 2026-08-02 (Current Authority)
+
+- **Task 18:** COMPLETE
+- **Repair commits:** `4daf153`, `37c49e5`
+- **Connected tests:** 23/23 pass locally and in GitHub Actions on API 34
+- **GitHub evidence:** Android Debug Build and Test run `30776785734` for commit `37c49e5`
+- **Root cause:** the connected tests launched competing activity instances and tagged the confirmation row instead of the actual checkbox; on slower CI the coordinate click missed while the keyboard/scroll animation was active, leaving Chapter 2 confirmation false and Next disabled
+- **Next recovery task:** Task 19 — reconstruct the five missing product and engineering contracts for owner review
+
+This closure supersedes the older 21/23 and Task 18 “NEXT” statements retained below for audit history.
+
 ## Recovery Status Override — 2026-08-02
 
 The historical task table below is preserved, but its completion claims are not current acceptance evidence. The latest CI run for audited commit `575a9d5` executed 23 connected tests and failed 2. Tasks 13–16 are therefore reopened or blocked until their gates are reproduced on the recovery branch.
@@ -7,8 +18,8 @@ The historical task table below is preserved, but its completion claims are not 
 | Recovery Task | Deliverable | Status | Evidence / Notes |
 |---|---|---|---|
 | TASK 17 | Verified recovery baseline and documentation truth reconciliation | COMPLETE | `RECOVERY_BASELINE_2026-08-02.md`; local clean/compile/226 unit/lint/assemble gates reproduced |
-| TASK 18 | Repair setup completion, Home stack replacement, and post-setup footer | NEXT | Current CI: 21/23; two Compose timeouts |
-| TASK 19 | Reconstruct and approve missing product, Safe Now, screen, data, and test contracts | BLOCKED ON REVIEW | README references five absent authoritative contracts |
+| TASK 18 | Repair setup completion, Home stack replacement, and post-setup footer | COMPLETE | 23/23 local and GitHub API 34 connected tests; run `30776785734`; commits `4daf153`, `37c49e5` |
+| TASK 19 | Reconstruct and approve missing product, Safe Now, screen, data, and test contracts | NEXT | README references five absent authoritative contracts; drafts can be reconstructed before owner approval |
 | TASK 20 | Full financial, persistence, navigation, visual, accessibility, device, and release recovery | NOT STARTED | Must follow verified repair order in baseline |
 
 | Task | Deliverable | Status | Evidence / Notes |
