@@ -488,13 +488,13 @@ private fun ChapterPayday(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag("chapter2_confirmation_checkbox")
                 .clickable { onToggleIncomeConfirmation() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
                 checked = isIncomeConfirmed,
-                onCheckedChange = { onToggleIncomeConfirmation() }
+                onCheckedChange = { onToggleIncomeConfirmation() },
+                modifier = Modifier.testTag("chapter2_confirmation_checkbox")
             )
             Text("This income is confirmed and ready to use")
         }

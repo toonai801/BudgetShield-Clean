@@ -2,11 +2,14 @@ package com.toonai.budgetshield
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
@@ -176,7 +179,11 @@ class NavigationSmokeTest {
         Thread.sleep(300)
         
         // Confirm income - click on the checkbox directly using test tag
-        composeTestRule.onNodeWithTag("chapter2_confirmation_checkbox").performClick()
+        composeTestRule.onNodeWithTag("chapter2_confirmation_checkbox")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+            .assertIsOn()
         composeTestRule.waitForIdle()
         Thread.sleep(500)
         
