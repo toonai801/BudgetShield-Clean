@@ -1,5 +1,14 @@
 # Task Queue
 
+## Task 20.3 Execution — 2026-08-02 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** durable Room schema export, reconciled v4→v5 migration, real v1→v5 preservation proof, duplicate migration removal, and non-destructive downgrade proof at `b874b2f`
+- **Evidence:** 241/241 JVM tests; debug app, Android test APK, and lint pass; schema identity `33a854ca5e4e735d335a371f314b2c4f`
+- **Device limitation:** repair-panel Android UI test remains compiled but awaits an attached API 34 device/emulator
+- **Next increment:** immutable ledger and atomic financial-mutation recovery under the approved data contract
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
 ## Task 20.2 Execution — 2026-08-02 (Current Authority)
 
 - **Task 20:** IN PROGRESS

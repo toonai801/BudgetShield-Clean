@@ -1,5 +1,17 @@
 # Known Bugs
 
+## Task 20.3 Migration/Schema Status — 2026-08-02 (Current Authority)
+
+| Defect area | Status | Evidence / remaining work |
+|---|---|---|
+| Room schema export disabled | CLOSED | version-5 schema JSON committed at `b874b2f` |
+| Duplicate 1→2 migration definitions | CLOSED | unused duplicate removed; companion migrations are canonical |
+| Historical migration SQL inconsistent with current entity columns | CLOSED for supported v1→v5 path | migration reconciles known income/settings/budget differences and Room validates final schema |
+| Versions 1→current value preservation | CLOSED | real v1→v5 test preserves representative financial rows |
+| Destructive downgrade risk | CLOSED | fallback removed and downgrade preservation test passes |
+| Connected migration/device evidence | OPEN | current proof is Robolectric/JVM; approved device matrix still required for beta |
+| Full Task 20 recovery inventory | OPEN | ledger/data, navigation, placeholder, CI/release, visual, accessibility, and device work remains |
+
 ## Task 20.2 Financial/Data Repair Status — 2026-08-02 (Current Authority)
 
 | Defect area | Status | Evidence / remaining work |

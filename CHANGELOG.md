@@ -1,5 +1,20 @@
 # Changelog
 
+## [Task 20.3 — Migration and Schema Integrity] — 2026-08-02
+
+### Repaired
+
+- Enabled Room schema export and committed the authoritative version-5 schema snapshot with identity hash `33a854ca5e4e735d335a371f314b2c4f`.
+- Expanded migration 4→5 to reconcile historical income, settings, and budget table shapes while preserving rows and removing undeclared legacy indexes.
+- Removed the duplicate unused 1→2 migration definition so production has one migration authority.
+- Added a real version-1-to-version-5 test that traverses every production migration, requires Room final-schema validation, and verifies bill, income, budget, and settings values survive.
+- Added a downgrade test proving older code refuses a newer database without deleting its saved bill.
+
+### Verified
+
+- Implementation commit `b874b2f` passed 241/241 JVM tests, debug app assembly, Android test APK assembly, and lint.
+- Task 20 remains IN PROGRESS; connected-device execution and the remaining ledger, navigation, visual, accessibility, CI/signing, and release gates remain open.
+
 ## [Task 20.2 — Two-Anchor Income and Guided Repair] — 2026-08-02
 
 ### Repaired

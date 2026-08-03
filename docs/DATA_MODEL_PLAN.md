@@ -284,12 +284,10 @@ Owner decisions are required for Android Auto Backup, device transfer, export, a
 
 ## 12. Current gaps requiring Task 20 work
 
-Task 20.2 at `fd526e1` added two nullable semimonthly anchor fields to `IncomeSchedule` and `SetupDraft`, introduced a row-preserving version-5 migration, and removed the destructive-downgrade opt-in. Legacy semimonthly rows intentionally retain null anchors so the app can request repair instead of inventing paydays.
+Task 20.2 at `fd526e1` added two nullable semimonthly anchor fields to `IncomeSchedule` and `SetupDraft`, introduced a row-preserving version-5 migration, and removed the destructive-downgrade opt-in. Task 20.3 at `b874b2f` enabled durable schema export, reconciled the supported v1→v5 chain with the current schema, removed the duplicate migration definition, and proved representative financial-value preservation plus non-destructive downgrade refusal. Legacy semimonthly rows intentionally retain null anchors so the app can request repair instead of inventing paydays.
 
-- Room schema export is disabled.
-- Complete downgrade-failure and versions-1-through-current migration evidence remains required even though destructive downgrade fallback is now removed.
-- Migration 1→2 is duplicated.
-- Historical migration SQL appears inconsistent with current model columns.
+- Historical schema JSON for versions 1–4 was not available before recovery; version 5 is now exported, and every future schema version must remain committed.
+- Connected-device migration evidence remains required by the broader beta device matrix even though the supported v1→v5 chain now passes Room validation under Robolectric.
 - Schedule and occurrence concepts are still combined; two-anchor recurrence is now representable, but a durable generated-occurrence model remains open.
 - Transaction mutation/deletion APIs conflict with the immutable ledger.
 - Related IDs lack enforced foreign-key policy.

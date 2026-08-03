@@ -1,5 +1,11 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 20.3 Verified Locally (2026-08-02)
+
+Checkpoint `b874b2f` closes the supported migration/schema defects: version-5 schema export is durable, the duplicate migration authority is removed, the production 1→5 chain passes Room validation while preserving representative financial values, and downgrade refusal preserves data.
+
+The checkpoint passes 241 JVM tests, debug assembly, Android test APK assembly, and lint. Task 20 remains **IN PROGRESS**; immutable-ledger and atomic financial-mutation recovery is the next ordered data increment, while connected-device and release gates remain open.
+
 ## Recovery Progress — Task 20.2 Verified Locally (2026-08-02)
 
 Checkpoint `fd526e1` implements the approved two-anchor semimonthly rule across calculation, persistence, migration, Income Entry, and Setup Quest. It also disables destructive database downgrade and blocks Home's formerly misleading `$0` result when persisted data is invalid.

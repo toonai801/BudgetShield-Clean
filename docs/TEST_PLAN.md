@@ -4,7 +4,7 @@
 
 **Authority:** Minimum verification strategy and evidence required for task, beta, and release acceptance
 
-**Current verified checkpoint:** Task 20.2 — 239/239 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug` passed locally for implementation commit `fd526e1`; the new repair-panel UI test compiled but was not executed because no device was connected. The latest executed connected-test checkpoint remains Task 18 with 23/23 API 34 tests at commit `37c49e5` and GitHub Actions run `30776785734`.
+**Current verified checkpoint:** Task 20.3 — 241/241 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug` passed locally for implementation commit `b874b2f`; schema version 5 is exported with identity `33a854ca5e4e735d335a371f314b2c4f`. The repair-panel UI test compiled but was not executed because no device was connected. The latest executed connected-test checkpoint remains Task 18 with 23/23 API 34 tests at commit `37c49e5` and GitHub Actions run `30776785734`.
 
 ## 1. Test objectives
 
@@ -35,7 +35,7 @@ A successful compile, a green unit suite, an APK, or screenshots alone cannot es
 
 ### JVM tests
 
-The current repository contains 17 JVM test suites and 239 passing test methods at the Task 20.2 checkpoint. Coverage areas include:
+The current repository contains 17 JVM test suites and 241 passing test methods at the Task 20.3 checkpoint. Coverage areas include:
 
 - Safe Now calculation and recalculation
 - Money parsing and formatting
@@ -337,13 +337,13 @@ CI must not publish a release when the connected gate is absent, skipped, cancel
 
 - Current tests are concentrated on setup/navigation and selected data logic; most production controls lack end-to-end coverage.
 - Safe Now now covers active-income eligibility, real/extended horizons, weekly/monthly/one-time recurrence, two-anchor semimonthly generation and collision rejection, malformed dates, and overflow; biweekly edge cases, full database/relaunch integration, record-specific repair focus, and explanation/UI semantics remain open.
-- Migration evidence is incomplete and schema export is disabled.
+- The supported v1→v5 chain and non-destructive downgrade behavior now have local preservation evidence and version 5 is exported; connected-device migration evidence and future-version schema discipline remain required.
 - Visual/accessibility/device coverage is not a current candidate matrix.
 - CI branch triggers do not automatically cover the recovery branch.
 - The release workflow can publish without connected tests and produces a debug-signed artifact.
 - Signing, shrinking, ProGuard, supported upgrade, real-device, and independent release gates remain open.
 
-Task 19 records the required strategy. Task 20.1 is the first verified implementation increment; Task 20 must continue in the approved order.
+Task 19 records the required strategy. Task 20.1 through 20.3 are verified implementation increments; Task 20 must continue in the approved order.
 
 ## 16. Approved test direction and explicit deferrals
 

@@ -1,5 +1,22 @@
 # Quality Gates
 
+## Task 20.3 Migration and Schema Gate — 2026-08-02 (Current Authority)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Durable current schema export | PASS | committed version-5 JSON; identity `33a854ca5e4e735d335a371f314b2c4f` |
+| Single production migration authority | PASS | duplicate top-level 1→2 definition removed |
+| Version 1→current migration | PASS | real v1 schema traverses 1→2→3→4→5 and passes Room final validation |
+| Financial value preservation | PASS | bill, income, budget, and settings assertions after migration |
+| Historical schema reconciliation | PASS | canonical payday, nullable selected month, category metadata, and legacy indexes repaired in 4→5 |
+| Non-destructive downgrade | PASS | downgrade refuses to open and saved bill remains in the database |
+| Full JVM regression | PASS | 241/241; zero failures, errors, or skips |
+| Build/static checks | PASS | debug app, Android test APK, and lint |
+| Connected-device execution | PENDING | no attached emulator/phone |
+| Overall Task 20/release gate | FAIL | ledger, navigation, device, accessibility, signing, and release work remains |
+
+**Task 20.3 local gate:** PASS. **Task 20 and overall release gates:** FAIL until all remaining recovery work is verified.
+
 ## Task 20.2 Two-Anchor Income Gate — 2026-08-02 (Current Authority)
 
 | Gate | Status | Evidence |

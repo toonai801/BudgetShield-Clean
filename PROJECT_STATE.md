@@ -1,5 +1,18 @@
 # Project State
 
+## Task 20.3 Migration and Schema Integrity — 2026-08-02 (Current Authority)
+
+- **Status:** RED — migration/schema increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** `b874b2f` on `recovery/full-audit-2026-08-02`
+- **Verified locally:** 241/241 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`
+- **Completed in this increment:** durable version-5 Room schema export; canonical migration authority; historical income/settings/budget reconciliation; real v1→v5 Room validation with value preservation; non-destructive downgrade refusal
+- **Schema identity:** `33a854ca5e4e735d335a371f314b2c4f`
+- **Device evidence:** repair-panel UI test remains compiled but NOT RUN because no Android device/emulator is connected
+- **Explicitly still open:** remaining ledger/data source-of-truth work, navigation/placeholders, connected device matrix, visuals/accessibility, CI, signing, shrinking, and release provenance
+- **Task 20 result:** IN PROGRESS — migration approval is not a beta/release completion declaration
+
+This section supersedes Task 20.2 as the current recovery status; prior checkpoints remain audit history below.
+
 ## Task 20.2 Two-Anchor Income Recovery — 2026-08-02 (Current Authority)
 
 - **Status:** RED — second financial/data increment verified locally; full recovery remains in progress
