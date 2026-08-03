@@ -347,6 +347,39 @@ class MigrationTest {
                             )
                             """.trimIndent()
                         )
+                        db.execSQL(
+                            """
+                            CREATE TABLE user_settings (
+                                id INTEGER PRIMARY KEY NOT NULL,
+                                isFirstRunComplete INTEGER NOT NULL,
+                                currency TEXT NOT NULL,
+                                timezone TEXT NOT NULL,
+                                notificationsEnabled INTEGER NOT NULL,
+                                dailyReminderTime TEXT,
+                                billReminderDaysBefore INTEGER NOT NULL,
+                                planningHorizonMonths INTEGER NOT NULL,
+                                cashOnHandCents INTEGER NOT NULL,
+                                savingsBalanceCents INTEGER NOT NULL,
+                                selectedMonth TEXT,
+                                setupChapter INTEGER NOT NULL,
+                                createdAt INTEGER NOT NULL,
+                                updatedAt INTEGER NOT NULL
+                            )
+                            """.trimIndent()
+                        )
+                        db.execSQL(
+                            """
+                            CREATE TABLE budget_categories (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                name TEXT NOT NULL,
+                                monthKey TEXT NOT NULL,
+                                plannedAmountCents INTEGER NOT NULL,
+                                spentAmountCents INTEGER NOT NULL,
+                                createdAt INTEGER NOT NULL,
+                                updatedAt INTEGER NOT NULL
+                            )
+                            """.trimIndent()
+                        )
                     }
 
                     override fun onUpgrade(
@@ -365,6 +398,20 @@ class MigrationTest {
              isConfirmed, isActive, createdAt, updatedAt)
             VALUES ('Legacy pay', 12345, '2026-08-15',
                     'semimonthly', 1, 1, 10, 20)
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            INSERT INTO user_settings VALUES
+            (1, 1, 'USD', 'America/Denver', 1, NULL, 3, 2,
+             50000, 10000, NULL, 7, 10, 20)
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            INSERT INTO budget_categories
+            (name, monthKey, plannedAmountCents, spentAmountCents, createdAt, updatedAt)
+            VALUES ('Food', '2026-08', 30000, 12000, 10, 20)
             """.trimIndent()
         )
 
@@ -389,7 +436,228 @@ class MigrationTest {
             assertTrue(cursor.isNull(4))
             assertTrue(cursor.isNull(5))
         }
+        db.query(
+            "SELECT selectedMonth, cashOnHandCents FROM user_settings WHERE id = 1"
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("", cursor.getString(0))
+            assertEquals(50000L, cursor.getLong(1))
+        }
+        db.query(
+            "SELECT categoryType, isActive, icon, plannedAmountCents " +
+                "FROM budget_categories WHERE name = 'Food'"
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("food", cursor.getString(0))
+            assertEquals(1, cursor.getInt(1))
+            assertEquals("", cursor.getString(2))
+            assertEquals(30000L, cursor.getLong(3))
+        }
         helper.close()
+    }
+
+    @Test
+    fun `real version 1 schema migrates to version 5 without data loss`() {
+        val dbName = "test_real_v1_to_v5.db"
+        val dbFile = File(context.cacheDir, dbName)
+        if (dbFile.exists()) dbFile.delete()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name(dbFile.absolutePath)
+                .callback(object : SupportSQLiteOpenHelper.Callback(1) {
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        db.execSQL(
+                            """
+                            CREATE TABLE bills (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                name TEXT NOT NULL,
+                                icon TEXT NOT NULL,
+                                amountCents INTEGER NOT NULL,
+                                paidAmountCents INTEGER NOT NULL,
+                                dueDate TEXT NOT NULL,
+                                isProtected INTEGER NOT NULL,
+                                isPaid INTEGER NOT NULL,
+                                createdAt INTEGER NOT NULL
+                            )
+                            """.trimIndent()
+                        )
+                    }
+
+                    override fun onUpgrade(
+                        db: SupportSQLiteDatabase,
+                        oldVersion: Int,
+                        newVersion: Int
+                    ) = Unit
+                })
+                .build()
+        )
+        val legacy = helper.writableDatabase
+        legacy.execSQL(
+            """
+            INSERT INTO bills
+            (name, icon, amountCents, paidAmountCents, dueDate,
+             isProtected, isPaid, createdAt)
+            VALUES ('Rent', 'home', 120000, 20000, '2026-08-05', 1, 0, 10)
+            """.trimIndent()
+        )
+        BudgetShieldDatabase.MIGRATION_1_2.migrate(legacy)
+        legacy.execSQL(
+            """
+            INSERT INTO user_settings
+            (id, isFirstRunComplete, currency, timezone, notificationsEnabled,
+             dailyReminderTime, billReminderDaysBefore, planningHorizonMonths,
+             cashOnHandCents, savingsBalanceCents, setupChapter,
+             createdAt, updatedAt)
+            VALUES (1, 1, 'USD', 'America/Denver', 1, NULL, 3, 2,
+                    250000, 50000, 7, 10, 20)
+            """.trimIndent()
+        )
+        legacy.execSQL(
+            """
+            INSERT INTO income_schedules
+            (name, amountCents, frequency, nextPaydayDate,
+             isConfirmed, isActive, createdAt, updatedAt)
+            VALUES ('Paycheck', 150000, 'semimonthly', '2026-08-15',
+                    1, 1, 10, 20)
+            """.trimIndent()
+        )
+        legacy.execSQL(
+            """
+            INSERT INTO budget_categories
+            (name, monthKey, plannedAmountCents, spentAmountCents, createdAt, updatedAt)
+            VALUES ('Food', '2026-08', 40000, 5000, 10, 20)
+            """.trimIndent()
+        )
+        BudgetShieldDatabase.MIGRATION_2_3.migrate(legacy)
+        BudgetShieldDatabase.MIGRATION_3_4.migrate(legacy)
+        BudgetShieldDatabase.MIGRATION_4_5.migrate(legacy)
+        legacy.execSQL("PRAGMA user_version = 5")
+        helper.close()
+
+        val migrated = Room.databaseBuilder(
+            context,
+            BudgetShieldDatabase::class.java,
+            dbFile.absolutePath
+        )
+            .allowMainThreadQueries()
+            .build()
+        database = migrated
+
+        migrated.query(
+            "SELECT name, amountCents, paidAmountCents FROM bills WHERE name = 'Rent'",
+            emptyArray()
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Rent", cursor.getString(0))
+            assertEquals(120000L, cursor.getLong(1))
+            assertEquals(20000L, cursor.getLong(2))
+        }
+        migrated.query(
+            "SELECT name, nextPayday, nextPaydayDate, paydayAnchorDayOne " +
+                "FROM income_schedules WHERE name = 'Paycheck'",
+            emptyArray()
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Paycheck", cursor.getString(0))
+            assertEquals("2026-08-15", cursor.getString(1))
+            assertEquals("2026-08-15", cursor.getString(2))
+            assertTrue(cursor.isNull(3))
+        }
+        migrated.query(
+            "SELECT plannedAmountCents, spentAmountCents, categoryType " +
+                "FROM budget_categories WHERE name = 'Food'",
+            emptyArray()
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(40000L, cursor.getLong(0))
+            assertEquals(5000L, cursor.getLong(1))
+            assertEquals("food", cursor.getString(2))
+        }
+        migrated.query(
+            "SELECT cashOnHandCents, savingsBalanceCents, selectedMonth " +
+                "FROM user_settings WHERE id = 1",
+            emptyArray()
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(250000L, cursor.getLong(0))
+            assertEquals(50000L, cursor.getLong(1))
+            assertEquals("", cursor.getString(2))
+        }
+        migrated.close()
+        database = null
+    }
+
+    @Test
+    fun `database downgrade fails without deleting user data`(): Unit = runBlocking {
+        val dbName = "test_non_destructive_downgrade.db"
+        val dbFile = File(context.cacheDir, dbName)
+        if (dbFile.exists()) dbFile.delete()
+        val current = Room.databaseBuilder(
+            context,
+            BudgetShieldDatabase::class.java,
+            dbFile.absolutePath
+        )
+            .allowMainThreadQueries()
+            .build()
+        current.billDao().insertBill(
+            com.toonai.budgetshield.data.model.Bill(
+                name = "Preserve me",
+                icon = "home",
+                amountCents = 10000L,
+                dueDate = "2026-08-20",
+                isProtected = true
+            )
+        )
+        current.close()
+
+        val versionSetter = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name(dbFile.absolutePath)
+                .callback(object : SupportSQLiteOpenHelper.Callback(5) {
+                    override fun onCreate(db: SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(
+                        db: SupportSQLiteDatabase,
+                        oldVersion: Int,
+                        newVersion: Int
+                    ) = Unit
+                })
+                .build()
+        )
+        versionSetter.writableDatabase.execSQL("PRAGMA user_version = 6")
+        versionSetter.close()
+
+        val downgradeAttempt = Room.databaseBuilder(
+            context,
+            BudgetShieldDatabase::class.java,
+            dbFile.absolutePath
+        )
+            .allowMainThreadQueries()
+            .build()
+        assertThrows(IllegalStateException::class.java) {
+            downgradeAttempt.openHelper.writableDatabase
+        }
+        downgradeAttempt.close()
+
+        val verifier = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name(dbFile.absolutePath)
+                .callback(object : SupportSQLiteOpenHelper.Callback(6) {
+                    override fun onCreate(db: SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(
+                        db: SupportSQLiteDatabase,
+                        oldVersion: Int,
+                        newVersion: Int
+                    ) = Unit
+                })
+                .build()
+        )
+        verifier.readableDatabase.query(
+            "SELECT amountCents FROM bills WHERE name = 'Preserve me'"
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(10000L, cursor.getLong(0))
+        }
+        verifier.close()
     }
 
     /**

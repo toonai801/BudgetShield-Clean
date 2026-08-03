@@ -36,7 +36,7 @@ import com.toonai.budgetshield.data.model.XpEntry
         UserStreak::class
     ],
     version = 5,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class BudgetShieldDatabase : RoomDatabase() {
 
@@ -300,6 +300,101 @@ abstract class BudgetShieldDatabase : RoomDatabase() {
                 database.execSQL(
                     "ALTER TABLE setup_drafts ADD COLUMN paydayAnchorDayTwo INTEGER"
                 )
+
+                // The historical 1->2 table allowed selectedMonth to be null,
+                // while the current entity requires a non-null string.
+                database.execSQL("ALTER TABLE user_settings RENAME TO user_settings_v4")
+                database.execSQL(
+                    """
+                    CREATE TABLE user_settings (
+                        id INTEGER NOT NULL,
+                        isFirstRunComplete INTEGER NOT NULL,
+                        currency TEXT NOT NULL,
+                        timezone TEXT NOT NULL,
+                        notificationsEnabled INTEGER NOT NULL,
+                        dailyReminderTime TEXT,
+                        billReminderDaysBefore INTEGER NOT NULL,
+                        planningHorizonMonths INTEGER NOT NULL,
+                        cashOnHandCents INTEGER NOT NULL,
+                        savingsBalanceCents INTEGER NOT NULL,
+                        selectedMonth TEXT NOT NULL,
+                        setupChapter INTEGER NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        PRIMARY KEY(id)
+                    )
+                    """.trimIndent()
+                )
+                database.execSQL(
+                    """
+                    INSERT INTO user_settings (
+                        id, isFirstRunComplete, currency, timezone,
+                        notificationsEnabled, dailyReminderTime, billReminderDaysBefore,
+                        planningHorizonMonths, cashOnHandCents, savingsBalanceCents,
+                        selectedMonth, setupChapter, createdAt, updatedAt
+                    )
+                    SELECT id, isFirstRunComplete, currency, timezone,
+                        notificationsEnabled, dailyReminderTime, billReminderDaysBefore,
+                        planningHorizonMonths, cashOnHandCents, savingsBalanceCents,
+                        COALESCE(selectedMonth, ''), setupChapter, createdAt, updatedAt
+                    FROM user_settings_v4
+                    """.trimIndent()
+                )
+                database.execSQL("DROP TABLE user_settings_v4")
+
+                // Older installs lack the three current category metadata fields.
+                val budgetColumns = mutableSetOf<String>()
+                database.query("PRAGMA table_info(budget_categories)").use { cursor ->
+                    while (cursor.moveToNext()) budgetColumns += cursor.getString(1)
+                }
+                val categoryTypeExpression = if ("categoryType" in budgetColumns) {
+                    "categoryType"
+                } else {
+                    "CASE lower(name) WHEN 'food' THEN 'food' " +
+                        "WHEN 'wants' THEN 'wants' ELSE 'other' END"
+                }
+                val activeExpression = if ("isActive" in budgetColumns) "isActive" else "1"
+                val iconExpression = if ("icon" in budgetColumns) "icon" else "''"
+                database.execSQL("ALTER TABLE budget_categories RENAME TO budget_categories_v4")
+                database.execSQL(
+                    """
+                    CREATE TABLE budget_categories (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        monthKey TEXT NOT NULL,
+                        plannedAmountCents INTEGER NOT NULL,
+                        spentAmountCents INTEGER NOT NULL,
+                        categoryType TEXT NOT NULL,
+                        isActive INTEGER NOT NULL,
+                        icon TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                database.execSQL(
+                    """
+                    INSERT INTO budget_categories (
+                        id, name, monthKey, plannedAmountCents, spentAmountCents,
+                        categoryType, isActive, icon, createdAt, updatedAt
+                    )
+                    SELECT id, name, monthKey, plannedAmountCents, spentAmountCents,
+                        $categoryTypeExpression, $activeExpression, $iconExpression,
+                        createdAt, updatedAt
+                    FROM budget_categories_v4
+                    """.trimIndent()
+                )
+                database.execSQL("DROP TABLE budget_categories_v4")
+                database.execSQL(
+                    "CREATE UNIQUE INDEX index_budget_categories_name_monthKey " +
+                        "ON budget_categories(name, monthKey)"
+                )
+
+                // These indexes were created by historical SQL but are not part of
+                // the current entity declarations and otherwise break schema equality.
+                database.execSQL("DROP INDEX IF EXISTS index_transactions_date")
+                database.execSQL("DROP INDEX IF EXISTS index_transactions_category")
+                database.execSQL("DROP INDEX IF EXISTS index_xp_entries_date")
             }
         }
 

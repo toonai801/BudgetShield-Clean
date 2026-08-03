@@ -52,6 +52,12 @@ android {
 
 }
 
+kapt {
+    arguments {
+        arg("room.schemaLocation", file("schemas").path)
+    }
+}
+
 dependencies {
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
