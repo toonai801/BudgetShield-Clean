@@ -1,5 +1,13 @@
 # Task Queue
 
+## Task 20 Execution — 2026-08-02 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** 20.1 Safe Now core contract repair at `f051663`
+- **Evidence:** 234/234 JVM tests plus successful debug assembly and lint
+- **Next increment:** implement the approved two-anchor semimonthly data contract and guided invalid-data repair path before broader persistence/navigation recovery
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
 ## Task 19 Closure — 2026-08-02 (Current Authority)
 
 - **Task 19:** COMPLETE

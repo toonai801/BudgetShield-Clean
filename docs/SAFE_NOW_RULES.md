@@ -214,20 +214,24 @@ At minimum, automated tests must cover:
 - Process death/relaunch producing the same result
 - UI explanation semantics for positive, zero, shortage, and error states
 
-## 13. Current implementation differences
+## 13. Task 20 implementation status
 
-The current `data/calculator/SafeNowCalculator.kt` is not yet accepted as conforming because:
+Task 20.1 at checkpoint `f051663` repaired the following calculator differences:
 
-- It filters `isConfirmed` but not `isActive`.
-- It adds only `nextPayday`; it does not expand recurring income.
-- It ignores `selectedMonth` and `planningHorizonMonths`.
-- It creates an end-of-next-month string ending in day `31`, which is not a valid date for every month.
-- It relies on lexical date strings without first validating all records.
-- It does not explicitly detect integer overflow.
+- Income must now be both confirmed and active.
+- Weekly, biweekly, monthly, and one-time schedules expand through the horizon.
+- `planningHorizonMonths` now produces a real calendar end date, and later known protected bills extend it.
+- Dates are parsed and validated before calculation instead of compared lexically.
+- Arithmetic overflow now fails closed.
+
+The following differences remain open:
+
+- Semimonthly/twice-monthly schedules cannot conform to the approved two-anchor rule until the schema, migration, repository, and UI store both anchors; the current single recorded payday is counted once rather than fabricated into a second date.
 - Its shortage explanation lists all protected bills due through the first failing date, which may not clearly identify the event that first caused failure.
 - A compatibility wrapper uses the device's current date implicitly, reducing deterministic testability.
+- Invalid persisted financial data blocks calculation, but the guided record-level repair UI is not yet implemented.
 
-These are Task 20 verification/repair items. This contract records them; it does not fix or waive them.
+The new focused tests and full JVM suite verify the completed portion only. Task 20 remains in progress, and this status does not waive the open requirements.
 
 ## 14. Approved owner decisions
 
@@ -238,4 +242,4 @@ These are Task 20 verification/repair items. This contract records them; it does
 5. Every known protected unpaid bill extends the horizon when later than the configured minimum horizon.
 6. Invalid persisted financial data blocks calculation and presents guided repair; it is never silently ignored or converted to zero.
 
-The full approval record is in `DECISIONS.md`. Financial correctness remains unverified until Task 20 implementation and evidence satisfy this contract.
+The full approval record is in `DECISIONS.md`. Core financial correctness has an initial verified checkpoint, but full conformity remains unverified until the open Task 20 implementation and evidence satisfy this contract.

@@ -1,5 +1,16 @@
 # Project State
 
+## Task 20.1 Safe Now Contract Repair — 2026-08-02 (Current Authority)
+
+- **Status:** RED — first Task 20 financial increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** `f051663` on `recovery/full-audit-2026-08-02`
+- **Verified locally:** 234/234 JVM tests, `assembleDebug`, and `lintDebug`
+- **Repaired:** active/confirmed income filtering, real configured horizons, protected-bill extension, weekly/biweekly/monthly/one-time recurrence, invalid-date rejection, checked arithmetic, and exact-cent parsing on income/savings entry
+- **Explicitly still open:** approved two-anchor semimonthly schema/UX, guided repair presentation, remaining data and ledger repairs, navigation/placeholders, connected-device evidence, visuals/accessibility, CI, signing, shrinking, and release provenance
+- **Task 20 result:** IN PROGRESS — this increment is a checkpoint, not a release-ready declaration
+
+This section supersedes Task 19 as the current recovery status; the approved Task 19 closure remains authoritative contract history below.
+
 ## Task 19 Approved Closure — 2026-08-02 (Current Authority)
 
 - **Status:** RED — authoritative contracts restored; Task 20 product and release recovery is next

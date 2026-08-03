@@ -1,5 +1,18 @@
 # Changelog
 
+## [Task 20.1 — Safe Now Contract Repair] — 2026-08-02
+
+### Repaired
+
+- Enforced active-and-confirmed income eligibility, real calendar horizons, known protected-bill horizon extension, supported recurrence expansion, date validation, deterministic date ordering, and checked `Long` arithmetic in the production Safe Now calculator.
+- Replaced floating-point money conversion on income and savings entry with the shared exact-cent parser.
+- Added eight focused contract tests covering inactive income, leap-month horizons, horizon extension, weekly and monthly recurrence, one-time income, malformed dates, and arithmetic overflow.
+
+### Verified
+
+- Commit `f051663` passed 234/234 JVM tests, `assembleDebug`, and `lintDebug` on the approved Gradle 8.13 / Android plugin 8.13.2 baseline.
+- Task 20 remains IN PROGRESS: two-anchor semimonthly persistence, guided repair UI, database/migration work, navigation, device, accessibility, signing, and release gates remain open.
+
 ## [Task 19 — Contract Approval Closure] — 2026-08-02
 
 ### Approved

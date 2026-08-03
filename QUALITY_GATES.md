@@ -1,5 +1,19 @@
 # Quality Gates
 
+## Task 20.1 Safe Now Gate — 2026-08-02 (Current Authority)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Focused Safe Now contract matrix | PASS | 8/8 new compliance tests |
+| Full JVM regression | PASS | 234/234 tests; zero failures, errors, or skips |
+| Debug build | PASS | `assembleDebug` |
+| Static Android checks | PASS | `lintDebug` |
+| Approved build baseline preserved | PASS | Gradle 8.13 and Android plugin 8.13.2 |
+| Full Safe Now/UI/data conformity | PARTIAL | two-anchor semimonthly persistence and guided repair UI remain open |
+| Overall Task 20/release gate | FAIL | persistence, navigation, device, accessibility, CI/signing/release work remains |
+
+**Task 20.1 gate:** PASS as an implementation increment. **Task 20 and overall release gates:** FAIL until the remaining approved work is verified.
+
 ## Task 19 Completion Gate — 2026-08-02 (Current Authority)
 
 | Gate | Status | Evidence |

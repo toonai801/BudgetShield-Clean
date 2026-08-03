@@ -1,5 +1,15 @@
 # Known Bugs
 
+## Task 20.1 Financial Repair Status — 2026-08-02 (Current Authority)
+
+| Defect area | Status | Evidence / remaining work |
+|---|---|---|
+| Safe Now active-income, horizon, core recurrence, date, and overflow defects | CLOSED | Production repair and 8/8 focused tests at `f051663` |
+| Floating-point parsing on income and savings entry | CLOSED | Both screens use `MoneyParser` exact-cent conversion |
+| Semimonthly/twice-monthly two-anchor recurrence | OPEN | Current schema has only one payday anchor; schema, migration, repository, and UI work required |
+| Invalid persisted-data guided repair | OPEN | Calculator now fails closed; user-facing record-level repair flow remains required |
+| Full Task 20 recovery inventory | OPEN | Data, navigation, placeholder, CI/release, visual, accessibility, and device issues remain |
+
 ## Task 19 Contract Closure — 2026-08-02 (Current Authority)
 
 | Defect | Status | Closure evidence |

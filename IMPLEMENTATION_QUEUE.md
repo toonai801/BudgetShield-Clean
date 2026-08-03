@@ -1,5 +1,11 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 20.1 Verified (2026-08-02)
+
+The first Task 20 increment repaired the production Safe Now core against the approved financial contract and moved income/savings entry to exact-cent parsing. Checkpoint `f051663` passes 234 JVM tests, debug assembly, and lint on the locked build baseline.
+
+Task 20 remains **IN PROGRESS**. The next financial/data increment is the approved two-anchor semimonthly model and guided invalid-record repair path; the broader persistence, navigation, device, accessibility, signing, and release gates remain open.
+
 ## Recovery Progress — Task 19 Complete (2026-08-02)
 
 The owner approved all five reconstructed contracts with the recommended decisions. The contracts are now authoritative, and the fourteen approved directions are recorded in `DECISIONS.md`.
