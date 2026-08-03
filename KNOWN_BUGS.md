@@ -1,5 +1,13 @@
 # Known Bugs
 
+## Task 19 Documentation Status — 2026-08-02 (Current Authority)
+
+| Defect | Status | Current evidence |
+|---|---|---|
+| REC-DOC-001 | MITIGATED — APPROVAL PENDING | All five missing contracts have been reconstructed as drafts in `docs/`; each remains marked owner-approval required |
+
+The absence defect is resolved at the file/reconstruction level, but contract authority is not restored until the owner approves or revises every draft. All product-code, data, CI/release, visual, accessibility, and device gaps cataloged by the drafts remain open for the ordered Task 20 recovery.
+
 ## Task 18 Resolution — 2026-08-02 (Current Authority)
 
 | Defect | Status | Resolution evidence |

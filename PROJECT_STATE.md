@@ -1,5 +1,31 @@
 # Project State
 
+## Task 19 Contract Review Checkpoint — 2026-08-02 (Current Authority)
+
+- **Status:** RED — five missing contracts are reconstructed as review drafts; owner approval and Task 20 recovery remain outstanding
+- **Working branch:** `recovery/full-audit-2026-08-02`
+- **Draft source base:** Task 18 checkpoint `5acfabd`
+- **Drafts created:** `docs/PRODUCT_CONTRACT.md`, `docs/SAFE_NOW_RULES.md`, `docs/SCREEN_MAP.md`, `docs/DATA_MODEL_PLAN.md`, and `docs/TEST_PLAN.md`
+- **Source policy:** reconstructed from current approved control documents and current recovery-branch code only; no forbidden legacy source or old commit was used
+- **Task 19 status:** IN REVIEW — reconstruction is complete; owner approval/revision is required before Task 19 can close
+- **Task 20 status:** NOT STARTED — no production code or schema change is included in the Task 19 draft checkpoint
+- **Release status:** blocked by unapproved contracts and the unresolved financial, persistence, navigation, placeholder, visual, accessibility, device, signing, shrinking, and governance gates cataloged in the drafts
+
+### Task 19 acceptance criteria
+
+- [x] All five README-authoritative missing contract files exist.
+- [x] Each draft identifies its status, authority, current implementation gaps, and owner decisions.
+- [x] Product vocabulary preserves Budget Shield and Safe Now.
+- [x] Safe Now rules define exact cents, same-day ordering, partial payments, horizon behavior, shortage output, and a verification matrix.
+- [x] Screen Map reconciles the 17 canonical registry entries, parameterized bill-payment route, five-tab footer, and unreachable Transaction History screen.
+- [x] Data Model Plan inventories all ten Room entities, migration risks, ledger rules, and required transaction boundaries.
+- [x] Test Plan maps functional, persistence, navigation, visual, accessibility, device, CI, and release evidence.
+- [x] Drafts were cross-checked against current source and recovery findings.
+- [ ] Owner reviews, revises where needed, and explicitly approves all five contracts.
+- [ ] Approved decisions are recorded in `DECISIONS.md` and the contracts are marked approved.
+
+Until the final two criteria pass, Task 19 is not complete and Task 20 implementation must not begin.
+
 ## Task 18 Verified Checkpoint — 2026-08-02 (Current Authority)
 
 - **Status:** RED — automated foundation restored; product and release recovery still in progress

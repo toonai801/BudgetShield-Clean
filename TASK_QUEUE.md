@@ -1,5 +1,16 @@
 # Task Queue
 
+## Task 19 Contract Review — 2026-08-02 (Current Authority)
+
+- **Task 19:** IN REVIEW
+- **Reconstruction:** COMPLETE — Product, Safe Now, Screen Map, Data Model, and Test Plan drafts now exist
+- **Approval:** PENDING OWNER REVIEW
+- **Scope:** Documentation only; no production code, schema, workflow, or release artifact changed
+- **Next action:** Owner reviews the decisions listed in each contract; Task 19 closes only after explicit approval/revision
+- **Task 20:** NOT STARTED and blocked behind Task 19 approval
+
+Acceptance criteria and their current state are recorded in the current Task 19 section of `PROJECT_STATE.md`.
+
 ## Task 18 Closure — 2026-08-02 (Current Authority)
 
 - **Task 18:** COMPLETE
@@ -19,7 +30,7 @@ The historical task table below is preserved, but its completion claims are not 
 |---|---|---|---|
 | TASK 17 | Verified recovery baseline and documentation truth reconciliation | COMPLETE | `RECOVERY_BASELINE_2026-08-02.md`; local clean/compile/226 unit/lint/assemble gates reproduced |
 | TASK 18 | Repair setup completion, Home stack replacement, and post-setup footer | COMPLETE | 23/23 local and GitHub API 34 connected tests; run `30776785734`; commits `4daf153`, `37c49e5` |
-| TASK 19 | Reconstruct and approve missing product, Safe Now, screen, data, and test contracts | NEXT | README references five absent authoritative contracts; drafts can be reconstructed before owner approval |
+| TASK 19 | Reconstruct and approve missing product, Safe Now, screen, data, and test contracts | IN REVIEW | Five drafts reconstructed from current approved requirements/code; owner approval pending |
 | TASK 20 | Full financial, persistence, navigation, visual, accessibility, device, and release recovery | NOT STARTED | Must follow verified repair order in baseline |
 
 | Task | Deliverable | Status | Evidence / Notes |

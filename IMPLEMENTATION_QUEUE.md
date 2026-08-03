@@ -1,5 +1,11 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 19 Drafts Ready for Owner Review (2026-08-02)
+
+The five missing contract drafts have been reconstructed from current approved requirements and current code: Product Contract, Safe Now Rules, Screen Map, Data Model Plan, and Test Plan. They explicitly record current implementation gaps and unresolved owner decisions.
+
+Task 19 remains **IN REVIEW**, not complete. The next executable step is owner review/revision and explicit approval of all five contracts. Task 20 production repair must not begin until that approval is recorded.
+
 ## Recovery Progress — Task 18 Complete (2026-08-02)
 
 Recovery priority 3 is complete. The setup/Home/footer connected-test blocker is closed with 23/23 tests passing locally and in GitHub Actions run `30776785734` for commit `37c49e5`.

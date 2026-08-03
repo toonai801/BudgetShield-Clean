@@ -1,5 +1,19 @@
 # Changelog
 
+## [Task 19 — Contract Reconstruction Draft] — 2026-08-02
+
+### Added
+
+- Reconstructed the missing Product Contract, Safe Now Rules, Screen Map, Data Model Plan, and Test Plan from current approved control documents and current recovery-branch code.
+- Added explicit implementation-gap inventories and owner-decision lists to each draft.
+- Added Task 19 acceptance criteria and marked the task IN REVIEW pending owner approval.
+
+### Scope
+
+- Documentation only; no production Kotlin, Room schema, workflow, APK, credential, or signing material changed.
+- No forbidden legacy repository, project, commit, asset, or contract was used.
+- Task 20 remains not started.
+
 ## [Task 18 — Connected Test Stabilization] — 2026-08-02
 
 ### Fixed

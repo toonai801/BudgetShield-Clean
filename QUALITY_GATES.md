@@ -1,5 +1,17 @@
 # Quality Gates
 
+## Task 19 Draft Gate — 2026-08-02 (Current Authority)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Five missing contract files reconstructed | PASS | Product, Safe Now, Screen Map, Data Model, and Test Plan drafts exist in `docs/` |
+| Current-source traceability | PASS | Drafts inventory current routes, ten Room entities, Safe Now implementation differences, tests, workflows, and recovery findings |
+| Forbidden legacy exclusion | PASS | Reconstruction used current recovery-branch sources only |
+| Product-code isolation | PASS | Task 19 draft scope contains documentation only |
+| Owner approval | PENDING | Every new contract remains explicitly marked DRAFT — owner approval required |
+
+**Task 19 draft gate:** PASS. **Task 19 completion gate:** PENDING OWNER APPROVAL. **Overall release gate:** FAIL — Task 20 product and release recovery has not started.
+
 ## Task 18 Gate Result — 2026-08-02 (Current Authority)
 
 | Gate | Status | Evidence |

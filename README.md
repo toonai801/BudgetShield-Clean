@@ -63,8 +63,8 @@ Never use, reference, or recover:
 - `docs/SCREEN_MAP.md` — Screen inventory
 - `docs/DATA_MODEL_PLAN.md` — Data architecture
 - `docs/TEST_PLAN.md` — Testing strategy
-### Missing Contract Warning — 2026-08-02
+### Contract Review Status — 2026-08-02
 
-The repository currently contains only `docs/DESIGN_CONTRACT.md` from the contract list above. `PRODUCT_CONTRACT.md`, `SAFE_NOW_RULES.md`, `SCREEN_MAP.md`, `DATA_MODEL_PLAN.md`, and `TEST_PLAN.md` must be reconstructed from current approved requirements and current code; do not recover them from forbidden legacy sources.
+`PRODUCT_CONTRACT.md`, `SAFE_NOW_RULES.md`, `SCREEN_MAP.md`, `DATA_MODEL_PLAN.md`, and `TEST_PLAN.md` have been reconstructed from current approved requirements and current recovery-branch code. They are review drafts, not yet approved authority. Task 19 remains open until the owner reviews/revises and explicitly approves all five. No forbidden legacy source was used.
 
 # Release trigger Fri Jul 24 05:52:13 PM MDT 2026
