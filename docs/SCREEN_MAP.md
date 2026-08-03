@@ -1,8 +1,8 @@
 # Budget Shield Screen Map
 
-**Status:** DRAFT — reconstructed from current navigation and screen code on 2026-08-02; owner approval required
+**Status:** APPROVED — owner-approved with the recommended decisions on 2026-08-02
 
-**Authority after approval:** Screen ownership, route inventory, navigation entry/exit rules, and persistent-footer behavior
+**Authority:** Screen ownership, route inventory, navigation entry/exit rules, and persistent-footer behavior
 
 ## 1. Navigation model
 
@@ -220,9 +220,11 @@ For every screen and state:
 - Two different parameterized IDs navigate correctly.
 - Invalid/deleted IDs show a recoverable error.
 - All visible buttons and footer items reach the documented destination.
-- Transaction History is either reachable/tested or absent/hidden.
+- Transaction History is reachable and tested for the next beta.
 
-## 12. Current contradictions to resolve in Task 20
+## 12. Approved navigation decisions and current contradictions
+
+The owner approved the five-tab footer in the order Home, Treasure, Stats, Goals, Settings and required Transaction History to become a reachable, tested next-beta route. The following implementation contradictions remain Task 20 work:
 
 - Route comments say 14 while the registry contains 17 canonical entries.
 - `BillPaymentWithId` is valid but omitted from `allDestinations` as a separate entry, which must be documented consistently.

@@ -1,10 +1,10 @@
 # Budget Shield Product Contract
 
-**Status:** DRAFT — reconstructed from the current recovery branch on 2026-08-02; owner approval required
+**Status:** APPROVED — owner-approved with the recommended decisions on 2026-08-02
 
 **Applies to:** Budget Shield Android application (`com.toonai.budgetshield`)
 
-**Authority after approval:** Product intent, vocabulary, scope, and user-visible behavior
+**Authority:** Product intent, vocabulary, scope, and user-visible behavior
 
 **Does not prove:** That the current implementation satisfies this contract
 
@@ -201,18 +201,18 @@ The recovery inventory found these current-code discrepancies:
 - Transaction History has an implemented screen but no registered route.
 - Migration schema export, supported upgrade evidence, signing, shrinking, and release governance remain open.
 
-These gaps are inputs to Task 20. Their presence does not change the intended contract, and this draft does not claim that they are fixed.
+These gaps are inputs to Task 20. Their presence does not change the approved contract, and this contract does not claim that they are fixed.
 
-## 13. Owner approvals required
+## 13. Approved owner decisions
 
-The owner must explicitly accept or revise:
+The owner approved this contract and the following direction on 2026-08-02:
 
-1. Whether monthly category budgets reduce Safe Now.
-2. The supported currency/locale scope beyond USD.
-3. The supported database upgrade floor and downgrade policy.
-4. Reset/re-onboarding behavior from Settings.
-5. The final emoji/icon policy referenced by the surviving design contract.
-6. Whether Transaction History is a required route for the next beta.
-7. Whether the current five-tab footer is the final information architecture.
+1. Monthly category budgets are advisory and do not reduce Safe Now.
+2. The next beta is USD-only; broader currency/locale support is deferred.
+3. Database versions 1 through current must migrate without data loss; destructive downgrade is forbidden.
+4. Reset/re-onboarding controls remain hidden until preservation/deletion behavior is explicitly approved and implemented.
+5. Emoji are not the release-quality icon system and must be replaced with consistent vectors before visual approval.
+6. Transaction History is required, reachable, and tested for the next beta.
+7. The five-tab footer—Home, Treasure, Stats, Goals, Settings—is approved.
 
-Approval should record the date, approving owner, and any accepted revisions in this file and `DECISIONS.md`.
+The full approval record is in `DECISIONS.md`. Deferred features remain outside the next-beta claim.

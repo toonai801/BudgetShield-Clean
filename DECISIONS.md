@@ -1,5 +1,28 @@
 # Decisions
 
+## Task 19 Contract Approval — 2026-08-02 (Current Authority)
+
+The owner explicitly approved all five reconstructed contracts with the recommended decisions in the Codex task on 2026-08-02. This approval makes `docs/PRODUCT_CONTRACT.md`, `docs/SAFE_NOW_RULES.md`, `docs/SCREEN_MAP.md`, `docs/DATA_MODEL_PLAN.md`, and `docs/TEST_PLAN.md` authoritative requirements. It does not claim that the current implementation conforms; implementation gaps remain Task 20 work.
+
+### Approved decisions
+
+1. Monthly Food/Wants budgets are advisory tracking and do not directly reduce Safe Now.
+2. Only active and confirmed income can increase Safe Now.
+3. Every known protected unpaid bill extends the Safe Now horizon when its due date is later than the configured minimum horizon.
+4. Invalid persisted financial data blocks Safe Now and presents guided repair; it is not silently ignored or converted to zero.
+5. Monthly recurrence uses the same intended day when available and the month's final valid day otherwise.
+6. Semimonthly/twice-monthly income uses two user-configured payday anchors; fixed assumed anchors are not approved.
+7. The five-tab footer is approved in this order: Home, Treasure, Stats, Goals, Settings.
+8. Transaction History is required, reachable, and tested for the next beta.
+9. The next beta is USD-only. Broader currency and locale support is deferred until separately contracted and tested.
+10. Database versions 1 through the current version must be preserved through tested migrations.
+11. Destructive database downgrade is not approved.
+12. Emoji must be replaced by a consistent vector icon system before release-quality visual approval.
+13. Re-onboarding and data-reset controls remain hidden until a confirmed, clearly explained preservation/deletion policy is implemented.
+14. The approved minimum device baseline is API 26 smoke, API 34 full connected regression, API 35 target-behavior coverage, API 36 compatibility where tooling is available, and at least one physical Android phone before public beta.
+
+Any decisions the approved contracts explicitly defer remain outside the next-beta claim until separately approved. Deferral does not weaken the mandatory fail-closed, exact-money, persistence, accessibility, signing, and evidence requirements.
+
 ## Architecture-Independent Data Decisions
 
 ### Monetary Storage

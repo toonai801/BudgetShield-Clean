@@ -1,6 +1,14 @@
 # Known Bugs
 
-## Task 19 Documentation Status — 2026-08-02 (Current Authority)
+## Task 19 Contract Closure — 2026-08-02 (Current Authority)
+
+| Defect | Status | Closure evidence |
+|---|---|---|
+| REC-DOC-001 | CLOSED | Five reconstructed contracts owner-approved with recommended decisions; authority and decisions recorded in `docs/` and `DECISIONS.md` |
+
+Contract restoration does not close the implementation defects described by those contracts. Financial, persistence, navigation, placeholder, CI/release, visual, accessibility, and device issues remain open for Task 20.
+
+## Task 19 Documentation Status — 2026-08-02 (Superseded by Closure)
 
 | Defect | Status | Current evidence |
 |---|---|---|

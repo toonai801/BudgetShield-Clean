@@ -1,6 +1,18 @@
 # Project State
 
-## Task 19 Contract Review Checkpoint — 2026-08-02 (Current Authority)
+## Task 19 Approved Closure — 2026-08-02 (Current Authority)
+
+- **Status:** RED — authoritative contracts restored; Task 20 product and release recovery is next
+- **Owner approval:** GRANTED on 2026-08-02 for all five contracts with the recommended decisions
+- **Approved contracts:** Product Contract, Safe Now Rules, Screen Map, Data Model Plan, and Test Plan
+- **Decision record:** Fourteen approved decisions recorded in `DECISIONS.md`
+- **Task 19 result:** COMPLETE — reconstruction, owner review, approval recording, and documentation reconciliation are complete
+- **Next task:** Task 20 — execute the approved financial, persistence, navigation, placeholder, visual, accessibility, device, CI, signing, shrinking, and release recovery in ordered, evidenced increments
+- **Release status:** BLOCKED — contract approval authorizes verification/repair but does not establish implementation conformity or release readiness
+
+This closure supersedes the Task 19 IN REVIEW section retained immediately below for audit history.
+
+## Task 19 Contract Review Checkpoint — 2026-08-02 (Superseded by Approved Closure)
 
 - **Status:** RED — five missing contracts are reconstructed as review drafts; owner approval and Task 20 recovery remain outstanding
 - **Working branch:** `recovery/full-audit-2026-08-02`
@@ -21,10 +33,10 @@
 - [x] Data Model Plan inventories all ten Room entities, migration risks, ledger rules, and required transaction boundaries.
 - [x] Test Plan maps functional, persistence, navigation, visual, accessibility, device, CI, and release evidence.
 - [x] Drafts were cross-checked against current source and recovery findings.
-- [ ] Owner reviews, revises where needed, and explicitly approves all five contracts.
-- [ ] Approved decisions are recorded in `DECISIONS.md` and the contracts are marked approved.
+- [x] Owner reviews, revises where needed, and explicitly approves all five contracts.
+- [x] Approved decisions are recorded in `DECISIONS.md` and the contracts are marked approved.
 
-Until the final two criteria pass, Task 19 is not complete and Task 20 implementation must not begin.
+All Task 19 criteria now pass. The approved closure above is current authority.
 
 ## Task 18 Verified Checkpoint — 2026-08-02 (Current Authority)
 

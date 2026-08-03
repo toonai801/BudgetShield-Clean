@@ -1,8 +1,8 @@
 # Budget Shield Data Model Plan
 
-**Status:** DRAFT — reconstructed from current Room entities, DAOs, repositories, and approved decisions on 2026-08-02; owner approval required
+**Status:** APPROVED — owner-approved with the recommended decisions on 2026-08-02
 
-**Authority after approval:** Persistence semantics, entity ownership, money/date representation, ledger rules, and migration expectations
+**Authority:** Persistence semantics, entity ownership, money/date representation, ledger rules, and migration expectations
 
 **Current database:** Room database version 4, file `budget_shield_db_v4`
 
@@ -299,13 +299,14 @@ Owner decisions are required for Android Auto Backup, device transfer, export, a
 
 This plan documents the target and risks; Task 19 does not change the schema.
 
-## 13. Owner decisions required
+## 13. Approved direction and explicit deferrals
 
-1. Oldest supported upgrade version.
-2. Downgrade behavior.
-3. Whether Android backup/device transfer is supported.
-4. Relationship between savings balance and savings goals.
-5. Whether budget spent totals are stored aggregates or transaction-derived.
-6. Ledger correction/reversal UX and retention policy.
-7. Monthly and semimonthly recurrence semantics.
-8. Data reset, export, and support-diagnostics policy.
+The owner approved:
+
+1. Database versions 1 through current must migrate without data loss.
+2. Destructive downgrade is forbidden.
+3. Monthly recurrence clamps a missing anchor day to the month's final valid day.
+4. Semimonthly/twice-monthly schedules store two user-configured anchors.
+5. Re-onboarding/data-reset controls remain hidden until a preservation/deletion policy is approved and implemented.
+
+Android backup/device transfer, savings-goal allocation semantics, budget aggregate source-of-truth details, ledger correction UX/retention, data export, and support diagnostics remain explicitly deferred. Task 20 may design and test an implementation consistent with this contract, but none may be claimed as next-beta functionality without separate owner approval where the contract requires it.

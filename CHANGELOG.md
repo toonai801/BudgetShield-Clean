@@ -1,5 +1,18 @@
 # Changelog
 
+## [Task 19 — Contract Approval Closure] — 2026-08-02
+
+### Approved
+
+- Owner-approved the Product Contract, Safe Now Rules, Screen Map, Data Model Plan, and Test Plan with the recommended decisions.
+- Recorded fourteen authoritative product, calculation, recurrence, navigation, migration, icon, reset, currency, and device-test decisions in `DECISIONS.md`.
+- Marked all five reconstructed contracts approved and closed Task 19.
+
+### Scope
+
+- Documentation only; approval does not claim current implementation conformity or release readiness.
+- Task 20 is next and remains subject to every approved evidence gate.
+
 ## [Task 19 — Contract Reconstruction Draft] — 2026-08-02
 
 ### Added

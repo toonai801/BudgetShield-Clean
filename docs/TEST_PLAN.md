@@ -1,8 +1,8 @@
 # Budget Shield Test Plan
 
-**Status:** DRAFT — reconstructed from current tests, workflows, quality gates, and recovery findings on 2026-08-02; owner approval required
+**Status:** APPROVED — owner-approved with the recommended decisions on 2026-08-02
 
-**Authority after approval:** Minimum verification strategy and evidence required for task, beta, and release acceptance
+**Authority:** Minimum verification strategy and evidence required for task, beta, and release acceptance
 
 **Current verified checkpoint:** Task 18 — 226/226 JVM tests and 23/23 API 34 connected tests passed for recovery commit `37c49e5`; GitHub Actions run `30776785734`
 
@@ -345,11 +345,15 @@ CI must not publish a release when the connected gate is absent, skipped, cancel
 
 Task 19 records the required strategy. Task 20 must implement and execute it in the approved order.
 
-## 16. Owner decisions required
+## 16. Approved test direction and explicit deferrals
 
-1. Supported physical-device/API matrix.
-2. Required accessibility font scale and locale matrix.
-3. Oldest supported upgrade version.
-4. Warning budget and which lint categories are release-blocking.
-5. Independent reviewer/approval policy and protected-branch requirements.
-6. Whether signed beta and production release have separate exit criteria.
+The owner approved:
+
+1. API 26 minimum smoke coverage.
+2. API 34 full connected regression.
+3. API 35 target-behavior coverage.
+4. API 36 compatibility coverage where tooling is available.
+5. At least one physical Android phone before public beta.
+6. Database versions 1 through current as the supported migration test floor.
+
+The exact extended locale/font-scale matrix, lint warning budget, independent reviewer policy, protected-branch requirements, and signed-beta versus production-release distinctions remain explicit release-planning decisions. Their deferral does not waive the accessibility, review, signing, or evidence gates in this contract.

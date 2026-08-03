@@ -1,6 +1,12 @@
 # BudgetShield Implementation Queue - Final
 
-## Recovery Progress — Task 19 Drafts Ready for Owner Review (2026-08-02)
+## Recovery Progress — Task 19 Complete (2026-08-02)
+
+The owner approved all five reconstructed contracts with the recommended decisions. The contracts are now authoritative, and the fourteen approved directions are recorded in `DECISIONS.md`.
+
+Task 20 is the next executable recovery task. It must proceed in ordered, evidenced increments; contract approval does not waive reproduction, testing, migration, accessibility, device, signing, or release gates.
+
+## Recovery Progress — Task 19 Drafts Ready for Owner Review (2026-08-02, Superseded by Completion)
 
 The five missing contract drafts have been reconstructed from current approved requirements and current code: Product Contract, Safe Now Rules, Screen Map, Data Model Plan, and Test Plan. They explicitly record current implementation gaps and unresolved owner decisions.
 

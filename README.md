@@ -63,8 +63,8 @@ Never use, reference, or recover:
 - `docs/SCREEN_MAP.md` — Screen inventory
 - `docs/DATA_MODEL_PLAN.md` — Data architecture
 - `docs/TEST_PLAN.md` — Testing strategy
-### Contract Review Status — 2026-08-02
+### Contract Approval Status — 2026-08-02
 
-`PRODUCT_CONTRACT.md`, `SAFE_NOW_RULES.md`, `SCREEN_MAP.md`, `DATA_MODEL_PLAN.md`, and `TEST_PLAN.md` have been reconstructed from current approved requirements and current recovery-branch code. They are review drafts, not yet approved authority. Task 19 remains open until the owner reviews/revises and explicitly approves all five. No forbidden legacy source was used.
+`PRODUCT_CONTRACT.md`, `SAFE_NOW_RULES.md`, `SCREEN_MAP.md`, `DATA_MODEL_PLAN.md`, and `TEST_PLAN.md` were reconstructed from current approved requirements/current recovery-branch code and owner-approved with the recommended decisions on 2026-08-02. They are now authoritative. Task 20 must verify and repair implementation conformity; approval does not make the current app release-ready. No forbidden legacy source was used.
 
 # Release trigger Fri Jul 24 05:52:13 PM MDT 2026

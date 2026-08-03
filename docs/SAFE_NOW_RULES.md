@@ -1,10 +1,10 @@
 # Safe Now Rules
 
-**Status:** DRAFT — reconstructed on 2026-08-02; owner approval required
+**Status:** APPROVED — owner-approved with the recommended decisions on 2026-08-02
 
-**Authority after approval:** Normative calculation and explanation contract for Safe Now
+**Authority:** Normative calculation and explanation contract for Safe Now
 
-**Implementation note:** This contract states intended behavior. Section 13 lists known differences in current code.
+**Implementation note:** This contract states required behavior. Section 13 lists known differences in current code.
 
 ## 1. Definition
 
@@ -187,7 +187,7 @@ All amounts are exact cents; dates use `YYYY-MM-DD`.
 | 8 | Cash $600; bill $200 on 08-10 and bill $500 on 08-20; income $300 on 08-15 | Balances: $400, $700, $200; Safe Now $200. |
 | 9 | Cash $250; protected bill $100 in horizon and another $500 beyond minimum horizon but already known/protected | Horizon extends to later bill; minimum -$350; Safe Now $0; shortage $350. |
 
-These examples are normative after owner approval. Test fixtures must use explicit dates rather than the device clock.
+These examples are normative. Test fixtures must use explicit dates rather than the device clock.
 
 ## 12. Required verification matrix
 
@@ -227,15 +227,15 @@ The current `data/calculator/SafeNowCalculator.kt` is not yet accepted as confor
 - Its shortage explanation lists all protected bills due through the first failing date, which may not clearly identify the event that first caused failure.
 - A compatibility wrapper uses the device's current date implicitly, reducing deterministic testability.
 
-These are Task 20 verification/repair items. This draft records them; it does not fix or waive them.
+These are Task 20 verification/repair items. This contract records them; it does not fix or waive them.
 
-## 14. Owner decisions required
+## 14. Approved owner decisions
 
-1. Do category budgets reduce Safe Now, or remain advisory tracking only?
-2. What is the monthly recurrence rule when the anchor day does not exist in a month?
-3. What two anchors define semimonthly/twice-monthly schedules?
-4. Is income available at the start or end of its payday for all supported institutions? The current contract assumes date-level availability before bills.
-5. Should known protected bills always extend the horizon, even far beyond the configured month count?
-6. What is the user-facing treatment of invalid persisted data: exclude with warning, block calculation, or guided repair? This draft recommends blocking the calculation and guiding repair.
+1. Category budgets remain advisory and do not reduce Safe Now.
+2. Monthly recurrence uses the same intended day when available and the month's final valid day otherwise.
+3. Semimonthly/twice-monthly schedules use two user-configured payday anchors.
+4. Confirmed income is available before protected bills at date-level precision on the same payday/due date.
+5. Every known protected unpaid bill extends the horizon when later than the configured minimum horizon.
+6. Invalid persisted financial data blocks calculation and presents guided repair; it is never silently ignored or converted to zero.
 
-Approval must be recorded before financial correctness is marked complete.
+The full approval record is in `DECISIONS.md`. Financial correctness remains unverified until Task 20 implementation and evidence satisfy this contract.
