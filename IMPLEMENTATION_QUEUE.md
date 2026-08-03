@@ -1,5 +1,11 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 20.2 Verified Locally (2026-08-02)
+
+Checkpoint `fd526e1` implements the approved two-anchor semimonthly rule across calculation, persistence, migration, Income Entry, and Setup Quest. It also disables destructive database downgrade and blocks Home's formerly misleading `$0` result when persisted data is invalid.
+
+The checkpoint passes 239 JVM tests, debug assembly, Android test APK assembly, and lint. Its new repair-panel UI test is compiled but awaits a connected emulator/device. Task 20 remains **IN PROGRESS**; complete historical migration/schema evidence is the next ordered data increment.
+
 ## Recovery Progress — Task 20.1 Verified (2026-08-02)
 
 The first Task 20 increment repaired the production Safe Now core against the approved financial contract and moved income/savings entry to exact-cent parsing. Checkpoint `f051663` passes 234 JVM tests, debug assembly, and lint on the locked build baseline.

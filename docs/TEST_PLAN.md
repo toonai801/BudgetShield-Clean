@@ -4,7 +4,7 @@
 
 **Authority:** Minimum verification strategy and evidence required for task, beta, and release acceptance
 
-**Current verified checkpoint:** Task 20.1 — 234/234 JVM tests, `assembleDebug`, and `lintDebug` passed locally for implementation commit `f051663`; the latest connected-test checkpoint remains Task 18 with 23/23 API 34 tests at commit `37c49e5` and GitHub Actions run `30776785734`
+**Current verified checkpoint:** Task 20.2 — 239/239 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug` passed locally for implementation commit `fd526e1`; the new repair-panel UI test compiled but was not executed because no device was connected. The latest executed connected-test checkpoint remains Task 18 with 23/23 API 34 tests at commit `37c49e5` and GitHub Actions run `30776785734`.
 
 ## 1. Test objectives
 
@@ -35,7 +35,7 @@ A successful compile, a green unit suite, an APK, or screenshots alone cannot es
 
 ### JVM tests
 
-The current repository contains 17 JVM test suites and 234 passing test methods at the Task 20.1 checkpoint. Coverage areas include:
+The current repository contains 17 JVM test suites and 239 passing test methods at the Task 20.2 checkpoint. Coverage areas include:
 
 - Safe Now calculation and recalculation
 - Money parsing and formatting
@@ -336,7 +336,7 @@ CI must not publish a release when the connected gate is absent, skipped, cancel
 ## 15. Current gaps
 
 - Current tests are concentrated on setup/navigation and selected data logic; most production controls lack end-to-end coverage.
-- Safe Now now covers active-income eligibility, real/extended horizons, weekly/monthly/one-time recurrence, malformed dates, and overflow in a focused matrix; biweekly edge cases, approved two-anchor semimonthly persistence, guided repair UI, database integration, relaunch, and explanation/UI semantics remain open.
+- Safe Now now covers active-income eligibility, real/extended horizons, weekly/monthly/one-time recurrence, two-anchor semimonthly generation and collision rejection, malformed dates, and overflow; biweekly edge cases, full database/relaunch integration, record-specific repair focus, and explanation/UI semantics remain open.
 - Migration evidence is incomplete and schema export is disabled.
 - Visual/accessibility/device coverage is not a current candidate matrix.
 - CI branch triggers do not automatically cover the recovery branch.

@@ -216,20 +216,21 @@ At minimum, automated tests must cover:
 
 ## 13. Task 20 implementation status
 
-Task 20.1 at checkpoint `f051663` repaired the following calculator differences:
+Task 20.1 at `f051663` and Task 20.2 at `fd526e1` repaired the following calculator differences:
 
 - Income must now be both confirmed and active.
 - Weekly, biweekly, monthly, and one-time schedules expand through the horizon.
 - `planningHorizonMonths` now produces a real calendar end date, and later known protected bills extend it.
 - Dates are parsed and validated before calculation instead of compared lexically.
 - Arithmetic overflow now fails closed.
+- Semimonthly/twice-monthly schedules now store and expand two user-configured anchors, clamp missing days to month-end, and reject pairs that can collide.
+- Invalid financial data now blocks Home's Safe Now result and presents repair destinations instead of displaying a false `$0` calculation.
 
 The following differences remain open:
 
-- Semimonthly/twice-monthly schedules cannot conform to the approved two-anchor rule until the schema, migration, repository, and UI store both anchors; the current single recorded payday is counted once rather than fabricated into a second date.
 - Its shortage explanation lists all protected bills due through the first failing date, which may not clearly identify the event that first caused failure.
 - A compatibility wrapper uses the device's current date implicitly, reducing deterministic testability.
-- Invalid persisted financial data blocks calculation, but the guided record-level repair UI is not yet implemented.
+- Guided repair reaches the relevant Income and Bills screens, but it does not yet identify and focus the exact invalid record automatically.
 
 The new focused tests and full JVM suite verify the completed portion only. Task 20 remains in progress, and this status does not waive the open requirements.
 

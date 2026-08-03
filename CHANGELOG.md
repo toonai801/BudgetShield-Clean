@@ -1,5 +1,20 @@
 # Changelog
 
+## [Task 20.2 — Two-Anchor Income and Guided Repair] — 2026-08-02
+
+### Repaired
+
+- Added two persisted user-configured payday anchors for semimonthly/twice-monthly income, including approved month-end clamping and collision rejection.
+- Added database version 5 with a row-preserving income-table migration that repairs the historical canonical-payday alias gap without inventing a second legacy payday.
+- Added both anchors to Income Entry and Setup Quest, normalized setup payday dates to ISO, and removed destructive database downgrade fallback.
+- Replaced Home's false `$0` fallback for invalid financial data with a blocking Safe Now repair panel wired to Income, Bills, and retry actions.
+
+### Verified
+
+- Implementation commit `fd526e1` passed 239/239 JVM tests, debug app assembly, Android test APK assembly, and lint.
+- The new repair-panel Android UI test compiled into the test APK but was not executed because no emulator or phone was connected.
+- Task 20 remains IN PROGRESS; full historical migration coverage, schema export, record-specific repair highlighting, connected-device execution, and broader product/release gates remain open.
+
 ## [Task 20.1 — Safe Now Contract Repair] — 2026-08-02
 
 ### Repaired

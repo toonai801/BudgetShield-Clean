@@ -1,5 +1,14 @@
 # Task Queue
 
+## Task 20.2 Execution — 2026-08-02 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** two-anchor semimonthly recurrence, database version 5 migration, income/setup UI, destructive-downgrade removal, and blocking Safe Now repair panel at `fd526e1`
+- **Evidence:** 239/239 JVM tests; debug app, Android test APK, and lint pass
+- **Device limitation:** repair-panel Android UI test compiled but awaits an attached API 34 device/emulator for execution
+- **Next increment:** repair and prove the complete versions-1-through-current migration chain, enable durable schema export, then continue ordered ledger/persistence recovery
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
 ## Task 20 Execution — 2026-08-02 (Current Authority)
 
 - **Task 20:** IN PROGRESS

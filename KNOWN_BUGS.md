@@ -1,5 +1,17 @@
 # Known Bugs
 
+## Task 20.2 Financial/Data Repair Status — 2026-08-02 (Current Authority)
+
+| Defect area | Status | Evidence / remaining work |
+|---|---|---|
+| Semimonthly/twice-monthly two-anchor recurrence | CLOSED | Persisted anchors, collision-safe policy, UI support, and focused tests at `fd526e1` |
+| Version 4→5 income migration and canonical payday alias repair | CLOSED | Row-preserving migration test covers the historical missing-canonical-column shape |
+| Destructive database downgrade | CLOSED | Destructive downgrade fallback removed |
+| Invalid-data false `$0` Safe Now result | CLOSED | Home blocks calculation and offers Income, Bills, and retry actions |
+| Record-specific guided repair | PARTIAL | Guided destinations exist; exact invalid record is not yet highlighted automatically |
+| Versions 1→current migration proof/schema export | OPEN | Existing historical migration tests do not yet prove every real version schema end to end |
+| Full Task 20 recovery inventory | OPEN | Ledger/data, navigation, placeholder, CI/release, visual, accessibility, and device work remains |
+
 ## Task 20.1 Financial Repair Status — 2026-08-02 (Current Authority)
 
 | Defect area | Status | Evidence / remaining work |

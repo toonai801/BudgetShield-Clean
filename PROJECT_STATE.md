@@ -1,5 +1,17 @@
 # Project State
 
+## Task 20.2 Two-Anchor Income Recovery — 2026-08-02 (Current Authority)
+
+- **Status:** RED — second financial/data increment verified locally; full recovery remains in progress
+- **Implementation checkpoint:** `fd526e1` on `recovery/full-audit-2026-08-02`
+- **Verified locally:** 239/239 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`
+- **Completed in this increment:** approved short-month decision, two persisted payday anchors, collision-safe recurrence, version-5 row-preserving migration, setup/income-entry support, destructive-downgrade removal, and blocking Home repair guidance
+- **Device evidence:** new repair-panel UI test compiled but NOT RUN because no Android device/emulator was connected
+- **Explicitly still open:** complete versions-1-through-current migration proof and schema export, record-specific repair highlighting, remaining ledger/data work, navigation/placeholders, connected device matrix, visuals/accessibility, CI, signing, shrinking, and release provenance
+- **Task 20 result:** IN PROGRESS — this is a verified checkpoint, not a beta/release completion declaration
+
+This section supersedes Task 20.1 as the current recovery status; prior checkpoints remain audit history below.
+
 ## Task 20.1 Safe Now Contract Repair — 2026-08-02 (Current Authority)
 
 - **Status:** RED — first Task 20 financial increment verified; full product and release recovery remains in progress

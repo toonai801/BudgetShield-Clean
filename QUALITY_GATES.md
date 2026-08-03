@@ -1,5 +1,22 @@
 # Quality Gates
 
+## Task 20.2 Two-Anchor Income Gate — 2026-08-02 (Current Authority)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Approved short-month rule recorded | PASS | Owner approval and `DECISIONS.md` |
+| Two-anchor calculation matrix | PASS | Both anchors, leap-month clamp, collision rejection, and missing-anchor rejection tests |
+| Version 4→5 row preservation | PASS | Robolectric migration test preserves legacy income and repairs canonical payday |
+| Destructive downgrade disabled | PASS | Runtime database builder no longer opts into destructive downgrade |
+| Full JVM regression | PASS | 239/239; zero failures, errors, or skips |
+| App and Android test artifacts | PASS | `assembleDebug` and `assembleDebugAndroidTest` |
+| Static Android checks | PASS | `lintDebug` |
+| Repair-panel device execution | PENDING | Test compiled; no connected device/emulator |
+| Full migration/schema gate | FAIL | complete v1→current proof and schema export remain open |
+| Overall Task 20/release gate | FAIL | broader data, navigation, device, accessibility, signing, and release gates remain |
+
+**Task 20.2 local gate:** PASS with the stated device limitation. **Task 20 and overall release gates:** FAIL until all remaining work is verified.
+
 ## Task 20.1 Safe Now Gate — 2026-08-02 (Current Authority)
 
 | Gate | Status | Evidence |

@@ -284,11 +284,13 @@ Owner decisions are required for Android Auto Backup, device transfer, export, a
 
 ## 12. Current gaps requiring Task 20 work
 
+Task 20.2 at `fd526e1` added two nullable semimonthly anchor fields to `IncomeSchedule` and `SetupDraft`, introduced a row-preserving version-5 migration, and removed the destructive-downgrade opt-in. Legacy semimonthly rows intentionally retain null anchors so the app can request repair instead of inventing paydays.
+
 - Room schema export is disabled.
-- Destructive downgrade is enabled.
+- Complete downgrade-failure and versions-1-through-current migration evidence remains required even though destructive downgrade fallback is now removed.
 - Migration 1→2 is duplicated.
 - Historical migration SQL appears inconsistent with current model columns.
-- Schedule and occurrence concepts are combined.
+- Schedule and occurrence concepts are still combined; two-anchor recurrence is now representable, but a durable generated-occurrence model remains open.
 - Transaction mutation/deletion APIs conflict with the immutable ledger.
 - Related IDs lack enforced foreign-key policy.
 - Setup draft does not contain draft bills.
