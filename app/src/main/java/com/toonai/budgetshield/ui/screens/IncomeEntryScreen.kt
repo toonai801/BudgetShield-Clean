@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.toonai.budgetshield.ui.viewmodel.IncomeEntryViewModel
 import com.toonai.budgetshield.util.DateParser
+import com.toonai.budgetshield.util.MoneyParser
 
 // Premium gamified dark theme colors (matching Home)
 private val BackgroundDark = Color(0xFF02070D)
@@ -154,9 +155,7 @@ fun IncomeEntryScreen(
                     isAddingNew = uiState.isAddingNew,
                     hasPrimaryIncome = uiState.hasPrimaryIncome,
                     onSave = {
-                        val amountCents = amount.replace("[^0-9.]", "").toDoubleOrNull()?.let {
-                            (it * 100).toLong()
-                        } ?: 0L
+                        val amountCents = MoneyParser.parseToCents(amount).getOrElse { 0L }
                         if (uiState.hasPrimaryIncome && !uiState.isAddingNew) {
                             // Update existing primary income
                             uiState.primaryIncome?.id?.let { id ->

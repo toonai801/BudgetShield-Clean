@@ -1,8 +1,11 @@
 package com.toonai.budgetshield.data.calculator
 
 import com.toonai.budgetshield.data.model.Bill
+import com.toonai.budgetshield.data.model.IncomeFrequency
 import com.toonai.budgetshield.data.model.IncomeSchedule
 import com.toonai.budgetshield.data.model.UserSettings
+import java.time.LocalDate
+import java.time.YearMonth
 
 /**
  * Result of Safe Now calculation.
@@ -22,6 +25,7 @@ data class SafeNowResult(
     val firstFailingDate: String?,
     val failingBills: List<Bill>,
     val explanation: String,
+    val planningHorizonEnd: String,
     val projectedBalances: Map<String, Long> = emptyMap()
 )
 
@@ -67,17 +71,33 @@ object SafeNowCalculator {
         selectedMonth: String,
         today: String
     ): SafeNowResult {
-        // Get protected unpaid bills only
-        val protectedBills = bills.filter { it.isProtected && !it.isPaid }
+        val todayDate = parseIsoDate(today, "today")
+        parseMonth(selectedMonth, "selected month")
+        validateInputs(userSettings, bills, incomeSchedules)
 
-        // Get confirmed income only
-        val confirmedIncome = incomeSchedules.filter { it.isConfirmed }
+        // Get protected unpaid bills only
+        val protectedBills = bills.filter {
+            it.isProtected && !it.isPaid && it.remainingDueCents > 0L
+        }
+
+        // Only active and confirmed income can increase Safe Now.
+        val confirmedIncome = incomeSchedules.filter { it.isConfirmed && it.isActive }
 
         // Calculate planning horizon
-        val horizonEnd = calculatePlanningHorizon(today, protectedBills)
+        val horizonEnd = calculatePlanningHorizon(
+            today = todayDate,
+            planningHorizonMonths = userSettings.planningHorizonMonths,
+            protectedBills = protectedBills
+        )
 
         // Build event list
-        val events = buildEvents(today, userSettings.cashOnHandCents, protectedBills, confirmedIncome)
+        val events = buildEvents(
+            today = todayDate,
+            horizonEnd = horizonEnd,
+            startingCash = userSettings.cashOnHandCents,
+            protectedBills = protectedBills,
+            confirmedIncome = confirmedIncome
+        )
 
         // Calculate projected balances
         val projectedBalances = calculateProjectedBalances(events, horizonEnd)
@@ -105,6 +125,7 @@ object SafeNowCalculator {
                 firstFailingDate = failingDate,
                 failingBills = failingBills,
                 explanation = buildShortageExplanation(failingDate, shortage, failingBills),
+                planningHorizonEnd = horizonEnd.toString(),
                 projectedBalances = projectedBalances
             )
         } else {
@@ -116,6 +137,7 @@ object SafeNowCalculator {
                 firstFailingDate = null,
                 failingBills = emptyList(),
                 explanation = "Safe to spend ${formatCents(minBalance)}",
+                planningHorizonEnd = horizonEnd.toString(),
                 projectedBalances = projectedBalances
             )
         }
@@ -168,27 +190,30 @@ object SafeNowCalculator {
      * Calculate planning horizon end date.
      * Extends through end of next month or latest protected bill, whichever is later.
      */
-    private fun calculatePlanningHorizon(today: String, protectedBills: List<Bill>): String {
-        val todayYear = today.substring(0, 4).toInt()
-        val todayMonth = today.substring(5, 7).toInt()
+    private fun calculatePlanningHorizon(
+        today: LocalDate,
+        planningHorizonMonths: Int,
+        protectedBills: List<Bill>
+    ): LocalDate {
+        val configuredEnd = YearMonth.from(today)
+            .plusMonths((planningHorizonMonths - 1).toLong())
+            .atEndOfMonth()
+        val latestBillDate = protectedBills
+            .maxOfOrNull { LocalDate.parse(it.dueDate) }
 
-        // Calculate end of next month
-        val nextMonth = if (todayMonth == 12) 1 else todayMonth + 1
-        val nextMonthYear = if (todayMonth == 12) todayYear + 1 else todayYear
-        val endOfNextMonth = String.format("%04d-%02d-31", nextMonthYear, nextMonth)
-
-        // Find latest protected bill date
-        val latestBillDate = protectedBills.map { it.dueDate }.maxOrNull() ?: endOfNextMonth
-
-        // Return whichever is later
-        return if (latestBillDate > endOfNextMonth) latestBillDate else endOfNextMonth
+        return if (latestBillDate != null && latestBillDate > configuredEnd) {
+            latestBillDate
+        } else {
+            configuredEnd
+        }
     }
 
     /**
      * Build list of financial events (date, change, description).
      */
     private fun buildEvents(
-        today: String,
+        today: LocalDate,
+        horizonEnd: LocalDate,
         startingCash: Long,
         protectedBills: List<Bill>,
         confirmedIncome: List<IncomeSchedule>
@@ -199,10 +224,10 @@ object SafeNowCalculator {
         events.add(FinancialEvent(today, startingCash, "starting_cash", "Starting Cash"))
 
         // Add overdue bills as events on today
-        protectedBills.filter { it.dueDate < today }.forEach { bill ->
+        protectedBills.filter { LocalDate.parse(it.dueDate) < today }.forEach { bill ->
             events.add(FinancialEvent(
                 today,
-                -bill.remainingDueCents,
+                Math.negateExact(bill.remainingDueCents),
                 "overdue_bill",
                 bill.name
             ))
@@ -210,19 +235,21 @@ object SafeNowCalculator {
 
         // Add confirmed income events
         confirmedIncome.forEach { income ->
-            events.add(FinancialEvent(
-                income.nextPayday,
-                income.amountCents,
-                "income",
-                income.name
-            ))
+            generateIncomeOccurrences(income, today, horizonEnd).forEach { occurrenceDate ->
+                events.add(FinancialEvent(
+                    occurrenceDate,
+                    income.amountCents,
+                    "income",
+                    income.name
+                ))
+            }
         }
 
         // Add future bill events
-        protectedBills.filter { it.dueDate >= today }.forEach { bill ->
+        protectedBills.filter { LocalDate.parse(it.dueDate) >= today }.forEach { bill ->
             events.add(FinancialEvent(
-                bill.dueDate,
-                -bill.remainingDueCents,
+                LocalDate.parse(bill.dueDate),
+                Math.negateExact(bill.remainingDueCents),
                 "bill",
                 bill.name
             ))
@@ -237,7 +264,7 @@ object SafeNowCalculator {
      */
     private fun calculateProjectedBalances(
         events: List<FinancialEvent>,
-        horizonEnd: String
+        horizonEnd: LocalDate
     ): Map<String, Long> {
         val balances = mutableMapOf<String, Long>()
         var runningBalance = 0L
@@ -260,10 +287,10 @@ object SafeNowCalculator {
             val billEvents = dayEvents.filter { it.type == "bill" || it.type == "overdue_bill" }
 
             for (event in startingEvents + incomeEvents + billEvents) {
-                runningBalance += event.amountCents
+                runningBalance = Math.addExact(runningBalance, event.amountCents)
             }
 
-            balances[date] = runningBalance
+            balances[date.toString()] = runningBalance
         }
 
         return balances
@@ -291,13 +318,107 @@ object SafeNowCalculator {
         return String.format("$%d.%02d", dollars, remainder)
     }
 
+    private fun validateInputs(
+        userSettings: UserSettings,
+        bills: List<Bill>,
+        incomeSchedules: List<IncomeSchedule>
+    ) {
+        require(userSettings.cashOnHandCents >= 0L) { "Cash on hand cannot be negative" }
+        require(userSettings.planningHorizonMonths >= 2) {
+            "Planning horizon must cover at least the current and next calendar month"
+        }
+
+        bills.forEach { bill ->
+            require(bill.amountCents > 0L) { "Bill amount must be positive" }
+            require(bill.paidAmountCents in 0L..bill.amountCents) {
+                "Bill paid amount must be between zero and the bill amount"
+            }
+            parseIsoDate(bill.dueDate, "bill due date")
+        }
+
+        incomeSchedules.forEach { income ->
+            require(income.amountCents > 0L) { "Income amount must be positive" }
+            parseIsoDate(income.nextPayday, "income payday")
+            require(income.frequency in SUPPORTED_FREQUENCIES) {
+                "Unsupported income frequency: ${income.frequency}"
+            }
+        }
+    }
+
+    private fun generateIncomeOccurrences(
+        income: IncomeSchedule,
+        today: LocalDate,
+        horizonEnd: LocalDate
+    ): List<LocalDate> {
+        val firstPayday = LocalDate.parse(income.nextPayday)
+        if (income.frequency == IncomeFrequency.ONE_TIME) {
+            return if (firstPayday in today..horizonEnd) listOf(firstPayday) else emptyList()
+        }
+
+        // The current schema has only one anchor for semimonthly schedules. Keep the
+        // recorded next payday as a single occurrence until the approved two-anchor
+        // migration is implemented in the next data-model increment.
+        if (income.frequency == IncomeFrequency.SEMIMONTHLY ||
+            income.frequency == IncomeFrequency.TWICE_MONTHLY
+        ) {
+            return if (firstPayday in today..horizonEnd) listOf(firstPayday) else emptyList()
+        }
+
+        val occurrences = mutableListOf<LocalDate>()
+        val monthlyAnchorDay = firstPayday.dayOfMonth
+        var occurrence = firstPayday
+        while (occurrence < today) {
+            occurrence = nextOccurrence(occurrence, income.frequency, monthlyAnchorDay)
+        }
+        while (occurrence <= horizonEnd) {
+            occurrences.add(occurrence)
+            occurrence = nextOccurrence(occurrence, income.frequency, monthlyAnchorDay)
+        }
+        return occurrences
+    }
+
+    private fun nextOccurrence(
+        current: LocalDate,
+        frequency: String,
+        monthlyAnchorDay: Int
+    ): LocalDate = when (frequency) {
+        IncomeFrequency.WEEKLY -> current.plusWeeks(1)
+        IncomeFrequency.BIWEEKLY -> current.plusWeeks(2)
+        IncomeFrequency.MONTHLY -> {
+            val nextMonth = YearMonth.from(current).plusMonths(1)
+            nextMonth.atDay(minOf(monthlyAnchorDay, nextMonth.lengthOfMonth()))
+        }
+        else -> error("Unsupported recurring frequency: $frequency")
+    }
+
+    private fun parseIsoDate(value: String, label: String): LocalDate = try {
+        LocalDate.parse(value)
+    } catch (error: Exception) {
+        throw IllegalArgumentException("Invalid $label: $value", error)
+    }
+
+    private fun parseMonth(value: String, label: String): YearMonth = try {
+        YearMonth.parse(value)
+    } catch (error: Exception) {
+        throw IllegalArgumentException("Invalid $label: $value", error)
+    }
+
     /**
      * Internal representation of a financial event.
      */
     private data class FinancialEvent(
-        val date: String,
+        val date: LocalDate,
         val amountCents: Long,
         val type: String,
         val description: String
+    )
+
+    private val SUPPORTED_FREQUENCIES = setOf(
+        IncomeFrequency.WEEKLY,
+        IncomeFrequency.BIWEEKLY,
+        IncomeFrequency.SEMIMONTHLY,
+        IncomeFrequency.MONTHLY,
+        IncomeFrequency.ONE_TIME,
+        IncomeFrequency.TWICE_MONTHLY
     )
 }

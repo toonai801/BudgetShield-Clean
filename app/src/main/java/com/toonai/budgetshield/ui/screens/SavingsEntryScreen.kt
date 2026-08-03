@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.toonai.budgetshield.ui.viewmodel.SavingsEntryViewModel
+import com.toonai.budgetshield.util.MoneyParser
 
 // Premium gamified dark theme colors (matching Home)
 private val BackgroundDark = Color(0xFF02070D)
@@ -128,9 +129,7 @@ fun SavingsEntryScreen(
                 ActionButtons(
                     isLoading = uiState.isLoading,
                     onSave = {
-                        val amountCents = amount.replace("[^0-9.]", "").toDoubleOrNull()?.let {
-                            (it * 100).toLong()
-                        } ?: 0L
+                        val amountCents = MoneyParser.parseToCents(amount).getOrElse { 0L }
                         viewModel.saveMoney(
                             amountCents = amountCents,
                             note = note.takeIf { it.isNotBlank() },
