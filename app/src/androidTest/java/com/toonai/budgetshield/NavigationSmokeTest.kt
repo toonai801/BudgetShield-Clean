@@ -2,7 +2,7 @@ package com.toonai.budgetshield
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -32,7 +32,9 @@ class NavigationSmokeTest {
     var hiltRule = HiltAndroidRule(this)
 
     @get:Rule
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+    // The activity is launched manually after the database fixture is prepared.
+    // An AndroidComposeRule would launch a competing MainActivity before @Before.
+    val composeTestRule = createEmptyComposeRule()
 
     @Inject
     lateinit var database: BudgetShieldDatabase
