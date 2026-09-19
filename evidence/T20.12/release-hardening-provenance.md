@@ -2,6 +2,7 @@
 
 Date: 2026-09-19
 Branch: recovery/full-audit-2026-08-02
+Commit: 44a9011d445321cd7e925f3bb110bce2c5100d4c
 
 ## Local candidate evidence
 
@@ -29,13 +30,21 @@ Branch: recovery/full-audit-2026-08-02
 
 `.github/workflows/release-apk.yml` still does not require a connected test suite before creating a GitHub prerelease. An attempted hardening patch was rejected by GitHub because the current OAuth token lacks `workflow` scope. Treat this as a release blocker until a token with workflow permission applies the change.
 
+## GitHub Actions evidence
+
+- QA Gate: PASS, run `35472701387`, SHA `44a9011d445321cd7e925f3bb110bce2c5100d4c`
+  - URL: https://github.com/toonai801/BudgetShield-Clean/actions/runs/35472701387
+  - Job: `qa-gate` completed successfully
+- Android Debug Build and Test: PASS, run `35472702463`, SHA `44a9011d445321cd7e925f3bb110bce2c5100d4c`
+  - URL: https://github.com/toonai801/BudgetShield-Clean/actions/runs/35472702463
+  - Jobs: `build-and-test` and `instrumentation-test` completed successfully
+
 ## Current release status
 
-This is still a locally verified beta candidate, not a production release candidate.
+This is a locally and exact-SHA CI verified beta candidate, not a production release candidate.
 
 Remaining release blockers:
 
-- Exact-SHA GitHub Actions evidence has not run yet for the current uncommitted/local changes.
 - The release workflow still publishes the debug APK as a prerelease artifact and can do so without the connected suite until the workflow-permission blocker is resolved.
 - No protected release signing configuration/keystore is present in the repository, as expected; the locally built release APK is unsigned.
 - Independent review and owner release approval remain required before calling this a release.

@@ -5,11 +5,12 @@
 - **Task 20:** LOCALLY VERIFIED / RELEASE BLOCKED
 - **Completed increment:** release hardening and provenance
 - **Evidence:** `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, `assembleRelease`, and 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554`
+- **GitHub Actions evidence:** QA Gate run `35472701387` passed on SHA `44a9011d445321cd7e925f3bb110bce2c5100d4c`; Android Debug Build and Test run `35472702463` passed on the same SHA, including API 34 instrumentation tests
 - **Repairs:** release build now enables R8 minification and resource shrinking; missing `app/proguard-rules.pro` added; provenance note recorded in `evidence/T20.12/release-hardening-provenance.md`
 - **Debug APK SHA-256:** `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`
 - **Android test APK SHA-256:** `098eb95bf7d795febf162d2bc98299d408adde9ccbe57fe4485d204b6fa5d3a1`
 - **Unsigned shrunk release APK SHA-256:** `62f46825a44b4089a95a6ff6b3b7d0f0cbdfa4d564cef51c67d2d972d29faf15`
-- **Release status:** BLOCKED on release-workflow hardening that requires GitHub `workflow` permission, exact-SHA GitHub Actions evidence after commit/push, protected release signing credentials/configuration, independent review, and owner release approval
+- **Release status:** BLOCKED on release-workflow hardening that requires GitHub `workflow` permission, protected release signing credentials/configuration, independent review, and owner release approval
 
 ## Task 20.11 Execution — 2026-09-19
 

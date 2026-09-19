@@ -4,7 +4,7 @@
 
 **Authority:** Minimum verification strategy and evidence required for task, beta, and release acceptance
 
-**Current verified checkpoint:** Task 20.12 — focused setup persistence regression, 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`, `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and shrunk `assembleRelease` passed locally on 2026-09-19. Debug APK SHA-256: `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`; unsigned shrunk release APK SHA-256: `62f46825a44b4089a95a6ff6b3b7d0f0cbdfa4d564cef51c67d2d972d29faf15`. Schema version 5 is exported with identity `33a854ca5e4e735d335a371f314b2c4f`. GitHub Actions still needs to be run on the exact current candidate SHA before release approval.
+**Current verified checkpoint:** Task 20.12 — focused setup persistence regression, 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`, `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and shrunk `assembleRelease` passed locally on 2026-09-19. Debug APK SHA-256: `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`; unsigned shrunk release APK SHA-256: `62f46825a44b4089a95a6ff6b3b7d0f0cbdfa4d564cef51c67d2d972d29faf15`. Schema version 5 is exported with identity `33a854ca5e4e735d335a371f314b2c4f`. GitHub Actions passed on exact candidate SHA `44a9011d445321cd7e925f3bb110bce2c5100d4c`: QA Gate run `35472701387` and Android Debug Build and Test run `35472702463`.
 
 ## 1. Test objectives
 
@@ -58,7 +58,7 @@ Four instrumentation classes currently contain 24 test methods:
 - `NavigationSmokeTest`
 - `PersistentFooterTest`
 
-At Task 20.11, all 24 passed locally on `FN_WS_Phone_API35` / `emulator-5554` running Android 15. They principally cover setup progression/persistence, route smoke behavior, setup-to-Home stack replacement, footer visibility, and Home repair-panel behavior. GitHub connected evidence for the exact current SHA remains required before release approval.
+At Task 20.12, all 24 passed locally on `FN_WS_Phone_API35` / `emulator-5554` running Android 15. They principally cover setup progression/persistence, route smoke behavior, setup-to-Home stack replacement, footer visibility, and Home repair-panel behavior. GitHub Android Debug Build and Test run `35472702463` also passed API 34 instrumentation tests on exact SHA `44a9011d445321cd7e925f3bb110bce2c5100d4c`.
 
 ### CI workflows
 

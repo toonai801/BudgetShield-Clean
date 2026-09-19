@@ -3,14 +3,15 @@
 ## Task 20.12 Release Hardening and Provenance — 2026-09-19 (Current Authority)
 
 - **Status:** RED — local release hardening/provenance gate verified; production release remains blocked on external governance/signing gates
-- **Implementation checkpoint:** local working tree on `recovery/full-audit-2026-08-02`; not yet a release checkpoint
+- **Implementation checkpoint:** pushed commit `44a9011d445321cd7e925f3bb110bce2c5100d4c` on `recovery/full-audit-2026-08-02`; local finish gates and exact-SHA CI are verified
 - **Verified locally:** `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, `assembleRelease`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`
 - **Completed in this increment:** release build now enables R8 minification and resource shrinking; missing `app/proguard-rules.pro` added; release provenance evidence recorded
 - **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, SHA-256 `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`
 - **Android test APK:** `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`, SHA-256 `098eb95bf7d795febf162d2bc98299d408adde9ccbe57fe4485d204b6fa5d3a1`
 - **Unsigned shrunk release APK:** `app/build/outputs/apk/release/app-release-unsigned.apk`, SHA-256 `62f46825a44b4089a95a6ff6b3b7d0f0cbdfa4d564cef51c67d2d972d29faf15`
+- **GitHub Actions evidence:** QA Gate run `35472701387` passed on SHA `44a9011d445321cd7e925f3bb110bce2c5100d4c`; Android Debug Build and Test run `35472702463` passed on the same SHA, including API 34 instrumentation tests
 - **Evidence:** `evidence/T20.12/release-hardening-provenance.md`
-- **Explicitly still open:** release-workflow hardening is blocked by missing GitHub `workflow` permission for the current token; exact-SHA GitHub Actions evidence after commit/push, protected release signing credentials/configuration, independent review, and owner release approval remain required
+- **Explicitly still open:** release-workflow hardening is blocked by missing GitHub `workflow` permission for the current token; protected release signing credentials/configuration, independent review, and owner release approval remain required
 - **Task 20 result:** LOCALLY VERIFIED / RELEASE BLOCKED — this is not a production release declaration
 
 This section supersedes Task 20.11 as the current recovery status; prior checkpoints remain audit history below.
