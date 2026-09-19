@@ -82,6 +82,29 @@ class SetupActivationRepositoryTest {
     }
 
     @Test
+    fun `activation accepts setup bill month day date and stores iso due date`() = runBlocking {
+        val request = validRequest().copy(
+            bills = listOf(
+                SetupActivationRepository.ActivationBillDraft(
+                    name = "Phone",
+                    icon = "📱",
+                    amountCents = 8500L,
+                    dueDate = "10/1",
+                    isProtected = true
+                )
+            )
+        )
+
+        val result = repository.activate(request)
+
+        assertTrue(result.activated)
+        val bill = database.billDao().getAllBills().first().single()
+        assertEquals("Phone", bill.name)
+        assertEquals(8500L, bill.amountCents)
+        assertTrue("Bill due date should be stored as ISO date", bill.dueDate.matches(Regex("^\\d{4}-10-01$")))
+    }
+
+    @Test
     fun `rejected activation appends no setup side effects`() = runBlocking {
         val invalid = validRequest().copy(
             bills = listOf(

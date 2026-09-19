@@ -12,6 +12,7 @@ import com.toonai.budgetshield.data.model.UserSettings
 import com.toonai.budgetshield.data.model.XpActivityTypes
 import com.toonai.budgetshield.data.model.XpEntry
 import com.toonai.budgetshield.util.DateParser
+import java.time.LocalDate
 
 class SetupActivationRepository(
     private val database: BudgetShieldDatabase
@@ -88,7 +89,7 @@ class SetupActivationRepository(
                             name = draftBill.name.trim(),
                             icon = draftBill.icon.ifBlank { "📄" },
                             amountCents = draftBill.amountCents,
-                            dueDate = DateParser.parseToIsoDate(draftBill.dueDate).getOrThrow(),
+                            dueDate = normalizeBillDueDate(draftBill.dueDate),
                             isProtected = draftBill.isProtected
                         )
                     )
@@ -176,8 +177,23 @@ class SetupActivationRepository(
             if (bill.name.isNotBlank() || bill.amountCents > 0L || bill.dueDate.isNotBlank()) {
                 require(bill.name.isNotBlank()) { "Bill name is required" }
                 require(bill.amountCents > 0L) { "Bill amount must be positive" }
-                DateParser.parseToIsoDate(bill.dueDate).getOrThrow()
+                normalizeBillDueDate(bill.dueDate)
             }
         }
+    }
+
+    private fun normalizeBillDueDate(input: String): String {
+        val trimmed = input.trim()
+        DateParser.parseToIsoDate(trimmed).getOrNull()?.let { return it }
+
+        require(trimmed.matches(Regex("^\\d{1,2}/\\d{1,2}$"))) {
+            "Bill due date must use MM/DD or MM/DD/YYYY"
+        }
+
+        val (month, day) = trimmed.split("/").map { it.toInt() }
+        val today = LocalDate.now()
+        val candidate = LocalDate.of(today.year, month, day)
+        val nextOccurrence = if (candidate.isBefore(today)) candidate.plusYears(1) else candidate
+        return DateParser.formatDate(nextOccurrence)
     }
 }

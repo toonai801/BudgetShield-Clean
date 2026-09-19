@@ -15,8 +15,8 @@ android {
         applicationId = "com.toonai.budgetshield"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.2.0-beta-intake-home-v8"
+        versionCode = 9
+        versionName = "1.2.0-beta-setup-hotfix-v9"
         testInstrumentationRunner = "com.toonai.budgetshield.HiltTestRunner"
     }
 

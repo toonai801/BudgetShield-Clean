@@ -207,7 +207,10 @@ class SetupQuestViewModel @Inject constructor(
         val updatedBills = _uiState.value.bills.map { bill ->
             if (bill.id == billId) bill.copy(name = name) else bill
         }
-        _uiState.value = _uiState.value.copy(bills = updatedBills)
+        _uiState.value = _uiState.value.copy(
+            bills = updatedBills,
+            billErrors = _uiState.value.billErrors - billId
+        )
         saveDraft()
     }
 
@@ -215,7 +218,10 @@ class SetupQuestViewModel @Inject constructor(
         val updatedBills = _uiState.value.bills.map { bill ->
             if (bill.id == billId) bill.copy(amountInput = amount) else bill
         }
-        _uiState.value = _uiState.value.copy(bills = updatedBills)
+        _uiState.value = _uiState.value.copy(
+            bills = updatedBills,
+            billErrors = _uiState.value.billErrors - billId
+        )
 
         MoneyParser.parseToCents(amount).fold(
             onSuccess = { cents ->
@@ -233,7 +239,10 @@ class SetupQuestViewModel @Inject constructor(
         val updatedBills = _uiState.value.bills.map { bill ->
             if (bill.id == billId) bill.copy(dueDateInput = dueDate) else bill
         }
-        _uiState.value = _uiState.value.copy(bills = updatedBills)
+        _uiState.value = _uiState.value.copy(
+            bills = updatedBills,
+            billErrors = _uiState.value.billErrors - billId
+        )
         saveDraft()
     }
 
@@ -371,13 +380,47 @@ class SetupQuestViewModel @Inject constructor(
                 _uiState.value = state.copy(paydayErrors = errors)
                 errors.isEmpty()
             }
-            3 -> true // Bills are optional
+            3 -> {
+                val errors = state.bills
+                    .mapNotNull { bill ->
+                        val billErrors = mutableMapOf<String, String>()
+                        val hasAnyValue = bill.name.isNotBlank() ||
+                            bill.amountInput.isNotBlank() ||
+                            bill.amountCents > 0L ||
+                            bill.dueDateInput.isNotBlank()
+
+                        if (hasAnyValue) {
+                            if (bill.name.isBlank()) billErrors["name"] = "Required"
+                            if (bill.amountCents <= 0L) billErrors["amount"] = "Amount must be greater than 0"
+                            if (!isValidSetupBillDueDate(bill.dueDateInput)) {
+                                billErrors["dueDate"] = "Use MM/DD"
+                            }
+                        }
+
+                        billErrors.takeIf { it.isNotEmpty() }?.let { bill.id to it }
+                    }
+                    .toMap()
+
+                _uiState.value = state.copy(billErrors = errors)
+                errors.isEmpty()
+            }
             4 -> state.savingsError == null
             5 -> state.foodBudgetError == null && state.wantsBudgetError == null &&
                  state.foodBudgetInput.isNotBlank() && state.wantsBudgetInput.isNotBlank()
             6 -> true
             else -> true
         }
+    }
+
+    private fun isValidSetupBillDueDate(input: String): Boolean {
+        val trimmed = input.trim()
+        if (DateParser.parseToIsoDate(trimmed).isSuccess) return true
+        if (!trimmed.matches(Regex("^\\d{1,2}/\\d{1,2}$"))) return false
+
+        return runCatching {
+            val (month, day) = trimmed.split("/").map { it.toInt() }
+            java.time.LocalDate.of(java.time.LocalDate.now().year, month, day)
+        }.isSuccess
     }
 
     // Complete setup atomically
