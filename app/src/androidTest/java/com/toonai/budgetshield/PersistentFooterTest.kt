@@ -76,6 +76,10 @@ class PersistentFooterTest {
         }
         scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithTag("loading_screen").fetchSemanticsNodes().isEmpty() &&
+                composeTestRule.onAllNodesWithTag("home_safe_now_card").fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
@@ -95,7 +99,9 @@ class PersistentFooterTest {
     @Test
     fun footerVisibleOnBills() {
         launchWithCompletedSetup()
-        composeTestRule.onNodeWithTag("home_action_pay_bill").performClick()
+        composeTestRule.onNodeWithTag("home_action_pay_bill")
+            .performScrollTo()
+            .performClick()
         composeTestRule.onNodeWithTag("budgetshield_bottom_nav").assertExists()
     }
 

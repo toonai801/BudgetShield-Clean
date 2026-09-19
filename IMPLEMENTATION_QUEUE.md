@@ -4,7 +4,7 @@
 
 Checkpoint pending commit implements the next ordered financial-mutation increment: bill payment now updates the bill, appends the transaction ledger row, and appends XP in one Room transaction. Invalid/rejected payments do not create transaction or XP side effects. Transaction Details was also aligned with the immutable-ledger rule by removing the destructive delete affordance and rendering the selected transaction's real title/icon/category/type rather than hard-coded `Rent Payment` content.
 
-The checkpoint passes 243 JVM tests, debug assembly, Android test APK assembly, and lint. Task 20 remains **IN PROGRESS**; savings/spending/setup activation mutation boundaries, broader placeholder cleanup, connected-device evidence, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
+The checkpoint passes 243 JVM tests, debug assembly, Android test APK assembly, lint, and 24/24 connected tests on the local phone AVD `FN_WS_Phone_API35` / `emulator-5554`. Task 20 remains **IN PROGRESS**; savings/spending/setup activation mutation boundaries, broader placeholder cleanup, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
 
 ## Recovery Progress — Task 20.3 Verified Locally (2026-08-02)
 

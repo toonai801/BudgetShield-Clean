@@ -4,8 +4,8 @@
 
 - **Task 20:** IN PROGRESS
 - **Completed increment:** bill payment now commits bill state, immutable transaction ledger entry, and XP entry in one Room transaction; the Transaction Details screen no longer exposes destructive transaction deletion and now renders real ledger fields instead of hard-coded Rent Payment placeholders
-- **Evidence:** 243/243 JVM tests; debug app, Android test APK, and lint pass; debug APK SHA-256 `c0139b2c3572383613b497344b3e1b756bc4eb1875d633e51b06bbad37218117`
-- **Device limitation:** connected Android UI/device tests were not run in this increment because no suitable phone emulator/device was attached; the connected Wear watch visible to ADB is not a Budget Shield target
+- **Evidence:** 243/243 JVM tests; debug app, Android test APK, and lint pass; 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554`; debug APK SHA-256 `6736b64ff747a9283341fb96e83c7f18b261c591c4d74d9b3670f6aa2c5c6d89`
+- **Device evidence:** connected Android UI tests ran locally on the phone emulator after disconnecting the unrelated Wear watch ADB endpoints
 - **Next increment:** continue Task 20 ordered recovery with remaining financial mutation paths (savings contribution, spending/category budget ledger, setup activation XP/idempotency) and then the navigation/placeholders/device/release gates
 - **Release status:** BLOCKED until all remaining Task 20 gates pass
 

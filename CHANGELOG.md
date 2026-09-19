@@ -1,5 +1,20 @@
 # Changelog
 
+## [Task 20.4 — Atomic Bill-Payment Ledger] — 2026-09-19
+
+### Repaired
+
+- Made bill payment an atomic Room transaction that updates bill paid state, appends the immutable bill-payment transaction row, and appends the matching XP entry together.
+- Prevented rejected bill payments from appending transaction or XP side effects.
+- Removed the destructive transaction delete affordance from Transaction Details and replaced hard-coded Rent Payment display data with the selected ledger row's real fields.
+- Improved Home daily action semantics so the Pay Bill action is a stable clickable target in connected tests.
+
+### Verified
+
+- Local phone emulator `FN_WS_Phone_API35` / `emulator-5554`: 24/24 connected tests passed.
+- Local non-device gate passed: 243/243 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`.
+- Task 20 remains IN PROGRESS; remaining financial mutation paths, placeholders/navigation, accessibility/device matrix, CI/signing, and release provenance remain open.
+
 ## [Task 20.3 — Migration and Schema Integrity] — 2026-08-02
 
 ### Repaired

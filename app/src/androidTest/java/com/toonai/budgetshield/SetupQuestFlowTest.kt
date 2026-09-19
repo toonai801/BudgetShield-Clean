@@ -3,6 +3,7 @@ package com.toonai.budgetshield
 import android.content.Intent
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
@@ -155,8 +156,8 @@ class SetupQuestFlowTest {
         scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
 
-        // VERIFY: Home screen is shown (Safe Now is the main Home element)
-        composeTestRule.onNodeWithText("Safe Now").assertExists()
+        // VERIFY: Home screen is shown.
+        composeTestRule.onNodeWithTag("home_safe_now_card").assertExists()
     }
 
     /**
@@ -253,8 +254,8 @@ class SetupQuestFlowTest {
         scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
 
-        // VERIFY: Home with persisted values (Safe Now is the main indicator)
-        composeTestRule.onNodeWithText("Safe Now").assertExists()
+        // VERIFY: Home with persisted values.
+        composeTestRule.onNodeWithTag("home_safe_now_card").assertExists()
 
         // Simulate force-stop by closing activity
         scenario?.close()
@@ -267,7 +268,7 @@ class SetupQuestFlowTest {
         scenario = ActivityScenario.launch(relaunchIntent)
         composeTestRule.waitForIdle()
 
-        // VERIFY: Still shows Home (Safe Now exists, not Setup Quest)
-        composeTestRule.onNodeWithText("Safe Now").assertExists()
+        // VERIFY: Still shows Home, not Setup Quest.
+        composeTestRule.onNodeWithTag("home_safe_now_card").assertExists()
     }
 }

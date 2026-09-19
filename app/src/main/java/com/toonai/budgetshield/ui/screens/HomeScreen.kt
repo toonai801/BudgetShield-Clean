@@ -1,6 +1,7 @@
 package com.toonai.budgetshield.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -688,14 +689,24 @@ private fun DailyActionsSection(
 
 @Composable
 private fun ActionButton(icon: String, label: String, onClick: () -> Unit, testTag: String = "") {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    val actionModifier = if (testTag.isNotEmpty()) {
+        Modifier
+            .testTag(testTag)
+            .clickable(onClick = onClick)
+    } else {
+        Modifier.clickable(onClick = onClick)
+    }
+
+    Column(
+        modifier = actionModifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         IconButton(
             onClick = onClick,
             modifier = Modifier
                 .size(IconContainerLarge)
                 .clip(ShapeCircular)
                 .background(CyanAccent15)
-                .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
         ) {
             Text(text = icon, fontSize = IconSizes.action)
         }
