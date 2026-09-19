@@ -97,9 +97,7 @@ fun HomeScreen(
     onNavigateToSavingsEntry: () -> Unit,
     onNavigateToTransactionDetails: () -> Unit,
     onNavigateToShieldProgression: () -> Unit,
-    onNavigateToRewardScreen: () -> Unit,
     onNavigateToMenu: () -> Unit,
-    onNavigateToCalendar: () -> Unit,
     onNavigateToLogSpending: () -> Unit,
     onNavigateToBudgets: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
@@ -140,9 +138,7 @@ fun HomeScreen(
                         uiState = uiState,
                         onNavigateToTreasure = onNavigateToTreasure,
                         onNavigateToSettings = onNavigateToSettings,
-                        onNavigateToRewardScreen = onNavigateToRewardScreen,
                         onNavigateToMenu = onNavigateToMenu,
-                        onNavigateToCalendar = onNavigateToCalendar,
                         onNavigateToShieldProgression = onNavigateToShieldProgression,
                         onNavigateToIncomeEntry = onNavigateToIncomeEntry,
                         onNavigateToBillEntry = onNavigateToBillEntry,
@@ -230,9 +226,7 @@ private fun HomeContent(
     uiState: com.toonai.budgetshield.ui.viewmodel.HomeUiState,
     onNavigateToTreasure: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToRewardScreen: () -> Unit,
     onNavigateToMenu: () -> Unit,
-    onNavigateToCalendar: () -> Unit,
     onNavigateToShieldProgression: () -> Unit,
     onNavigateToIncomeEntry: () -> Unit,
     onNavigateToBillEntry: () -> Unit,
@@ -300,17 +294,14 @@ private fun HomeContent(
             verticalArrangement = Arrangement.spacedBy(Spacing.large)
         ) {
             HeaderSection(
-                onRewardClick = onNavigateToRewardScreen,
-                onMenuClick = onNavigateToMenu,
-                hasUnreadRewards = uiState.hasUnreadRewards
+                onMenuClick = onNavigateToMenu
             )
 
             MonthSelector(
                 selectedMonth = uiState.selectedMonth,
                 onPreviousMonth = viewModel::goToPreviousMonth,
                 onNextMonth = viewModel::goToNextMonth,
-                onMonthPickerClick = { showMonthPicker = true },
-                onCalendarClick = onNavigateToCalendar
+                onMonthPickerClick = { showMonthPicker = true }
             )
 
             HeroCard(
@@ -342,9 +333,7 @@ private fun HomeContent(
 
 @Composable
 private fun HeaderSection(
-    onRewardClick: () -> Unit,
-    onMenuClick: () -> Unit,
-    hasUnreadRewards: Boolean
+    onMenuClick: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -385,33 +374,6 @@ private fun HeaderSection(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            /* Reward button hidden until rewards system implemented
-            Box(contentAlignment = Alignment.TopEnd) {
-                IconButton(
-                    onClick = onRewardClick,
-                    modifier = Modifier.testTag("home_reward_button")
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(IconContainerMedium)
-                            .clip(ShapeCircular)
-                            .background(GoldAccent20),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "🪙", fontSize = 18.sp)
-                    }
-                }
-                if (hasUnreadRewards) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(ShapeCircular)
-                            .background(DangerDot)
-                    )
-                }
-            }
-            */
-
             IconButton(
                 onClick = onMenuClick,
                 modifier = Modifier.testTag("home_menu_button")
@@ -427,8 +389,7 @@ private fun MonthSelector(
     selectedMonth: YearMonth,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
-    onMonthPickerClick: () -> Unit,
-    onCalendarClick: () -> Unit
+    onMonthPickerClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -484,9 +445,6 @@ private fun MonthSelector(
                     fontWeight = FontWeight.Bold
                 )
             }
-
-            // Calendar button removed - month picker now handles calendar functionality
-            /* Removed: Calendar icon button that was going to Settings */
         }
     }
 }
@@ -992,17 +950,14 @@ private fun PreviewHomeContent(
             verticalArrangement = Arrangement.spacedBy(Spacing.large)
         ) {
             HeaderSection(
-                onRewardClick = {},
-                onMenuClick = {},
-                hasUnreadRewards = hasUnreadRewards
+                onMenuClick = {}
             )
 
             MonthSelector(
                 selectedMonth = YearMonth.of(2026, 1),
                 onPreviousMonth = {},
                 onNextMonth = {},
-                onMonthPickerClick = {},
-                onCalendarClick = {}
+                onMonthPickerClick = {}
             )
 
             HeroCard(

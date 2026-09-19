@@ -106,9 +106,7 @@ private fun BudgetShieldScreenContent(
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) },
-                onNavigateToRewardScreen = { /* Rewards not implemented - button hidden in UI */ },
                 onNavigateToMenu = { onNavigate(BudgetMenu) },
-                onNavigateToCalendar = { /* Calendar button removed - use month picker */ },
                 onNavigateToLogSpending = { onNavigate(LogSpending) },
                 onNavigateToBudgets = { onNavigate(Budgets) }
             )
@@ -166,7 +164,7 @@ private fun BudgetShieldScreenContent(
         }
         is BillEntry -> {
             BillEntryScreen(
-                onNavigateToTreasure = { onNavigate(Bills) },
+                onNavigateToBills = { onNavigate(Bills) },
                 onNavigateToHome = { onNavigate(Home) },
                 onNavigateToSetupQuest = { onNavigate(SetupQuest) }
             )

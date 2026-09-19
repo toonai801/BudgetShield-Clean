@@ -1,6 +1,15 @@
 # Task Queue
 
-## Task 20.7 Execution — 2026-09-19 (Current Authority)
+## Task 20.8 Execution — 2026-09-19 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** removed dead Home reward/calendar navigation plumbing and commented-out controls; renamed BillEntry successful-save navigation from misleading Treasure terminology to Bills
+- **Evidence:** 251/251 JVM tests; debug app, Android test APK, and lint pass; 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554`; debug APK SHA-256 `6cb03a65d4e196ba29c62c35efe1980c2c72f89c727a3fba529b6bda09ff3258`
+- **Device evidence:** connected Android UI tests ran locally on the phone emulator; the attached Wear watch was not used
+- **Next increment:** continue Task 20 ordered recovery with remaining navigation/placeholders, then device matrix, accessibility/visual, CI/signing/shrinking, and release provenance gates
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
+## Task 20.7 Execution — 2026-09-19
 
 - **Task 20:** IN PROGRESS
 - **Completed increment:** Home now reads persisted current streak from `UserStreak` and recent activity from immutable transaction ledger rows instead of hard-coded zero/reconstructed paid-bill data; Home activity supports spending rows

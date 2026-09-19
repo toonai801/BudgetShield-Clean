@@ -1,5 +1,11 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 20.8 Verified Locally (2026-09-19)
+
+This checkpoint removes dead navigation/control wiring found after the Home source-of-truth pass: Home no longer carries callbacks or commented-out bodies for hidden reward/calendar controls, and BillEntry successful save navigation is named for the Bills destination it actually opens.
+
+The checkpoint passes 251 JVM tests, debug assembly, Android test APK assembly, lint, and 24/24 connected tests on the local phone AVD `FN_WS_Phone_API35` / `emulator-5554`. Task 20 remains **IN PROGRESS**; broader placeholder cleanup, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
+
 ## Recovery Progress — Task 20.7 Verified Locally (2026-09-19)
 
 This checkpoint removes the remaining Home production placeholder/source-of-truth gaps found in this pass: current streak now comes from persisted `UserStreak`, recent activity now comes from immutable transaction ledger rows, and spending transactions render as Home activity rows. Production and instrumentation-test Hilt modules now provide `SavingsGoalRepository` for Home.

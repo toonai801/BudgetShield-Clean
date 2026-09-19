@@ -1,5 +1,19 @@
 # Changelog
 
+## [Task 20.8 — Navigation Dead-Control Cleanup] — 2026-09-19
+
+### Repaired
+
+- Removed Home reward/calendar callback plumbing for controls that are not present.
+- Removed commented-out reward/calendar control bodies from Home.
+- Renamed BillEntry successful-save navigation from misleading Treasure terminology to Bills.
+
+### Verified
+
+- Local phone emulator `FN_WS_Phone_API35` / `emulator-5554`: 24/24 connected tests passed.
+- Local non-device gate passed: 251/251 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`.
+- Task 20 remains IN PROGRESS; remaining navigation/placeholders, accessibility/device matrix, CI/signing, and release provenance remain open.
+
 ## [Task 20.7 — Home Ledger/Streak Source-of-Truth] — 2026-09-19
 
 ### Repaired

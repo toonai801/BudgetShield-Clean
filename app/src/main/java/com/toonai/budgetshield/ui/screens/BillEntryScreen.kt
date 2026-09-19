@@ -61,7 +61,7 @@ import com.toonai.budgetshield.theme.DangerDot
 @Composable
 fun BillEntryScreen(
     viewModel: BillEntryViewModel = viewModel(factory = BillEntryViewModel.Factory(LocalBillRepository.current)),
-    onNavigateToTreasure: () -> Unit,
+    onNavigateToBills: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToSetupQuest: () -> Unit
 ) {
@@ -202,8 +202,7 @@ fun BillEntryScreen(
                             createResult.fold(
                                 onSuccess = { billId ->
                                     if (billId > 0) {
-                                        // Success: navigate to Treasure
-                                        onNavigateToTreasure()
+                                        onNavigateToBills()
                                     } else {
                                         errorMessage = "Failed to save bill: invalid ID"
                                         isSaving = false

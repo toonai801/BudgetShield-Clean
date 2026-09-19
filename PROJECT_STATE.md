@@ -1,6 +1,20 @@
 # Project State
 
-## Task 20.7 Home Ledger/Streak Source-of-Truth — 2026-09-19 (Current Authority)
+## Task 20.8 Navigation Dead-Control Cleanup — 2026-09-19 (Current Authority)
+
+- **Status:** RED — navigation dead-control cleanup increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** this checkpoint commit on `recovery/full-audit-2026-08-02`
+- **Verified locally:** 251/251 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`
+- **Completed in this increment:** removed Home reward/calendar callback plumbing for controls that are not present, removed commented-out reward/calendar control bodies, and renamed BillEntry's successful-save callback from the misleading `onNavigateToTreasure` to `onNavigateToBills`
+- **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, SHA-256 `6cb03a65d4e196ba29c62c35efe1980c2c72f89c727a3fba529b6bda09ff3258`
+- **Android test APK:** `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`, SHA-256 `bb05ac7c1932c354546650c6fdf62d8c677d6d57874cc930a20c76e1d06f8cf8`
+- **Device evidence:** local connected UI tests passed on the Android phone emulator; the simultaneously attached Wear watch was not used for this phone app
+- **Explicitly still open:** remaining navigation/placeholders, connected device matrix breadth, visuals/accessibility, CI, signing, shrinking, and release provenance
+- **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
+
+This section supersedes Task 20.7 as the current recovery status; prior checkpoints remain audit history below.
+
+## Task 20.7 Home Ledger/Streak Source-of-Truth — 2026-09-19
 
 - **Status:** RED — Home placeholder/source-of-truth increment verified; full product and release recovery remains in progress
 - **Implementation checkpoint:** this checkpoint commit on `recovery/full-audit-2026-08-02`
@@ -12,7 +26,7 @@
 - **Explicitly still open:** remaining navigation/placeholders, connected device matrix breadth, visuals/accessibility, CI, signing, shrinking, and release provenance
 - **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
 
-This section supersedes Task 20.6 as the current recovery status; prior checkpoints remain audit history below.
+This section superseded Task 20.6 as recovery status; prior checkpoints remain audit history below.
 
 ## Task 20.6 Atomic Setup Activation — 2026-09-19
 
