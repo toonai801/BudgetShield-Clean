@@ -1,6 +1,15 @@
 # Task Queue
 
-## Task 20.5 Execution — 2026-09-19 (Current Authority)
+## Task 20.6 Execution — 2026-09-19 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** setup activation now atomically commits first-run settings, optional income, setup budgets, bills, draft cleanup, and setup XP; duplicate setup completion after first-run state is complete is idempotent and does not duplicate income, bills, or XP
+- **Evidence:** 250/250 JVM tests; debug app, Android test APK, and lint pass; 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554`; debug APK SHA-256 `d7034ce24b09f560d68928bc146d3f2b846e38cb9e832d6eded57198f3c30eb6`
+- **Device evidence:** connected Android UI tests ran locally on the phone emulator; the attached Wear watch was not used
+- **Next increment:** continue Task 20 ordered recovery with remaining navigation/placeholders, then device matrix, accessibility/visual, CI/signing/shrinking, and release provenance gates
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
+## Task 20.5 Execution — 2026-09-19
 
 - **Task 20:** IN PROGRESS
 - **Completed increment:** savings contributions now atomically update cash, savings balance, optional goal progress/completion, immutable transaction ledger, XP ledger, and streak; spending now atomically updates budget spent amount, cash, immutable transaction ledger, and budget-on-track XP

@@ -359,14 +359,18 @@ class BillCategoryModelTest {
             id = 1L,
             name = "Food",
             monthKey = "2025-07",
-            plannedAmountCents = 50000L
+            plannedAmountCents = 50000L,
+            createdAt = 123L,
+            updatedAt = 456L
         )
 
         val category2 = BudgetCategory(
             id = 1L,
             name = "Food",
             monthKey = "2025-07",
-            plannedAmountCents = 50000L
+            plannedAmountCents = 50000L,
+            createdAt = 123L,
+            updatedAt = 456L
         )
 
         assertEquals(category1, category2)

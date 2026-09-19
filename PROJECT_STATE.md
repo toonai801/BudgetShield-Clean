@@ -1,9 +1,23 @@
 # Project State
 
-## Task 20.5 Savings and Spending Atomic Ledger — 2026-09-19 (Current Authority)
+## Task 20.6 Atomic Setup Activation — 2026-09-19 (Current Authority)
+
+- **Status:** RED — setup activation mutation/idempotency increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** pending commit on `recovery/full-audit-2026-08-02`
+- **Verified locally:** 250/250 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`
+- **Completed in this increment:** setup completion now validates the requested first-run data and commits income schedule, Food/Wants budgets, bills, first-run settings, draft cleanup, and setup XP in one Room transaction; repeated completion after first-run setup is already complete becomes a no-op and does not duplicate income, bills, or XP; rejected setup activation appends no side effects
+- **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, SHA-256 `d7034ce24b09f560d68928bc146d3f2b846e38cb9e832d6eded57198f3c30eb6`
+- **Android test APK:** `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`, SHA-256 `70e0db9ac2a2f76f7a6e0e2ba12a44b4052d7bb14abcfefd343d889e6e491d08`
+- **Device evidence:** local connected UI tests passed on the Android phone emulator; the simultaneously attached Wear watch was not used for this phone app
+- **Explicitly still open:** remaining navigation/placeholders, connected device matrix breadth, visuals/accessibility, CI, signing, shrinking, and release provenance
+- **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
+
+This section supersedes Task 20.5 as the current recovery status; prior checkpoints remain audit history below.
+
+## Task 20.5 Savings and Spending Atomic Ledger — 2026-09-19
 
 - **Status:** RED — savings/spending financial mutation increment verified; full product and release recovery remains in progress
-- **Implementation checkpoint:** pending commit on `recovery/full-audit-2026-08-02`
+- **Implementation checkpoint:** `d44f490` on `recovery/full-audit-2026-08-02`
 - **Verified locally:** 247/247 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`
 - **Completed in this increment:** savings contributions now commit cash-to-savings balance movement, optional goal progress/completion, immutable savings transaction, savings XP, and streak update atomically; spending now commits category spent amount, cash reduction, immutable spending transaction, and budget-on-track XP atomically; rejected savings/spending operations append no ledger or XP side effects
 - **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, 23,408,452 bytes, SHA-256 `ae163fda1927e3a462d98d618f0ac5ec1f7e317bc3cf4471ff75f515b48555f2`
@@ -11,7 +25,7 @@
 - **Explicitly still open:** setup activation XP/idempotency, remaining navigation/placeholders, connected device matrix breadth, visuals/accessibility, CI, signing, shrinking, and release provenance
 - **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
 
-This section supersedes Task 20.4 as the current recovery status; prior checkpoints remain audit history below.
+This section superseded Task 20.4 as recovery status; prior checkpoints remain audit history below.
 
 ## Task 20.4 Atomic Bill-Payment Ledger — 2026-09-19 (Current Authority)
 

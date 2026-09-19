@@ -1,5 +1,20 @@
 # Changelog
 
+## [Task 20.6 — Atomic Setup Activation] — 2026-09-19
+
+### Repaired
+
+- Added an atomic setup activation repository that commits first-run settings, optional income schedule, setup budgets, bills, draft cleanup, and setup XP together.
+- Made repeated setup activation idempotent after first-run completion so duplicate income, bills, and setup XP are not created.
+- Updated Setup Quest completion to use the atomic activation path instead of split repository/DAO writes.
+- Added repository tests proving accepted, duplicate, and rejected setup activation behavior.
+
+### Verified
+
+- Local phone emulator `FN_WS_Phone_API35` / `emulator-5554`: 24/24 connected tests passed.
+- Local non-device gate passed: 250/250 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`.
+- Task 20 remains IN PROGRESS; remaining navigation/placeholders, accessibility/device matrix, CI/signing, and release provenance remain open.
+
 ## [Task 20.5 — Savings and Spending Atomic Ledger] — 2026-09-19
 
 ### Repaired

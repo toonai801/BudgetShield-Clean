@@ -5,12 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.toonai.budgetshield.data.calculator.IncomeRecurrencePolicy
 import com.toonai.budgetshield.data.database.SetupDraftDao
 import com.toonai.budgetshield.data.model.Bill
-import com.toonai.budgetshield.data.model.IncomeSchedule
 import com.toonai.budgetshield.data.model.SetupDraft
-import com.toonai.budgetshield.data.model.UserSettings
 import com.toonai.budgetshield.data.repository.BillRepository
-import com.toonai.budgetshield.data.repository.BudgetRepository
-import com.toonai.budgetshield.data.repository.IncomeRepository
+import com.toonai.budgetshield.data.repository.SetupActivationRepository
 import com.toonai.budgetshield.data.repository.UserSettingsRepository
 import com.toonai.budgetshield.ui.screens.DraftBill
 import com.toonai.budgetshield.util.DateParser
@@ -26,10 +23,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SetupQuestViewModel @Inject constructor(
     private val userSettingsRepository: UserSettingsRepository,
-    private val incomeRepository: IncomeRepository,
-    private val budgetRepository: BudgetRepository,
     private val billRepository: BillRepository,
-    private val setupDraftDao: SetupDraftDao
+    private val setupDraftDao: SetupDraftDao,
+    private val setupActivationRepository: SetupActivationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SetupQuestUiState())
@@ -391,60 +387,37 @@ class SetupQuestViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // 1. Save income schedule
-                if (_uiState.value.incomeName.isNotBlank() && _uiState.value.incomeAmountCents > 0) {
-                    val nextPayday = DateParser.parseToIsoDate(_uiState.value.paydayDate).getOrThrow()
-                    incomeRepository.saveSchedule(
-                        IncomeSchedule(
-                            id = 0L,
-                            name = _uiState.value.incomeName,
-                            amountCents = _uiState.value.incomeAmountCents,
-                            nextPayday = nextPayday,
-                            nextPaydayDate = nextPayday,
-                            frequency = _uiState.value.frequency,
-                            paydayAnchorDayOne = _uiState.value.paydayAnchorOneInput.toIntOrNull(),
-                            paydayAnchorDayTwo = _uiState.value.paydayAnchorTwoInput.toIntOrNull(),
-                            isConfirmed = _uiState.value.isIncomeConfirmed
-                        )
-                    )
-                    android.util.Log.d("SetupQuest", "completeSetup: Income schedule saved")
-                }
-
-                // 2. Save budgets for current month
+                val state = _uiState.value
                 val monthKey = DateParser.currentMonthKey()
-                budgetRepository.saveBudget("Food", monthKey, _uiState.value.foodBudgetCents)
-                budgetRepository.saveBudget("Wants", monthKey, _uiState.value.wantsBudgetCents)
-                android.util.Log.d("SetupQuest", "completeSetup: Budgets saved")
-
-                // 3. Save bills from setup
-                _uiState.value.bills.forEach { draftBill ->
-                    if (draftBill.name.isNotBlank() && draftBill.amountCents > 0) {
-                        billRepository.createBill(
-                            name = draftBill.name,
-                            icon = draftBill.icon.ifBlank { "📄" },
-                            amountCents = draftBill.amountCents,
-                            dueDate = draftBill.dueDateInput,
-                            isProtected = draftBill.isProtected
-                        )
-                    }
-                }
-                android.util.Log.d("SetupQuest", "completeSetup: Bills saved")
-
-                // 4. Mark setup complete in UserSettings
-                val settings = UserSettings(
-                    id = 1,
-                    isFirstRunComplete = true,
-                    cashOnHandCents = _uiState.value.cashOnHandCents,
-                    savingsBalanceCents = _uiState.value.savingsCents,
-                    setupChapter = 7,
-                    selectedMonth = monthKey
+                val result = setupActivationRepository.activate(
+                    SetupActivationRepository.ActivationRequest(
+                        cashOnHandCents = state.cashOnHandCents,
+                        savingsBalanceCents = state.savingsCents,
+                        incomeName = state.incomeName,
+                        incomeAmountCents = state.incomeAmountCents,
+                        nextPaydayDate = state.paydayDate,
+                        frequency = state.frequency,
+                        paydayAnchorDayOne = state.paydayAnchorOneInput.toIntOrNull(),
+                        paydayAnchorDayTwo = state.paydayAnchorTwoInput.toIntOrNull(),
+                        isIncomeConfirmed = state.isIncomeConfirmed,
+                        foodBudgetCents = state.foodBudgetCents,
+                        wantsBudgetCents = state.wantsBudgetCents,
+                        bills = state.bills.map { draftBill ->
+                            SetupActivationRepository.ActivationBillDraft(
+                                name = draftBill.name,
+                                icon = draftBill.icon,
+                                amountCents = draftBill.amountCents,
+                                dueDate = draftBill.dueDateInput,
+                                isProtected = draftBill.isProtected
+                            )
+                        },
+                        selectedMonth = monthKey
+                    )
                 )
-                userSettingsRepository.saveSettings(settings)
-                android.util.Log.d("SetupQuest", "completeSetup: Settings saved")
-
-                // 5. Clear draft
-                setupDraftDao.clearDraft()
-                android.util.Log.d("SetupQuest", "completeSetup: Draft cleared")
+                android.util.Log.d(
+                    "SetupQuest",
+                    "completeSetup: activated=${result.activated}, alreadyComplete=${result.alreadyComplete}, xp=${result.xpEarned}"
+                )
 
                 _uiState.value = _uiState.value.copy(isLoading = false)
                 android.util.Log.d("SetupQuest", "completeSetup: Success, calling onSuccess")

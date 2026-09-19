@@ -1,8 +1,14 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 20.6 Verified Locally (2026-09-19)
+
+Checkpoint pending commit implements the setup activation mutation/idempotency increment after savings/spending ledger work: setup completion now validates the requested first-run data and commits optional income, Food/Wants budgets, bills, first-run settings, draft cleanup, and setup XP atomically. Re-running setup completion after first-run setup is complete is a no-op and does not duplicate income, bills, or XP. Rejected setup activation leaves all related records unchanged.
+
+The checkpoint passes 250 JVM tests, debug assembly, Android test APK assembly, lint, and 24/24 connected tests on the local phone AVD `FN_WS_Phone_API35` / `emulator-5554`. Task 20 remains **IN PROGRESS**; broader placeholder cleanup, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
+
 ## Recovery Progress — Task 20.5 Verified Locally (2026-09-19)
 
-Checkpoint pending commit implements the next ordered financial-mutation increment after bill payment: savings contributions and spending logs now commit their source record changes, cash/savings balance updates, immutable transaction ledger rows, and XP/streak side effects atomically. Rejected savings/spending attempts leave balances, goals/categories, transaction ledger, XP ledger, and streak state unchanged.
+Checkpoint `d44f490` implements the next ordered financial-mutation increment after bill payment: savings contributions and spending logs now commit their source record changes, cash/savings balance updates, immutable transaction ledger rows, and XP/streak side effects atomically. Rejected savings/spending attempts leave balances, goals/categories, transaction ledger, XP ledger, and streak state unchanged.
 
 The checkpoint passes 247 JVM tests, debug assembly, Android test APK assembly, lint, and 24/24 connected tests on the local phone AVD `FN_WS_Phone_API35` / `emulator-5554`. Task 20 remains **IN PROGRESS**; setup activation XP/idempotency, broader placeholder cleanup, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
 
