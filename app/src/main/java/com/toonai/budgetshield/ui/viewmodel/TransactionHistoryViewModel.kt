@@ -1,6 +1,7 @@
 package com.toonai.budgetshield.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.toonai.budgetshield.data.model.Transaction
 import com.toonai.budgetshield.data.repository.TransactionRepository
@@ -47,6 +48,18 @@ class TransactionHistoryViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    class Factory(
+        private val transactionRepository: TransactionRepository
+    ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(TransactionHistoryViewModel::class.java)) {
+                return TransactionHistoryViewModel(transactionRepository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }

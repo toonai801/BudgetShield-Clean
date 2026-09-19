@@ -4,7 +4,7 @@ import androidx.navigation3.runtime.NavKey
 
 /**
  * Production Route Registry - Single Source of Truth
- * Contains all 14 approved production destinations.
+ * Contains all approved production destinations.
  * Used by both the production app and tests.
  */
 object BudgetShieldRouteRegistry {
@@ -27,6 +27,7 @@ object BudgetShieldRouteRegistry {
         BillPayment,
         SavingsEntry,
         TransactionDetails(),
+        TransactionHistory,
         BillProtected,
         ShieldProgression,
         BudgetMenu,
@@ -37,7 +38,7 @@ object BudgetShieldRouteRegistry {
     /**
      * Count of production destinations.
      */
-    const val DESTINATION_COUNT: Int = 17
+    const val DESTINATION_COUNT: Int = 18
 
     /**
      * Check if a given key is a valid production destination.
@@ -57,6 +58,7 @@ object BudgetShieldRouteRegistry {
             is BillPaymentWithId,
             is SavingsEntry,
             is TransactionDetails,
+            is TransactionHistory,
             is BillProtected,
             is ShieldProgression,
             is BudgetMenu,
@@ -71,6 +73,6 @@ object BudgetShieldRouteRegistry {
      * Returns -1 if not found.
      */
     fun getDestinationIndex(key: NavKey): Int {
-        return allDestinations.indexOfFirst { it::class == key::class }
+        return allDestinations.indexOfFirst { it == key || it::class == key::class }
     }
 }

@@ -60,7 +60,8 @@ fun TransactionDetailsScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToTreasure: () -> Unit,
     onNavigateToStats: () -> Unit,
-    onNavigateToGoals: () -> Unit
+    onNavigateToGoals: () -> Unit,
+    onNavigateToTransactionHistory: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -121,7 +122,8 @@ fun TransactionDetailsScreen(
                 // Recent Transactions
                 RecentTransactionsSection(
                     transactions = uiState.transactions,
-                    onTransactionClick = { id -> viewModel.loadTransaction(id) }
+                    onTransactionClick = { id -> viewModel.loadTransaction(id) },
+                    onViewAll = onNavigateToTransactionHistory
                 )
 
                 // Monthly Summary
@@ -171,7 +173,7 @@ private fun HeaderSection(transactionId: Long?, onBack: () -> Unit) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "ID: #${transactionId ?: "TRX-2025-001"}",
+                    text = transactionId?.let { "ID: #$it" } ?: "No transaction selected",
                     color = TextMuted,
                     fontSize = 12.sp
                 )
@@ -408,7 +410,8 @@ private fun DetailRow(label: String, value: String) {
 @Composable
 private fun RecentTransactionsSection(
     transactions: List<com.toonai.budgetshield.data.model.Transaction>,
-    onTransactionClick: (Long) -> Unit
+    onTransactionClick: (Long) -> Unit,
+    onViewAll: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -434,7 +437,7 @@ private fun RecentTransactionsSection(
                 )
 
                 TextButton(
-                    onClick = { },
+                    onClick = onViewAll,
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(

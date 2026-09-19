@@ -1,5 +1,63 @@
 # Project State
 
+## Task 20.12 Release Hardening and Provenance — 2026-09-19 (Current Authority)
+
+- **Status:** RED — local release hardening/provenance gate verified; production release remains blocked on external governance/signing gates
+- **Implementation checkpoint:** local working tree on `recovery/full-audit-2026-08-02`; not yet a release checkpoint
+- **Verified locally:** `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, `assembleRelease`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`
+- **Completed in this increment:** release build now enables R8 minification and resource shrinking; missing `app/proguard-rules.pro` added; release provenance evidence recorded
+- **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, SHA-256 `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`
+- **Android test APK:** `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`, SHA-256 `098eb95bf7d795febf162d2bc98299d408adde9ccbe57fe4485d204b6fa5d3a1`
+- **Unsigned shrunk release APK:** `app/build/outputs/apk/release/app-release-unsigned.apk`, SHA-256 `62f46825a44b4089a95a6ff6b3b7d0f0cbdfa4d564cef51c67d2d972d29faf15`
+- **Evidence:** `evidence/T20.12/release-hardening-provenance.md`
+- **Explicitly still open:** release-workflow hardening is blocked by missing GitHub `workflow` permission for the current token; exact-SHA GitHub Actions evidence after commit/push, protected release signing credentials/configuration, independent review, and owner release approval remain required
+- **Task 20 result:** LOCALLY VERIFIED / RELEASE BLOCKED — this is not a production release declaration
+
+This section supersedes Task 20.11 as the current recovery status; prior checkpoints remain audit history below.
+
+## Task 20.11 Visual and Accessibility Gate — 2026-09-19
+
+- **Status:** RED — focused visual/accessibility repair increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** local working tree on `recovery/full-audit-2026-08-02`; not yet a release checkpoint
+- **Verified locally:** focused setup persistence regression test, 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`, `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and `assembleRelease`
+- **Completed in this increment:** added accessible state descriptions to footer tabs; added explicit labels for Home icon/glyph controls and quick actions; added Setup Quest date-picker labels; added accessible error banner descriptions to Bill Entry and Bill Payment; added an explicit Budget Menu close label; fixed Setup Quest status-bar overlap; fixed Home Safe Now card semantics so the production tag remains available in the merged accessibility tree
+- **Evidence:** `evidence/T20.11/visual-accessibility-audit.md`
+- **Connected test evidence:** `app/build/reports/androidTests/connected/debug/index.html`; XML summary `tests=24 failures=0 errors=0 skipped=0`
+- **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, SHA-256 `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`
+- **Android test APK:** `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`, SHA-256 `098eb95bf7d795febf162d2bc98299d408adde9ccbe57fe4485d204b6fa5d3a1`
+- **Manager-direct note:** implemented directly in the manager session for the active T20.11 managed-work request
+- **Regression found and fixed:** a connected test initially found `home_safe_now_card` only in the unmerged semantics tree after accessibility work; production semantics were repaired and the focused failing test plus the full connected suite now pass
+- **Explicitly still open:** CI, signing, shrinking, release provenance, and any defects found by later gates
+- **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
+
+This section supersedes Task 20.10 as the current recovery status; prior checkpoints remain audit history below.
+
+## Task 20.10 Device Matrix and Runtime QA — 2026-09-19 (Current Authority)
+
+- **Status:** RED — local phone-emulator runtime gate verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** local working tree on `recovery/full-audit-2026-08-02`; not yet a release checkpoint
+- **Verified locally:** 251/251 JVM tests via `testDebugUnitTest`, `assembleDebug`, `lintDebug`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554` running Android 15
+- **Connected test evidence:** `app/build/reports/androidTests/connected/debug/index.html`; XML summary `tests=24 failures=0 errors=0 skipped=0`
+- **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, SHA-256 `c4df9feba7f4d4069ad11cdbfee8777622cbaa068f62ef3eb43e46149aca30d4`
+- **Android test APK:** `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`, SHA-256 `bb05ac7c1932c354546650c6fdf62d8c677d6d57874cc930a20c76e1d06f8cf8`
+- **Device evidence:** local connected UI tests ran on the phone emulator only; no Wear watch or physical device was used
+- **Explicitly still open:** visuals/accessibility, CI, signing, shrinking, release provenance, and any further defects found by later gates
+- **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
+
+This section supersedes Task 20.9 as the current recovery status; prior checkpoints remain audit history below.
+
+## Task 20.9 Remaining Navigation and Placeholder Audit — 2026-09-19
+
+- **Status:** RED — navigation/history repair increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** local working tree on `recovery/full-audit-2026-08-02`; not yet a release checkpoint
+- **Verified locally:** `testDebugUnitTest`, `assembleDebug`, and `lintDebug`
+- **Completed in this increment:** registered `TransactionHistory` as a Home-owned production route; wired Settings, Home/Bills/Stats/Goals history controls, Transaction Details “View All,” and Transaction History row selection; corrected single-top navigation to compare full route values so different parameterized transaction/bill IDs are not suppressed; removed the hard-coded placeholder transaction header ID; reconciled `docs/SCREEN_MAP.md` with the current 18-route registry
+- **Manager-direct note:** implemented directly in the manager session for the active T20.9 managed-work request
+- **Explicitly still open:** connected device matrix breadth, visuals/accessibility, CI, signing, shrinking, release provenance, and any further financial/data regression work found by later gates
+- **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
+
+This section superseded Task 20.8 as recovery status; prior checkpoints remain audit history below.
+
 ## Task 20.8 Navigation Dead-Control Cleanup — 2026-09-19 (Current Authority)
 
 - **Status:** RED — navigation dead-control cleanup increment verified; full product and release recovery remains in progress

@@ -30,7 +30,7 @@ object BackStackPolicy {
      */
     fun navigateSingleTop(backStack: NavBackStack<NavKey>, route: NavKey) {
         val currentTop = backStack.lastOrNull()
-        if (currentTop?.javaClass != route.javaClass) {
+        if (currentTop != route) {
             backStack.add(route)
         }
     }

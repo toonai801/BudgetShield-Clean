@@ -39,6 +39,13 @@ class SetupQuestFlowTest {
 
     private var scenario: ActivityScenario<MainActivity>? = null
 
+    private fun waitForHomeScreen() {
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithTag("home_safe_now_card").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag("home_safe_now_card").assertExists()
+    }
+
     @Before
     fun setup() {
         hiltRule.inject()
@@ -157,7 +164,7 @@ class SetupQuestFlowTest {
         composeTestRule.waitForIdle()
 
         // VERIFY: Home screen is shown.
-        composeTestRule.onNodeWithTag("home_safe_now_card").assertExists()
+        waitForHomeScreen()
     }
 
     /**
@@ -255,7 +262,7 @@ class SetupQuestFlowTest {
         composeTestRule.waitForIdle()
 
         // VERIFY: Home with persisted values.
-        composeTestRule.onNodeWithTag("home_safe_now_card").assertExists()
+        waitForHomeScreen()
 
         // Simulate force-stop by closing activity
         scenario?.close()
@@ -269,6 +276,6 @@ class SetupQuestFlowTest {
         composeTestRule.waitForIdle()
 
         // VERIFY: Still shows Home, not Setup Quest.
-        composeTestRule.onNodeWithTag("home_safe_now_card").assertExists()
+        waitForHomeScreen()
     }
 }

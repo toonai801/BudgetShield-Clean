@@ -156,13 +156,27 @@ class BackStackPolicyTest {
         BackStackPolicy.navigateSingleTop(backStack, details1)
         assertEquals("Should have 2 entries", 2, backStack.size)
 
-        // Same class at top (TransactionDetails) - should NOT add even with different ID
-        // Single-top prevents duplicate destinations, not duplicate data
+        // Same route type with a different ID is a distinct destination.
         BackStackPolicy.navigateSingleTop(backStack, TransactionDetails(999L))
-        assertEquals("Should still have 2 entries (single-top prevents duplicate class)", 2, backStack.size)
+        assertEquals("Should have 3 entries after different transaction ID", 3, backStack.size)
+        assertEquals(TransactionDetails(999L), backStack.last())
 
         // Different class - should add
         BackStackPolicy.navigateSingleTop(backStack, Treasure)
-        assertEquals("Should have 3 entries", 3, backStack.size)
+        assertEquals("Should have 4 entries", 4, backStack.size)
+    }
+
+    @Test
+    fun `navigateSingleTop prevents duplicate parameterized route only when route matches exactly`() {
+        val backStack = createBackStack()
+        backStack.add(Home)
+
+        BackStackPolicy.navigateSingleTop(backStack, BillPaymentWithId(1L))
+        BackStackPolicy.navigateSingleTop(backStack, BillPaymentWithId(1L))
+        assertEquals("Same bill payment route should not duplicate", 2, backStack.size)
+
+        BackStackPolicy.navigateSingleTop(backStack, BillPaymentWithId(2L))
+        assertEquals("Different bill ID should create a new destination", 3, backStack.size)
+        assertEquals(BillPaymentWithId(2L), backStack.last())
     }
 }

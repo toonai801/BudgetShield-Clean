@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TransactionHistoryScreen(
     onBack: () -> Unit,
+    onTransactionSelected: (Long) -> Unit,
     viewModel: TransactionHistoryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -160,7 +161,10 @@ fun TransactionHistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(uiState.transactions) { transaction ->
-                        TransactionCard(transaction = transaction)
+                        TransactionCard(
+                            transaction = transaction,
+                            onClick = { onTransactionSelected(transaction.id) }
+                        )
                     }
                     item {
                         Spacer(modifier = Modifier.height(32.dp))
@@ -205,14 +209,15 @@ private fun SummaryCard(
 }
 
 @Composable
-private fun TransactionCard(transaction: Transaction) {
+private fun TransactionCard(transaction: Transaction, onClick: () -> Unit) {
     val isIncome = transaction.isIncome
     val isExpense = transaction.isExpense
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = PanelDark),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier

@@ -25,6 +25,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -77,7 +79,11 @@ fun SetupQuestScreen(
                 }
             }
             else -> {
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                ) {
                     SetupQuestContent(
                         uiState = uiState,
                         onPrevious = { viewModel.goToPreviousChapter() },
@@ -466,7 +472,12 @@ private fun ChapterPayday(
                 .testTag("chapter2_date_input"),
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = true }) {
-                    Text("📅")
+                    Text(
+                        "📅",
+                        modifier = Modifier.semantics {
+                            contentDescription = "Choose next payday date"
+                        }
+                    )
                 }
             }
         )
@@ -832,7 +843,13 @@ private fun BillCard(
                     modifier = Modifier.weight(1f),
                     trailingIcon = {
                         IconButton(onClick = { showDatePicker = true }) {
-                            Text(text = "📅", fontSize = 12.sp)
+                            Text(
+                                text = "📅",
+                                fontSize = 12.sp,
+                                modifier = Modifier.semantics {
+                                    contentDescription = "Choose bill due date"
+                                }
+                            )
                         }
                     }
                 )

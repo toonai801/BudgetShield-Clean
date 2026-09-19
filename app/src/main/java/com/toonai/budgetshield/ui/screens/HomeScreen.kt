@@ -42,6 +42,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag as semanticsTestTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -96,6 +99,7 @@ fun HomeScreen(
     onNavigateToBillEntry: () -> Unit,
     onNavigateToSavingsEntry: () -> Unit,
     onNavigateToTransactionDetails: () -> Unit,
+    onNavigateToTransactionHistory: () -> Unit,
     onNavigateToShieldProgression: () -> Unit,
     onNavigateToMenu: () -> Unit,
     onNavigateToLogSpending: () -> Unit,
@@ -143,7 +147,7 @@ fun HomeScreen(
                         onNavigateToIncomeEntry = onNavigateToIncomeEntry,
                         onNavigateToBillEntry = onNavigateToBillEntry,
                         onNavigateToSavingsEntry = onNavigateToSavingsEntry,
-                        onNavigateToTransactionDetails = onNavigateToTransactionDetails,
+                        onNavigateToTransactionDetails = onNavigateToTransactionHistory,
                         onNavigateToLogSpending = onNavigateToLogSpending,
                         onNavigateToBudgets = onNavigateToBudgets,
                         viewModel = viewModel,
@@ -378,7 +382,14 @@ private fun HeaderSection(
                 onClick = onMenuClick,
                 modifier = Modifier.testTag("home_menu_button")
             ) {
-                Text(text = "☰", color = TextPrimary, fontSize = 20.sp)
+                Text(
+                    text = "☰",
+                    color = TextPrimary,
+                    fontSize = 20.sp,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Open Budget Menu"
+                    }
+                )
             }
         }
     }
@@ -411,7 +422,10 @@ private fun MonthSelector(
                     text = "‹",
                     color = TextMuted,
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Previous month"
+                    }
                 )
             }
 
@@ -442,7 +456,10 @@ private fun MonthSelector(
                     text = "›",
                     color = TextMuted,
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Next month"
+                    }
                 )
             }
         }
@@ -457,73 +474,80 @@ private fun HeroCard(
     val hasShortage = safeAmountCents < 0
     val displayAmount = MoneyParser.formatCents(if (hasShortage) 0 else safeAmountCents)
 
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .testTag("home_safe_now_card"),
-        shape = ShapeXXLarge,
-        colors = CardDefaults.cardColors(containerColor = CardHeroBackground),
-        onClick = onNavigateToShieldProgression
+            .semantics(mergeDescendants = true) {
+                semanticsTestTag = "home_safe_now_card"
+            }
     ) {
-        Box(
+        Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .drawBehind {
-                    drawRect(
-                        color = if (hasShortage) DangerDot else CyanAccent,
-                        style = Stroke(width = 1.dp.toPx()),
-                        alpha = 0.3f
-                    )
-                }
-                .padding(CardPaddingLarge)
+                .fillMaxWidth(),
+            shape = ShapeXXLarge,
+            colors = CardDefaults.cardColors(containerColor = CardHeroBackground),
+            onClick = onNavigateToShieldProgression
         ) {
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(IconContainerHero)
-                    .clip(ShapeLarge)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                GradientCyanStart,
-                                GradientCyanEnd
-                            )
+                    .fillMaxWidth()
+                    .drawBehind {
+                        drawRect(
+                            color = if (hasShortage) DangerDot else CyanAccent,
+                            style = Stroke(width = 1.dp.toPx()),
+                            alpha = 0.3f
                         )
-                    ),
-                contentAlignment = Alignment.Center
+                    }
+                    .padding(CardPaddingLarge)
             ) {
-                Text(text = "🗡️", fontSize = IconSizes.hero)
-            }
-
-            Column(
-                modifier = Modifier.align(Alignment.CenterStart),
-                verticalArrangement = Arrangement.spacedBy(Spacing.xSmall)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(IconContainerHero)
+                        .clip(ShapeLarge)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    GradientCyanStart,
+                                    GradientCyanEnd
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "🛡️", fontSize = 14.sp)
-                    Text(
-                        text = if (hasShortage) "SHORTAGE" else "Safe Now",
-                        color = if (hasShortage) DangerDot else CyanAccent,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "🗡️", fontSize = IconSizes.hero)
                 }
 
-                Text(
-                    text = displayAmount,
-                    color = if (hasShortage) DangerDot else TextPrimary,
-                    fontSize = 42.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
+                Column(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.xSmall)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(text = "🛡️", fontSize = 14.sp)
+                        Text(
+                            text = if (hasShortage) "SHORTAGE" else "Safe Now",
+                            color = if (hasShortage) DangerDot else CyanAccent,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
 
-                Text(
-                    text = if (hasShortage) "Tap to see options" else "Safe to spend right now",
-                    color = TextMuted,
-                    fontSize = 13.sp
-                )
+                    Text(
+                        text = displayAmount,
+                        color = if (hasShortage) DangerDot else TextPrimary,
+                        fontSize = 42.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+
+                    Text(
+                        text = if (hasShortage) "Tap to see options" else "Safe to spend right now",
+                        color = TextMuted,
+                        fontSize = 13.sp
+                    )
+                }
             }
         }
     }
@@ -638,7 +662,13 @@ private fun DailyActionsSection(
                     onClick = onViewBudgets,
                     modifier = Modifier.testTag("home_action_view_budgets")
                 ) {
-                    Text("📊 View Budgets", color = CyanAccent)
+                    Text(
+                        "📊 View Budgets",
+                        color = CyanAccent,
+                        modifier = Modifier.semantics {
+                            contentDescription = "View Budgets"
+                        }
+                    )
                 }
             }
         }
@@ -651,8 +681,11 @@ private fun ActionButton(icon: String, label: String, onClick: () -> Unit, testT
         Modifier
             .testTag(testTag)
             .clickable(onClick = onClick)
+            .semantics { contentDescription = label }
     } else {
-        Modifier.clickable(onClick = onClick)
+        Modifier
+            .clickable(onClick = onClick)
+            .semantics { contentDescription = label }
     }
 
     Column(

@@ -1,5 +1,45 @@
 # Task Queue
 
+## Task 20.12 Execution — 2026-09-19 (Current Authority)
+
+- **Task 20:** LOCALLY VERIFIED / RELEASE BLOCKED
+- **Completed increment:** release hardening and provenance
+- **Evidence:** `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, `assembleRelease`, and 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554`
+- **Repairs:** release build now enables R8 minification and resource shrinking; missing `app/proguard-rules.pro` added; provenance note recorded in `evidence/T20.12/release-hardening-provenance.md`
+- **Debug APK SHA-256:** `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`
+- **Android test APK SHA-256:** `098eb95bf7d795febf162d2bc98299d408adde9ccbe57fe4485d204b6fa5d3a1`
+- **Unsigned shrunk release APK SHA-256:** `62f46825a44b4089a95a6ff6b3b7d0f0cbdfa4d564cef51c67d2d972d29faf15`
+- **Release status:** BLOCKED on release-workflow hardening that requires GitHub `workflow` permission, exact-SHA GitHub Actions evidence after commit/push, protected release signing credentials/configuration, independent review, and owner release approval
+
+## Task 20.11 Execution — 2026-09-19
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** focused visual/accessibility audit and repair for high-confidence Compose semantics issues
+- **Evidence:** focused setup persistence regression test passes; 24/24 connected tests pass on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`; `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and `assembleRelease` pass locally; audit note recorded in `evidence/T20.11/visual-accessibility-audit.md`
+- **Repairs:** footer selected-state descriptions; Home icon/glyph control labels; Setup Quest date-picker labels; Bill Entry/Bill Payment error-banner descriptions; Budget Menu close label; Setup Quest status-bar padding; Home Safe Now card merged-semantics tag preservation
+- **Debug APK SHA-256:** `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`
+- **Note:** an initial connected suite found the Home Safe Now card tag only in the unmerged semantics tree; production semantics were repaired and the focused failing test plus full connected suite now pass
+- **Next increment:** continue Task 20 ordered recovery with CI/signing/shrinking/release provenance gates
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
+## Task 20.10 Execution — 2026-09-19 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** local phone-emulator runtime QA after T20.9 navigation/history repairs
+- **Evidence:** 251/251 JVM tests, debug APK build, lint, and 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554` running Android 15; debug APK SHA-256 `c4df9feba7f4d4069ad11cdbfee8777622cbaa068f62ef3eb43e46149aca30d4`
+- **Device evidence:** connected Android UI tests ran locally on the phone emulator only; no Wear watch or physical device was used
+- **Next increment:** continue Task 20 ordered recovery with visual/accessibility gates, then CI/signing/shrinking/release provenance gates
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
+## Task 20.9 Execution — 2026-09-19
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** registered and wired Transaction History from the visible history controls; fixed single-top route equality for parameterized navigation; removed a hard-coded placeholder transaction ID from Transaction Details; updated route tests and the screen map to the current 18-route registry
+- **Evidence:** `testDebugUnitTest`, `assembleDebug`, and `lintDebug` pass locally
+- **Manager-direct note:** implemented directly in the manager session for T20.9
+- **Next increment:** continue Task 20 ordered recovery with device matrix/runtime QA, then visual/accessibility and CI/signing/shrinking/release provenance gates
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
 ## Task 20.8 Execution — 2026-09-19 (Current Authority)
 
 - **Task 20:** IN PROGRESS

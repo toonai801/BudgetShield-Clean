@@ -40,6 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.ui.viewmodel.BillPaymentViewModel
@@ -199,6 +201,9 @@ private fun ErrorBanner(message: String) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .semantics {
+                    contentDescription = "Error: $message"
+                }
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)

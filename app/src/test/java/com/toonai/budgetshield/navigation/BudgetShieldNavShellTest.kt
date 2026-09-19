@@ -104,8 +104,9 @@ class BudgetShieldNavShellTest {
         // BillEntry is owned by Home
         assertEquals(MainDestination.HOME, getMainDestinationForKey(BillEntry))
 
-        // TransactionDetails is owned by Home
+        // TransactionDetails and TransactionHistory are owned by Home
         assertEquals(MainDestination.HOME, getMainDestinationForKey(TransactionDetails()))
+        assertEquals(MainDestination.HOME, getMainDestinationForKey(TransactionHistory))
     }
 
     @Test
@@ -116,17 +117,14 @@ class BudgetShieldNavShellTest {
     }
 
     @Test
-    fun `all production routes have footer - SetupQuest has null selection but still shows footer`() {
+    fun `all production routes except SetupQuest have footer ownership`() {
         val allRoutes = BudgetShieldRouteRegistry.allDestinations
 
-        // All 17 routes should either map to a destination OR SetupQuest (which has footer but no selected tab)
-        assertEquals("Should have 17 registered routes", 17, allRoutes.size)
+        assertEquals("Should have 18 registered routes", 18, allRoutes.size)
 
         for (route in allRoutes) {
             val destination = getMainDestinationForKey(route)
 
-            // SetupQuest returns null (no selected tab), but ALL routes show footer
-            // Footer presence is determined by isValidDestination, not by getMainDestinationForKey
             when (route) {
                 is SetupQuest -> {
                     assertNull("SetupQuest should have no selected tab", destination)
@@ -138,18 +136,17 @@ class BudgetShieldNavShellTest {
     }
 
     @Test
-    fun `SetupQuest uses footer even with null selected destination`() {
-        // SetupQuest is registered and gets footer, but shows no selected tab
+    fun `SetupQuest has no selected footer destination`() {
         assertTrue("SetupQuest is valid registered route", BudgetShieldRouteRegistry.isValidDestination(SetupQuest))
         assertNull("SetupQuest has no selected tab", getMainDestinationForKey(SetupQuest))
     }
 
     @Test
-    fun `all 17 routes have correct ownership mapping`() {
+    fun `all 18 routes have correct ownership mapping`() {
         // Home-owned routes highlight HOME
         val homeOwnedRoutes = listOf(
             Home, Bills, IncomeEntry, BillEntry, BillPayment,
-            TransactionDetails(), BillProtected, ShieldProgression,
+            TransactionDetails(), TransactionHistory, BillProtected, ShieldProgression,
             LogSpending, Budgets, 
         )
         for (route in homeOwnedRoutes) {

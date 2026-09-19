@@ -335,7 +335,7 @@ private fun ProfileCard() {
 
                 Column {
                     Text(
-                        text = "Budget Buddy",
+                        text = "Budget Shield",
                         color = TextPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold

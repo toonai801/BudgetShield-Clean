@@ -32,6 +32,7 @@ import com.toonai.budgetshield.ui.screens.SetupQuestScreen
 import com.toonai.budgetshield.ui.screens.ShieldProgressionScreen
 import com.toonai.budgetshield.ui.screens.StatsScreen
 import com.toonai.budgetshield.ui.screens.TransactionDetailsScreen
+import com.toonai.budgetshield.ui.screens.TransactionHistoryScreen
 import com.toonai.budgetshield.ui.screens.TreasureScreen
 import com.toonai.budgetshield.ui.viewmodel.BillsViewModel
 import com.toonai.budgetshield.ui.viewmodel.GoalsViewModel
@@ -40,6 +41,7 @@ import com.toonai.budgetshield.ui.viewmodel.SavingsEntryViewModel
 import com.toonai.budgetshield.ui.viewmodel.SettingsViewModel
 import com.toonai.budgetshield.ui.viewmodel.StatsViewModel
 import com.toonai.budgetshield.ui.viewmodel.TransactionViewModel
+import com.toonai.budgetshield.ui.viewmodel.TransactionHistoryViewModel
 import com.toonai.budgetshield.ui.viewmodel.LogSpendingViewModel
 import com.toonai.budgetshield.ui.viewmodel.BudgetsViewModel
 
@@ -66,6 +68,7 @@ fun getMainDestinationForKey(key: NavKey): MainDestination? {
         is BillPaymentWithId -> MainDestination.HOME
         is SavingsEntry -> MainDestination.HOME
         is TransactionDetails -> MainDestination.HOME
+        is TransactionHistory -> MainDestination.HOME
         is BillProtected -> MainDestination.HOME
         is ShieldProgression -> MainDestination.HOME
         is BudgetMenu -> MainDestination.HOME
@@ -105,6 +108,7 @@ private fun BudgetShieldScreenContent(
                 onNavigateToBillEntry = { onNavigate(Bills) },
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
                 onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
+                onNavigateToTransactionHistory = { onNavigate(TransactionHistory) },
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) },
                 onNavigateToMenu = { onNavigate(BudgetMenu) },
                 onNavigateToLogSpending = { onNavigate(LogSpending) },
@@ -129,25 +133,26 @@ private fun BudgetShieldScreenContent(
             BillsScreen(
                 onNavigateToBillEntry = { onNavigate(BillEntry) },
                 onNavigateToBillPayment = { billId -> onNavigate(BillPaymentWithId(billId)) },
-                onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
+                onNavigateToTransactionDetails = { onNavigate(TransactionHistory) },
                 onNavigateToHome = { onNavigate(Home) }
             )
         }
         is Stats -> {
             StatsScreen(
-                onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) }
+                onNavigateToTransactionDetails = { onNavigate(TransactionHistory) }
             )
         }
         is Goals -> {
             GoalsScreen(
                 onNavigateToSavingsEntry = { onNavigate(SavingsEntry) },
-                onNavigateToTransactionDetails = { onNavigate(TransactionDetails()) },
+                onNavigateToTransactionDetails = { onNavigate(TransactionHistory) },
                 onNavigateToShieldProgression = { onNavigate(ShieldProgression) }
             )
         }
         is Settings -> {
             SettingsScreen(
-                onNavigateToSetupQuest = { onNavigate(SetupQuest) }
+                onNavigateToSetupQuest = { onNavigate(SetupQuest) },
+                onNavigateToTransactionHistory = { onNavigate(TransactionHistory) }
             )
         }
         is IncomeEntry -> {
@@ -204,7 +209,17 @@ private fun BudgetShieldScreenContent(
                 onNavigateToHome = { onNavigate(Home) },
                 onNavigateToTreasure = { onNavigate(Treasure) },
                 onNavigateToStats = { onNavigate(Stats) },
-                onNavigateToGoals = { onNavigate(Goals) }
+                onNavigateToGoals = { onNavigate(Goals) },
+                onNavigateToTransactionHistory = { onNavigate(TransactionHistory) }
+            )
+        }
+        is TransactionHistory -> {
+            TransactionHistoryScreen(
+                viewModel = viewModel(
+                    factory = TransactionHistoryViewModel.Factory(repositories.transactionRepository)
+                ),
+                onBack = { onNavigateBack() },
+                onTransactionSelected = { transactionId -> onNavigate(TransactionDetails(transactionId)) }
             )
         }
         is BillProtected -> {

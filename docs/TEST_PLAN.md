@@ -4,7 +4,7 @@
 
 **Authority:** Minimum verification strategy and evidence required for task, beta, and release acceptance
 
-**Current verified checkpoint:** Task 20.3 — 241/241 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug` passed locally for implementation commit `b874b2f`; schema version 5 is exported with identity `33a854ca5e4e735d335a371f314b2c4f`. The repair-panel UI test compiled but was not executed because no device was connected. The latest executed connected-test checkpoint remains Task 18 with 23/23 API 34 tests at commit `37c49e5` and GitHub Actions run `30776785734`.
+**Current verified checkpoint:** Task 20.12 — focused setup persistence regression, 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`, `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and shrunk `assembleRelease` passed locally on 2026-09-19. Debug APK SHA-256: `3ebe4e6b83acd9cadd90e1ab41f5931e3095ff4972b6c4718dd50973a24f07fd`; unsigned shrunk release APK SHA-256: `62f46825a44b4089a95a6ff6b3b7d0f0cbdfa4d564cef51c67d2d972d29faf15`. Schema version 5 is exported with identity `33a854ca5e4e735d335a371f314b2c4f`. GitHub Actions still needs to be run on the exact current candidate SHA before release approval.
 
 ## 1. Test objectives
 
@@ -35,7 +35,7 @@ A successful compile, a green unit suite, an APK, or screenshots alone cannot es
 
 ### JVM tests
 
-The current repository contains 17 JVM test suites and 241 passing test methods at the Task 20.3 checkpoint. Coverage areas include:
+The current repository contains 17 JVM test suites and 251 passing test methods at the Task 20.11 checkpoint. Coverage areas include:
 
 - Safe Now calculation and recalculation
 - Money parsing and formatting
@@ -51,19 +51,20 @@ Passing existing tests are regression assets, not proof that all contract cases 
 
 ### Connected tests
 
-Three instrumentation classes currently contain 23 test methods:
+Four instrumentation classes currently contain 24 test methods:
 
+- `HomeRepairPanelTest`
 - `SetupQuestFlowTest`
 - `NavigationSmokeTest`
 - `PersistentFooterTest`
 
-At Task 18, all 23 passed locally and in GitHub Actions on an API 34 x86_64 Google APIs emulator. They principally cover setup progression/persistence, route smoke behavior, setup-to-Home stack replacement, and footer visibility.
+At Task 20.11, all 24 passed locally on `FN_WS_Phone_API35` / `emulator-5554` running Android 15. They principally cover setup progression/persistence, route smoke behavior, setup-to-Home stack replacement, footer visibility, and Home repair-panel behavior. GitHub connected evidence for the exact current SHA remains required before release approval.
 
 ### CI workflows
 
 - `qa-gate.yml`: clean, compile, JVM tests, lint, debug APK, Android-test APK; currently scoped to `main` push/PR plus manual dispatch.
 - `android-debug.yml`: JVM build/test plus API 34 connected tests; currently scoped to `main` push/PR plus manual dispatch.
-- Release workflow: produces a debug beta after non-device gates; it does not currently require the connected suite and is not a signed production release.
+- Release workflow: produces a debug beta after clean/compile/unit/lint/debug APK/Android-test APK gates. It does not currently require the connected suite because the attempted workflow hardening is blocked by the current GitHub token lacking `workflow` scope.
 
 The recovery branch requires explicit workflow dispatch/API verification until branch triggers are corrected.
 
@@ -340,10 +341,10 @@ CI must not publish a release when the connected gate is absent, skipped, cancel
 - The supported v1→v5 chain and non-destructive downgrade behavior now have local preservation evidence and version 5 is exported; connected-device migration evidence and future-version schema discipline remain required.
 - Visual/accessibility/device coverage is not a current candidate matrix.
 - CI branch triggers do not automatically cover the recovery branch.
-- The release workflow can publish without connected tests and produces a debug-signed artifact.
-- Signing, shrinking, ProGuard, supported upgrade, real-device, and independent release gates remain open.
+- The release workflow can still publish without connected tests and produces a debug-signed artifact; hardening it requires GitHub `workflow` permission.
+- Signing, supported upgrade, real-device breadth, exact-SHA GitHub CI evidence, and independent release gates remain open. Shrinking/R8 now builds locally for the unsigned release variant.
 
-Task 19 records the required strategy. Task 20.1 through 20.3 are verified implementation increments; Task 20 must continue in the approved order.
+Task 19 records the required strategy. Task 20.1 through 20.11 are verified implementation increments; Task 20 must continue in the approved order.
 
 ## 16. Approved test direction and explicit deferrals
 

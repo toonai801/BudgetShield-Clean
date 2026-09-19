@@ -8,9 +8,9 @@
 
 Budget Shield is a single-activity Jetpack Compose application using type-safe Navigation 3 `NavKey` routes.
 
-The production registry contains 17 canonical destination entries. The route file contains an additional parameterized `BillPaymentWithId(billId)` variant accepted by the registry validator, so code comments that still say “14 destinations” are stale.
+The production registry contains 18 canonical destination entries. The route file contains an additional parameterized `BillPaymentWithId(billId)` variant accepted by the registry validator, so code comments that still say “14 destinations” are stale.
 
-The source tree contains 18 `*Screen.kt` files. `TransactionHistoryScreen` is implemented but has no registered route or production entry mapping.
+The source tree contains 18 `*Screen.kt` files. `TransactionHistoryScreen` is registered as a Home-owned secondary route.
 
 ## 2. Persistent footer
 
@@ -34,19 +34,20 @@ All financial secondary screens currently select Home as their owning footer tab
 | 2 | `Home` | `HomeScreen` | Home | Safe Now dashboard, selected month, quick actions, activity | Initial destination after completed setup; footer | Back exits at root; secondary actions push owned routes |
 | 3 | `Treasure` | `TreasureScreen` | Treasure | Real-data XP, achievements, streaks, chests/reward history | Footer; Home entry point if shown | Footer or Back |
 | 4 | `Bills` | `BillsScreen` | Home | Bill list, protected totals, add/pay actions | Home “Pay Bill”; Budget Menu | Home, Bill Entry, parameterized Bill Payment, Transaction Details |
-| 5 | `Stats` | `StatsScreen` | Stats | Financial aggregates and category breakdown | Footer | Transaction Details or footer |
-| 6 | `Goals` | `GoalsScreen` | Goals | Savings goals, streaks, shield summary | Footer | Savings Entry, Transaction Details, Shield Progression, footer |
-| 7 | `Settings` | `SettingsScreen` | Settings | Preferences and monthly budget configuration | Footer; Budget Menu | Footer; approved Setup Quest/reset flow |
+| 5 | `Stats` | `StatsScreen` | Stats | Financial aggregates and category breakdown | Footer | Transaction History or footer |
+| 6 | `Goals` | `GoalsScreen` | Goals | Savings goals, streaks, shield summary | Footer | Savings Entry, Transaction History, Shield Progression, footer |
+| 7 | `Settings` | `SettingsScreen` | Settings | Preferences and monthly budget configuration | Footer; Budget Menu | Footer, Transaction History, approved Setup Quest/reset flow |
 | 8 | `IncomeEntry` | `IncomeEntryScreen` | Home | Add or maintain income schedule | Home quick action; Budget Menu | Home after save/cancel; Setup Quest only in explicit setup context |
 | 9 | `BillEntry` | `BillEntryScreen` | Home | Add bill obligation | Bills | Bills after save/cancel; Home where explicitly offered |
 | 10 | `BillPayment` | `BillPaymentScreen` | Home | Generic bill-payment flow without preselected ID | Direct internal route only | Bill Protected on success; Back on cancel |
 | 11 | `SavingsEntry` | `SavingsEntryScreen` | Home | Record savings/goal contribution | Home; Goals; Budget Menu | Goals or Home |
-| 12 | `TransactionDetails(transactionId?)` | `TransactionDetailsScreen` | Home | Inspect one transaction; optional ID currently permits empty/placeholder state | Home activity, Bills, Stats, Goals | Back or footer destinations |
+| 12 | `TransactionDetails(transactionId?)` | `TransactionDetailsScreen` | Home | Inspect one transaction; optional ID shows an honest empty state | Home activity and Transaction History rows | Back, Transaction History, or footer destinations |
 | 13 | `BillProtected` | `BillProtectedScreen` | Home | Confirm successful protection/payment | Bill Payment | Home, Treasure, or Shield Progression |
 | 14 | `ShieldProgression` | `ShieldProgressionScreen` | Home | Shield level and XP progression | Home, Goals, Bill Protected | Back/footer |
 | 15 | `BudgetMenu` | `BudgetMenuScreen` | Home | Menu for Bills, Income, Savings, Settings | Home menu action | Selected destination or Back/dismiss |
 | 16 | `LogSpending` | `LogSpendingScreen` | Home | Record categorized spending | Home; Budgets | Back after completion/cancel |
 | 17 | `Budgets` | `BudgetsScreen` | Home | View monthly budget categories and usage | Home | Log Spending or Back |
+| 18 | `TransactionHistory` | `TransactionHistoryScreen` | Home | Inspect transaction ledger history | Home activity, Bills, Stats, Goals, Settings | Back or Transaction Details |
 
 ### Accepted parameterized variant
 
@@ -54,11 +55,9 @@ All financial secondary screens currently select Home as their owning footer tab
 |---|---|---|
 | `BillPaymentWithId(billId)` | `BillPaymentScreen` | Preferred Bills-to-payment route. The ID must resolve to a real bill; missing/deleted IDs produce an explicit error and safe Back path. |
 
-## 4. Implemented but not registered
+## 4. Implemented route status
 
-| Screen | Current state | Contract decision required |
-|---|---|---|
-| `TransactionHistoryScreen` | Production composable and ViewModel exist. `SettingsScreen` exposes a callback, but `BudgetShieldNavShell` does not provide it and no `NavKey` exists. | Add a registered route and entry point, or remove/hide the unreachable implementation. Owner must decide whether it is required for the next beta. |
+`TransactionHistoryScreen` is registered as `TransactionHistory` and reachable from Home-owned history controls.
 
 ## 5. Route ownership rules
 
@@ -72,6 +71,7 @@ These keep Home selected in the footer:
 - Bill Payment / Bill Payment With ID
 - Savings Entry
 - Transaction Details
+- Transaction History
 - Bill Protected
 - Shield Progression
 - Budget Menu
@@ -125,6 +125,7 @@ Home, Goals, or Budget Menu → Savings Entry → Save → Goals or Home
 ```text
 Home → Budgets → Log Spending → Back to Budgets
 Home → Log Spending → completion returns to prior screen
+Home → Transaction History → Transaction Details
 ```
 
 ### Explore progress
@@ -150,14 +151,14 @@ A sample or preview value may appear only in design preview/test code. Productio
 
 ## 8. Back-stack rules
 
-- Top-level navigation uses single-top behavior by route type.
+- Top-level navigation uses single-top behavior by route value.
 - Selecting a different top-level tab adds or activates the intended destination without duplicate consecutive entries.
 - Nested Back removes the current destination and returns to the prior destination.
 - Back from a sole Home root exits the activity.
 - Setup completion clears all setup/nested entries before adding Home.
 - Parameterized routes require deliberate equality behavior: navigating to a second transaction/bill ID must not be suppressed merely because the route class matches.
 
-The current `navigateSingleTop` compares Java classes, which can suppress a second parameterized destination with a different ID. That is a known implementation gap.
+`navigateSingleTop` compares full route values, so identical consecutive destinations are suppressed while distinct parameterized IDs remain reachable.
 
 ## 9. Screen-specific acceptance notes
 
@@ -187,13 +188,13 @@ The current `navigateSingleTop` compares Java classes, which can suppress a seco
 - A details route normally carries a real transaction ID.
 - Missing ID uses an honest selection/empty state, not a sample “Rent Payment.”
 - Editing/deleting must conform to the immutable-ledger decision.
-- History is either made reachable and tested or excluded from the release surface.
+- History is reachable and tested as a Home-owned route.
 
 ### Settings
 
 - Preference changes persist and survive relaunch.
 - Reset/re-onboarding requires confirmation and a defined data-retention outcome.
-- Transaction History control is hidden until its route works.
+- Transaction History control opens the registered history route.
 
 ## 10. Accessibility and responsive behavior
 
@@ -226,13 +227,12 @@ For every screen and state:
 
 The owner approved the five-tab footer in the order Home, Treasure, Stats, Goals, Settings and required Transaction History to become a reachable, tested next-beta route. The following implementation contradictions remain Task 20 work:
 
-- Route comments say 14 while the registry contains 17 canonical entries.
+- Route comments saying 14 destinations were stale; the registry now contains 18 canonical entries.
 - `BillPaymentWithId` is valid but omitted from `allDestinations` as a separate entry, which must be documented consistently.
-- `TransactionHistoryScreen` exists without a route.
-- `SettingsScreen` has a Transaction History callback that is not wired by the shell.
+- `TransactionHistoryScreen` is now registered and wired from Settings/history controls.
 - Some Home callbacks are intentionally empty because their controls are hidden/removed; tests must confirm they cannot appear enabled.
-- `navigateSingleTop` compares route classes and may mishandle distinct parameterized IDs.
-- Transaction Details currently permits no ID and contains placeholder/sample behavior.
+- `navigateSingleTop` now compares route values so distinct parameterized IDs are not suppressed.
+- Transaction Details permits no ID only as an honest empty state; it must not show sample transaction data.
 - `BillProtectedScreen` is invoked without passing the paid bill ID, so confirmation detail can fall back to generic values.
 
 This draft makes those gaps visible; it does not approve them.
