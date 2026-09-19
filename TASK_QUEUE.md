@@ -1,6 +1,15 @@
 # Task Queue
 
-## Task 20.6 Execution — 2026-09-19 (Current Authority)
+## Task 20.7 Execution — 2026-09-19 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** Home now reads persisted current streak from `UserStreak` and recent activity from immutable transaction ledger rows instead of hard-coded zero/reconstructed paid-bill data; Home activity supports spending rows
+- **Evidence:** 251/251 JVM tests; debug app, Android test APK, and lint pass; 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554`; debug APK SHA-256 `629f8ddf714bf0dcc29c53888691c4d4b6daa154ae3e7ce9b92286beea4726d4`
+- **Device evidence:** connected Android UI tests ran locally on the phone emulator; the attached Wear watch was not used
+- **Next increment:** continue Task 20 ordered recovery with remaining navigation/placeholders, then device matrix, accessibility/visual, CI/signing/shrinking, and release provenance gates
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
+## Task 20.6 Execution — 2026-09-19
 
 - **Task 20:** IN PROGRESS
 - **Completed increment:** setup activation now atomically commits first-run settings, optional income, setup budgets, bills, draft cleanup, and setup XP; duplicate setup completion after first-run state is complete is idempotent and does not duplicate income, bills, or XP

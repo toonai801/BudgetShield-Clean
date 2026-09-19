@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.toonai.budgetshield.data.calculator.SafeNowCalculator
 import com.toonai.budgetshield.data.model.Bill
 import com.toonai.budgetshield.data.model.IncomeSchedule
+import com.toonai.budgetshield.data.model.Transaction
 import com.toonai.budgetshield.data.model.UserSettings
 import com.toonai.budgetshield.data.repository.BillRepository
 import com.toonai.budgetshield.data.repository.IncomeRepository
+import com.toonai.budgetshield.data.repository.SavingsGoalRepository
+import com.toonai.budgetshield.data.repository.TransactionRepository
 import com.toonai.budgetshield.data.repository.UserSettingsRepository
 import com.toonai.budgetshield.ui.screens.TransactionType
 import com.toonai.budgetshield.ui.screens.TransactionUiModel
@@ -27,7 +30,9 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val userSettingsRepository: UserSettingsRepository,
     private val billRepository: BillRepository,
-    private val incomeRepository: IncomeRepository
+    private val incomeRepository: IncomeRepository,
+    private val transactionRepository: TransactionRepository,
+    private val savingsGoalRepository: SavingsGoalRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -36,54 +41,57 @@ class HomeViewModel @Inject constructor(
     fun loadHomeData() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = loadHomeDataState()
+        }
+    }
 
-            try {
-                val userSettings = userSettingsRepository.getSettings()
-                    ?: UserSettings(id = 1L, cashOnHandCents = 0L, savingsBalanceCents = 0L)
+    internal suspend fun loadHomeDataState(): HomeUiState {
+        return try {
+            val userSettings = userSettingsRepository.getSettings()
+                ?: UserSettings(id = 1L, cashOnHandCents = 0L, savingsBalanceCents = 0L)
 
-                val bills = billRepository.allBills.first()
-                val income = incomeRepository.getAllActiveSchedules().first()
-                val selectedMonth = userSettings.selectedMonth.let {
-                    if (it.isNotEmpty()) YearMonth.parse(it) else YearMonth.now()
-                }
-
-                val safeNowResult = SafeNowCalculator.calculate(
-                    userSettings = userSettings,
-                    bills = bills.filter { it.isProtected },
-                    incomeSchedules = income.filter { it.isConfirmed },
-                    selectedMonth = selectedMonth.toString(),
-                    today = LocalDate.now().toString()
-                )
-
-                val totalShielded = bills
-                    .filter { it.isProtected && it.isPaid }
-                    .sumOf { it.paidAmountCents }
-
-                val shieldPower = calculateShieldPower(bills)
-
-                val recentTransactions = buildRecentTransactions(bills)
-
-                _uiState.value = HomeUiState(
-                    isLoading = false,
-                    safeNowCents = safeNowResult.safeNowCents,
-                    hasShortage = safeNowResult.hasShortage,
-                    shortageCents = safeNowResult.shortageCents,
-                    cashOnHandCents = userSettings.cashOnHandCents,
-                    savingsCents = userSettings.savingsBalanceCents,
-                    selectedMonth = selectedMonth,
-                    currentStreak = calculateStreak(bills),
-                    shieldPower = shieldPower,
-                    totalShieldedCents = totalShielded,
-                    protectedBillsCount = bills.count { it.isProtected && !it.isPaid },
-                    recentTransactions = recentTransactions,
-                    hasUnreadRewards = false
-                )
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState(
-                    isLoading = false,
-                    error = e.message ?: "Safe Now could not verify the saved financial data"
-                )
+            val bills = billRepository.allBills.first()
+            val income = incomeRepository.getAllActiveSchedules().first()
+            val selectedMonth = userSettings.selectedMonth.let {
+                if (it.isNotEmpty()) YearMonth.parse(it) else YearMonth.now()
             }
+
+            val safeNowResult = SafeNowCalculator.calculate(
+                userSettings = userSettings,
+                bills = bills.filter { it.isProtected },
+                incomeSchedules = income.filter { it.isConfirmed },
+                selectedMonth = selectedMonth.toString(),
+                today = LocalDate.now().toString()
+            )
+
+            val totalShielded = bills
+                .filter { it.isProtected && it.isPaid }
+                .sumOf { it.paidAmountCents }
+
+            val shieldPower = calculateShieldPower(bills)
+            val recentTransactions = transactionRepository.getRecentTransactions(limit = 5)
+            val currentStreak = savingsGoalRepository.getCurrentStreak()
+
+            HomeUiState(
+                isLoading = false,
+                safeNowCents = safeNowResult.safeNowCents,
+                hasShortage = safeNowResult.hasShortage,
+                shortageCents = safeNowResult.shortageCents,
+                cashOnHandCents = userSettings.cashOnHandCents,
+                savingsCents = userSettings.savingsBalanceCents,
+                selectedMonth = selectedMonth,
+                currentStreak = currentStreak,
+                shieldPower = shieldPower,
+                totalShieldedCents = totalShielded,
+                protectedBillsCount = bills.count { it.isProtected && !it.isPaid },
+                recentTransactions = buildRecentTransactions(recentTransactions),
+                hasUnreadRewards = false
+            )
+        } catch (e: Exception) {
+            HomeUiState(
+                isLoading = false,
+                error = e.message ?: "Safe Now could not verify the saved financial data"
+            )
         }
     }
 
@@ -122,25 +130,33 @@ class HomeViewModel @Inject constructor(
         return (paidBills.size * 100 / protectedBills.size)
     }
 
-    private fun calculateStreak(bills: List<Bill>): Int {
-        return 0 // TODO: implement proper streak calculation
-    }
-
-    private fun buildRecentTransactions(bills: List<Bill>): List<TransactionUiModel> {
-        return bills
-            .filter { it.isPaid }
-            .sortedByDescending { it.createdAt }
-            .take(5)
-            .map { bill ->
+    private fun buildRecentTransactions(transactions: List<Transaction>): List<TransactionUiModel> {
+        return transactions
+            .map { transaction ->
                 TransactionUiModel(
-                    id = bill.id,
-                    name = bill.name,
-                    amountDisplay = "-${MoneyParser.formatCents(bill.paidAmountCents)}",
-                    date = bill.dueDate,
-                    type = TransactionType.BILL_PAYMENT,
-                    icon = bill.icon
+                    id = transaction.id,
+                    name = transaction.title,
+                    amountDisplay = transaction.toDisplayAmount(),
+                    date = transaction.transactionDate,
+                    type = transaction.toUiType(),
+                    icon = transaction.icon
                 )
             }
+    }
+
+    private fun Transaction.toUiType(): TransactionType {
+        return when (type) {
+            Transaction.TYPE_INCOME -> TransactionType.INCOME
+            Transaction.TYPE_BILL_PAYMENT -> TransactionType.BILL_PAYMENT
+            Transaction.TYPE_SAVINGS -> TransactionType.SAVINGS
+            Transaction.TYPE_SPENDING -> TransactionType.SPENDING
+            else -> if (amountCents >= 0) TransactionType.INCOME else TransactionType.SPENDING
+        }
+    }
+
+    private fun Transaction.toDisplayAmount(): String {
+        val sign = if (amountCents < 0) "-" else "+"
+        return "$sign${MoneyParser.formatCents(kotlin.math.abs(amountCents))}"
     }
 }
 

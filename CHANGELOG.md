@@ -1,5 +1,21 @@
 # Changelog
 
+## [Task 20.7 — Home Ledger/Streak Source-of-Truth] — 2026-09-19
+
+### Repaired
+
+- Replaced Home's hard-coded current streak value with the persisted streak record.
+- Replaced Home's paid-bill reconstruction of recent activity with immutable transaction ledger rows.
+- Added Home activity support for spending transactions.
+- Added production and instrumentation-test Hilt providers for `SavingsGoalRepository`.
+- Added a HomeViewModel test proving streak and recent activity load from persisted ledgers.
+
+### Verified
+
+- Local phone emulator `FN_WS_Phone_API35` / `emulator-5554`: 24/24 connected tests passed.
+- Local non-device gate passed: 251/251 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`.
+- Task 20 remains IN PROGRESS; remaining navigation/placeholders, accessibility/device matrix, CI/signing, and release provenance remain open.
+
 ## [Task 20.6 — Atomic Setup Activation] — 2026-09-19
 
 ### Repaired

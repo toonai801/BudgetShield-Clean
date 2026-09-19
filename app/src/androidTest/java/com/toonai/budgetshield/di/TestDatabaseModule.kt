@@ -6,6 +6,7 @@ import com.toonai.budgetshield.data.database.*
 import com.toonai.budgetshield.data.repository.BillRepository
 import com.toonai.budgetshield.data.repository.BudgetRepository
 import com.toonai.budgetshield.data.repository.IncomeRepository
+import com.toonai.budgetshield.data.repository.SavingsGoalRepository
 import com.toonai.budgetshield.data.repository.SetupActivationRepository
 import com.toonai.budgetshield.data.repository.TransactionRepository
 import com.toonai.budgetshield.data.repository.UserSettingsRepository
@@ -98,6 +99,12 @@ object TestDatabaseModule {
     @Singleton
     fun provideTransactionRepository(transactionDao: TransactionDao): TransactionRepository {
         return TransactionRepository(transactionDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSavingsGoalRepository(database: BudgetShieldDatabase): SavingsGoalRepository {
+        return SavingsGoalRepository(database)
     }
 
     @Provides

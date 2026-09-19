@@ -791,6 +791,7 @@ private fun ActivityItem(transaction: TransactionUiModel) {
                         TransactionType.INCOME -> GreenAccent20
                         TransactionType.BILL_PAYMENT -> DangerDot20
                         TransactionType.SAVINGS -> GoldAccent20
+                        TransactionType.SPENDING -> DangerDot20
                     }
                 ),
             contentAlignment = Alignment.Center
@@ -820,6 +821,7 @@ private fun ActivityItem(transaction: TransactionUiModel) {
                 TransactionType.INCOME -> GreenAccent
                 TransactionType.BILL_PAYMENT -> DangerDot
                 TransactionType.SAVINGS -> GoldAccent
+                TransactionType.SPENDING -> DangerDot
             },
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
@@ -838,7 +840,7 @@ data class TransactionUiModel(
 )
 
 enum class TransactionType {
-    INCOME, BILL_PAYMENT, SAVINGS
+    INCOME, BILL_PAYMENT, SAVINGS, SPENDING
 }
 
 // ============================================

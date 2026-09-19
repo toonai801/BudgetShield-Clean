@@ -1,8 +1,14 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 20.7 Verified Locally (2026-09-19)
+
+This checkpoint removes the remaining Home production placeholder/source-of-truth gaps found in this pass: current streak now comes from persisted `UserStreak`, recent activity now comes from immutable transaction ledger rows, and spending transactions render as Home activity rows. Production and instrumentation-test Hilt modules now provide `SavingsGoalRepository` for Home.
+
+The checkpoint passes 251 JVM tests, debug assembly, Android test APK assembly, lint, and 24/24 connected tests on the local phone AVD `FN_WS_Phone_API35` / `emulator-5554`. Task 20 remains **IN PROGRESS**; broader placeholder cleanup, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
+
 ## Recovery Progress — Task 20.6 Verified Locally (2026-09-19)
 
-Checkpoint pending commit implements the setup activation mutation/idempotency increment after savings/spending ledger work: setup completion now validates the requested first-run data and commits optional income, Food/Wants budgets, bills, first-run settings, draft cleanup, and setup XP atomically. Re-running setup completion after first-run setup is complete is a no-op and does not duplicate income, bills, or XP. Rejected setup activation leaves all related records unchanged.
+Checkpoint `b056136` implements the setup activation mutation/idempotency increment after savings/spending ledger work: setup completion now validates the requested first-run data and commits optional income, Food/Wants budgets, bills, first-run settings, draft cleanup, and setup XP atomically. Re-running setup completion after first-run setup is complete is a no-op and does not duplicate income, bills, or XP. Rejected setup activation leaves all related records unchanged.
 
 The checkpoint passes 250 JVM tests, debug assembly, Android test APK assembly, lint, and 24/24 connected tests on the local phone AVD `FN_WS_Phone_API35` / `emulator-5554`. Task 20 remains **IN PROGRESS**; broader placeholder cleanup, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
 
