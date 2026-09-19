@@ -189,9 +189,7 @@ private fun BudgetShieldScreenContent(
             SavingsEntryScreen(
                 viewModel = viewModel(
                     factory = SavingsEntryViewModel.Factory(
-                        repositories.savingsGoalRepository,
-                        repositories.transactionRepository,
-                        repositories.xpRepository
+                        repositories.savingsGoalRepository
                     )
                 ),
                 onNavigateToGoals = { onNavigate(Goals) },

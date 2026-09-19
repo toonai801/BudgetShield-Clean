@@ -1,5 +1,20 @@
 # Changelog
 
+## [Task 20.5 — Savings and Spending Atomic Ledger] — 2026-09-19
+
+### Repaired
+
+- Added atomic savings contribution persistence: cleared cash reduction, savings balance increase, optional goal progress/completion, immutable savings transaction, XP ledger entry, and streak update commit together.
+- Added atomic spending persistence: category spent amount, cleared cash reduction, immutable spending transaction, and budget-on-track XP commit together.
+- Updated Savings Entry and Log Spending ViewModels to use the atomic repository methods instead of split DAO/repository calls.
+- Added repository tests proving accepted and rejected savings/spending mutations affect all required records together or not at all.
+
+### Verified
+
+- Local phone emulator `FN_WS_Phone_API35` / `emulator-5554`: 24/24 connected tests passed.
+- Local non-device gate passed: 247/247 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`.
+- Task 20 remains IN PROGRESS; setup activation XP/idempotency, remaining navigation/placeholders, accessibility/device matrix, CI/signing, and release provenance remain open.
+
 ## [Task 20.4 — Atomic Bill-Payment Ledger] — 2026-09-19
 
 ### Repaired

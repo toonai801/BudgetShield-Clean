@@ -89,8 +89,8 @@ object TestDatabaseModule {
 
     @Provides
     @Singleton
-    fun provideBudgetRepository(budgetCategoryDao: BudgetCategoryDao): BudgetRepository {
-        return BudgetRepository(budgetCategoryDao)
+    fun provideBudgetRepository(database: BudgetShieldDatabase): BudgetRepository {
+        return BudgetRepository(database)
     }
 
     @Provides

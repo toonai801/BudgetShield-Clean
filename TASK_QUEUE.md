@@ -1,5 +1,14 @@
 # Task Queue
 
+## Task 20.5 Execution — 2026-09-19 (Current Authority)
+
+- **Task 20:** IN PROGRESS
+- **Completed increment:** savings contributions now atomically update cash, savings balance, optional goal progress/completion, immutable transaction ledger, XP ledger, and streak; spending now atomically updates budget spent amount, cash, immutable transaction ledger, and budget-on-track XP
+- **Evidence:** 247/247 JVM tests; debug app, Android test APK, and lint pass; 24/24 connected tests pass locally on phone AVD `FN_WS_Phone_API35` / `emulator-5554`; debug APK SHA-256 `ae163fda1927e3a462d98d618f0ac5ec1f7e317bc3cf4471ff75f515b48555f2`
+- **Device evidence:** connected Android UI tests ran locally on the phone emulator; no GitHub emulator result is required or treated as authoritative
+- **Next increment:** continue Task 20 ordered recovery with setup activation XP/idempotency, then navigation/placeholders/device/release gates
+- **Release status:** BLOCKED until all remaining Task 20 gates pass
+
 ## Task 20.4 Execution — 2026-09-19 (Current Authority)
 
 - **Task 20:** IN PROGRESS

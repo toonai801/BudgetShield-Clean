@@ -79,8 +79,8 @@ class MainActivity : ComponentActivity() {
                 incomeRepository = IncomeRepository(database.incomeScheduleDao()),
                 transactionRepository = TransactionRepository(database.transactionDao()),
                 xpRepository = XpRepository(database.xpEntryDao(), database.achievementDao()),
-                savingsGoalRepository = SavingsGoalRepository(database.savingsGoalDao(), database.userStreakDao()),
-                budgetRepository = BudgetRepository(database.budgetCategoryDao()),
+                savingsGoalRepository = SavingsGoalRepository(database),
+                budgetRepository = BudgetRepository(database),
                 userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
             )
             Log.d("BudgetShield", "Repositories initialized")

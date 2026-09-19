@@ -1,5 +1,11 @@
 # BudgetShield Implementation Queue - Final
 
+## Recovery Progress — Task 20.5 Verified Locally (2026-09-19)
+
+Checkpoint pending commit implements the next ordered financial-mutation increment after bill payment: savings contributions and spending logs now commit their source record changes, cash/savings balance updates, immutable transaction ledger rows, and XP/streak side effects atomically. Rejected savings/spending attempts leave balances, goals/categories, transaction ledger, XP ledger, and streak state unchanged.
+
+The checkpoint passes 247 JVM tests, debug assembly, Android test APK assembly, lint, and 24/24 connected tests on the local phone AVD `FN_WS_Phone_API35` / `emulator-5554`. Task 20 remains **IN PROGRESS**; setup activation XP/idempotency, broader placeholder cleanup, accessibility/device matrix, CI, signing, shrinking, and release provenance remain open.
+
 ## Recovery Progress — Task 20.4 Verified Locally (2026-09-19)
 
 Checkpoint pending commit implements the next ordered financial-mutation increment: bill payment now updates the bill, appends the transaction ledger row, and appends XP in one Room transaction. Invalid/rejected payments do not create transaction or XP side effects. Transaction Details was also aligned with the immutable-ledger rule by removing the destructive delete affordance and rendering the selected transaction's real title/icon/category/type rather than hard-coded `Rent Payment` content.

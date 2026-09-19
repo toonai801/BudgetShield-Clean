@@ -97,8 +97,20 @@ class LogSpendingViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Add spending to the budget category
-                budgetRepository.addSpending(budget.id, amountCents)
+                val result = budgetRepository.recordSpending(
+                    categoryId = budget.id,
+                    amountCents = amountCents,
+                    note = state.note
+                )
+                if (result == null) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Failed to save: check available cash and budget"
+                        )
+                    }
+                    return@launch
+                }
                 
                 _uiState.update { 
                     it.copy(

@@ -1,23 +1,28 @@
 package com.toonai.budgetshield.data.repository
 
+import androidx.room.withTransaction
+import com.toonai.budgetshield.data.database.BudgetShieldDatabase
 import com.toonai.budgetshield.data.database.SavingsGoalDao
 import com.toonai.budgetshield.data.database.UserStreakDao
 import com.toonai.budgetshield.data.model.SavingsGoal
+import com.toonai.budgetshield.data.model.Transaction
+import com.toonai.budgetshield.data.model.TransactionCategories
 import com.toonai.budgetshield.data.model.UserStreak
+import com.toonai.budgetshield.data.model.XpActivityTypes
+import com.toonai.budgetshield.data.model.XpEntry
 import com.toonai.budgetshield.util.DateParser
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 /**
  * Repository for savings goals and streak operations.
  */
 class SavingsGoalRepository(
-    private val savingsGoalDao: SavingsGoalDao,
-    private val userStreakDao: UserStreakDao
+    private val database: BudgetShieldDatabase
 ) {
+    private val savingsGoalDao: SavingsGoalDao = database.savingsGoalDao()
+    private val userStreakDao: UserStreakDao = database.userStreakDao()
 
     /** All savings goals as a reactive stream */
     val allGoals: Flow<List<SavingsGoal>> = savingsGoalDao.getAllGoals()
@@ -74,8 +79,98 @@ class SavingsGoalRepository(
 
         // Check if goal is now complete
         val goal = getGoalById(goalId)
-        if (goal != null && goal.currentAmountCents + amountCents >= goal.targetAmountCents) {
+        if (goal != null && goal.currentAmountCents >= goal.targetAmountCents) {
             savingsGoalDao.markGoalComplete(goalId)
+        }
+    }
+
+    data class SavingsContributionResult(
+        val transactionId: Long,
+        val xpEarned: Int,
+        val completedGoal: Boolean
+    )
+
+    /**
+     * Atomically records a savings contribution.
+     *
+     * The operation transfers cleared cash into savings, optionally updates a
+     * savings goal, appends the immutable transaction ledger row, records the
+     * savings XP entry, and updates the activity streak as one database commit.
+     */
+    suspend fun recordSavingsContribution(
+        amountCents: Long,
+        note: String? = null,
+        goalId: Long? = null
+    ): SavingsContributionResult? {
+        if (amountCents <= 0) return null
+
+        return database.withTransaction {
+            val settingsDao = database.userSettingsDao()
+            val settings = settingsDao.getSettingsSync() ?: return@withTransaction null
+            if (settings.cashOnHandCents < amountCents) return@withTransaction null
+
+            val goal = goalId?.let { savingsGoalDao.getGoalById(it) }
+            if (goalId != null && goal == null) return@withTransaction null
+
+            settingsDao.updateSettings(
+                settings.copy(
+                    cashOnHandCents = settings.cashOnHandCents - amountCents,
+                    savingsBalanceCents = settings.savingsBalanceCents + amountCents,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+
+            var completedGoal = false
+            if (goal != null) {
+                val newCurrent = goal.currentAmountCents + amountCents
+                savingsGoalDao.updateGoal(
+                    goal.copy(
+                        currentAmountCents = newCurrent,
+                        isCompleted = goal.isCompleted || newCurrent >= goal.targetAmountCents,
+                        completedAt = if (!goal.isCompleted && newCurrent >= goal.targetAmountCents) {
+                            System.currentTimeMillis()
+                        } else {
+                            goal.completedAt
+                        }
+                    )
+                )
+                completedGoal = !goal.isCompleted && newCurrent >= goal.targetAmountCents
+            }
+
+            val today = DateParser.today()
+            val title = note?.takeIf { it.isNotBlank() } ?: "Savings Deposit"
+            val xpAmount = XpActivityTypes.baseXp(XpActivityTypes.ADD_SAVINGS)
+            val transactionId = database.transactionDao().insertTransaction(
+                Transaction(
+                    type = Transaction.TYPE_SAVINGS,
+                    title = title,
+                    description = note,
+                    amountCents = -amountCents,
+                    category = TransactionCategories.SAVINGS,
+                    icon = "🏦",
+                    earnsXp = true,
+                    xpEarned = xpAmount,
+                    transactionDate = today
+                )
+            )
+
+            database.xpEntryDao().insertXpEntry(
+                XpEntry(
+                    amount = xpAmount,
+                    activityType = XpActivityTypes.ADD_SAVINGS,
+                    description = "Saved ${SavingsGoal.formatCents(amountCents)}",
+                    relatedId = transactionId,
+                    entryDate = today
+                )
+            )
+
+            recordActivity()
+
+            SavingsContributionResult(
+                transactionId = transactionId,
+                xpEarned = xpAmount,
+                completedGoal = completedGoal
+            )
         }
     }
 

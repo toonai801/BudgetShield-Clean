@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.toonai.budgetshield.data.model.SavingsGoal
 import com.toonai.budgetshield.data.repository.SavingsGoalRepository
-import com.toonai.budgetshield.data.repository.TransactionRepository
-import com.toonai.budgetshield.data.repository.XpRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,9 +27,7 @@ data class SavingsEntryUiState(
  * Handles saving money, updating goals, streaks, and XP rewards.
  */
 class SavingsEntryViewModel(
-    private val savingsGoalRepository: SavingsGoalRepository,
-    private val transactionRepository: TransactionRepository,
-    private val xpRepository: XpRepository
+    private val savingsGoalRepository: SavingsGoalRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SavingsEntryUiState())
@@ -85,29 +81,23 @@ class SavingsEntryViewModel(
             }
 
             try {
-                // Create savings transaction
-                val title = note?.takeIf { it.isNotBlank() } ?: "Savings Deposit"
-                transactionRepository.createSavingsTransaction(
-                    title = title,
+                val result = savingsGoalRepository.recordSavingsContribution(
                     amountCents = amountCents,
-                    description = note
+                    note = note,
+                    goalId = goalId
                 )
-
-                // Contribute to goal if specified
-                if (goalId != null) {
-                    savingsGoalRepository.contributeToGoal(goalId, amountCents)
+                if (result == null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Failed to save: check available cash and goal"
+                    )
+                    return@launch
                 }
-
-                // Record activity for streak
-                savingsGoalRepository.recordActivity()
-
-                // Award XP for saving
-                val xpEntry = xpRepository.awardSavingsXp(amountCents)
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     saveSuccess = true,
-                    xpEarned = xpEntry.amount
+                    xpEarned = result.xpEarned
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -143,17 +133,13 @@ class SavingsEntryViewModel(
      * Factory for creating ViewModel with dependencies.
      */
     class Factory(
-        private val savingsGoalRepository: SavingsGoalRepository,
-        private val transactionRepository: TransactionRepository,
-        private val xpRepository: XpRepository
+        private val savingsGoalRepository: SavingsGoalRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SavingsEntryViewModel::class.java)) {
                 return SavingsEntryViewModel(
-                    savingsGoalRepository,
-                    transactionRepository,
-                    xpRepository
+                    savingsGoalRepository
                 ) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")

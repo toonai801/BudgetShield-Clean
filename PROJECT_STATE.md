@@ -1,9 +1,22 @@
 # Project State
 
+## Task 20.5 Savings and Spending Atomic Ledger — 2026-09-19 (Current Authority)
+
+- **Status:** RED — savings/spending financial mutation increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** pending commit on `recovery/full-audit-2026-08-02`
+- **Verified locally:** 247/247 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`
+- **Completed in this increment:** savings contributions now commit cash-to-savings balance movement, optional goal progress/completion, immutable savings transaction, savings XP, and streak update atomically; spending now commits category spent amount, cash reduction, immutable spending transaction, and budget-on-track XP atomically; rejected savings/spending operations append no ledger or XP side effects
+- **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, 23,408,452 bytes, SHA-256 `ae163fda1927e3a462d98d618f0ac5ec1f7e317bc3cf4471ff75f515b48555f2`
+- **Device evidence:** local connected UI tests passed on the Android phone emulator; GitHub/emulator evidence is not used as the authority for this checkpoint
+- **Explicitly still open:** setup activation XP/idempotency, remaining navigation/placeholders, connected device matrix breadth, visuals/accessibility, CI, signing, shrinking, and release provenance
+- **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
+
+This section supersedes Task 20.4 as the current recovery status; prior checkpoints remain audit history below.
+
 ## Task 20.4 Atomic Bill-Payment Ledger — 2026-09-19 (Current Authority)
 
 - **Status:** RED — bill-payment financial mutation increment verified; full product and release recovery remains in progress
-- **Implementation checkpoint:** pending commit on `recovery/full-audit-2026-08-02`
+- **Implementation checkpoint:** `88c54bf` plus local-connected correction `4a1ccde` on `recovery/full-audit-2026-08-02`
 - **Verified locally:** 243/243 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, `lintDebug`, and 24/24 connected tests on local phone AVD `FN_WS_Phone_API35` / `emulator-5554`
 - **Completed in this increment:** bill payment is a single Room transaction that updates bill paid state, appends a bill-payment transaction row, and appends the matching XP ledger row; rejected payments append no ledger side effects; Transaction Details no longer offers destructive transaction deletion and no longer displays hard-coded Rent Payment details; Home daily action semantics and connected setup/footer tests are aligned with the local emulator result
 - **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, 24,078,361 bytes, SHA-256 `6736b64ff747a9283341fb96e83c7f18b261c591c4d74d9b3670f6aa2c5c6d89`

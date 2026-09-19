@@ -1,15 +1,23 @@
 package com.toonai.budgetshield.data.repository
 
+import androidx.room.withTransaction
 import com.toonai.budgetshield.data.database.BudgetCategoryDao
+import com.toonai.budgetshield.data.database.BudgetShieldDatabase
 import com.toonai.budgetshield.data.model.BudgetCategory
 import com.toonai.budgetshield.data.model.BudgetCategoryType
+import com.toonai.budgetshield.data.model.Transaction
+import com.toonai.budgetshield.data.model.TransactionCategories
+import com.toonai.budgetshield.data.model.XpActivityTypes
+import com.toonai.budgetshield.data.model.XpEntry
+import com.toonai.budgetshield.util.DateParser
 import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository for budget category operations.
  * Single source of truth for budget data.
  */
-class BudgetRepository(private val budgetCategoryDao: BudgetCategoryDao) {
+class BudgetRepository(private val database: BudgetShieldDatabase) {
+    private val budgetCategoryDao: BudgetCategoryDao = database.budgetCategoryDao()
 
     /**
      * Get budget for a specific category and month (compatible API).
@@ -122,6 +130,88 @@ class BudgetRepository(private val budgetCategoryDao: BudgetCategoryDao) {
     /** Record spending in a category */
     suspend fun addSpending(categoryId: Long, amountCents: Long) {
         budgetCategoryDao.addSpending(categoryId, amountCents)
+    }
+
+    data class SpendingResult(
+        val transactionId: Long,
+        val xpEarned: Int
+    )
+
+    /**
+     * Atomically records category spending.
+     *
+     * Spending updates the category usage, reduces cleared cash, appends the
+     * immutable transaction ledger row, and awards budget-on-track XP only if
+     * the category remains at or under plan after the spend.
+     */
+    suspend fun recordSpending(
+        categoryId: Long,
+        amountCents: Long,
+        note: String? = null
+    ): SpendingResult? {
+        if (amountCents <= 0) return null
+
+        return database.withTransaction {
+            val category = budgetCategoryDao.getCategoryById(categoryId) ?: return@withTransaction null
+            val settingsDao = database.userSettingsDao()
+            val settings = settingsDao.getSettingsSync() ?: return@withTransaction null
+            if (settings.cashOnHandCents < amountCents) return@withTransaction null
+
+            val newSpentAmount = category.spentAmountCents + amountCents
+            budgetCategoryDao.updateBudget(
+                category.copy(
+                    spentAmountCents = newSpentAmount,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+            settingsDao.updateSettings(
+                settings.copy(
+                    cashOnHandCents = settings.cashOnHandCents - amountCents,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+
+            val transactionCategory = when (category.categoryType) {
+                BudgetCategoryType.FOOD -> TransactionCategories.FOOD
+                BudgetCategoryType.WANTS -> TransactionCategories.WANTS
+                else -> category.name
+            }
+            val icon = when (transactionCategory) {
+                TransactionCategories.FOOD -> "🍔"
+                TransactionCategories.WANTS -> "🎮"
+                else -> category.icon
+            }
+            val stayedOnTrack = category.plannedAmountCents > 0 && newSpentAmount <= category.plannedAmountCents
+            val xpAmount = if (stayedOnTrack) XpActivityTypes.baseXp(XpActivityTypes.BUDGET_ON_TRACK) else 0
+            val today = DateParser.today()
+            val transactionId = database.transactionDao().insertTransaction(
+                Transaction(
+                    type = Transaction.TYPE_SPENDING,
+                    title = note?.takeIf { it.isNotBlank() } ?: category.name,
+                    description = note,
+                    amountCents = -amountCents,
+                    category = transactionCategory,
+                    icon = icon,
+                    earnsXp = stayedOnTrack,
+                    xpEarned = xpAmount,
+                    transactionDate = today
+                )
+            )
+
+            if (stayedOnTrack) {
+                database.xpEntryDao().insertXpEntry(
+                    XpEntry(
+                        amount = xpAmount,
+                        activityType = XpActivityTypes.BUDGET_ON_TRACK,
+                        description = "${category.name} stayed on track",
+                        relatedId = transactionId,
+                        entryDate = today
+                    )
+                )
+            }
+
+            SpendingResult(transactionId = transactionId, xpEarned = xpAmount)
+        }
     }
 
     /**
