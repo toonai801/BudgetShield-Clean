@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.toonai.budgetshield.data.database.BudgetShieldDatabase
+import com.toonai.budgetshield.data.model.Transaction
+import com.toonai.budgetshield.data.model.XpActivityTypes
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -33,7 +35,7 @@ class BillRepositoryTest {
             context,
             BudgetShieldDatabase::class.java
         ).allowMainThreadQueries().build()
-        repository = BillRepository(database.billDao())
+        repository = BillRepository(database)
     }
 
     @After
@@ -342,5 +344,54 @@ class BillRepositoryTest {
         assertEquals("paidAmountCents should be unchanged", 10000L, afterSecondAttempt.paidAmountCents)
         assertTrue("Should still be paid", afterSecondAttempt.isPaid)
         assertEquals("remainingDueCents should be zero", 0L, afterSecondAttempt.remainingDueCents)
+    }
+
+    @Test
+    fun `successful bill payment appends transaction and xp ledger entries`() = runBlocking {
+        val billId = repository.createBill(
+            name = "Water",
+            icon = "💧",
+            amountCents = 4200L,
+            dueDate = "2026-08-12",
+            isProtected = true
+        )
+
+        val result = repository.payBill(billId, 1200L)
+
+        assertTrue("Payment should succeed", result)
+
+        val transactions = database.transactionDao().getRecentTransactions(10)
+        assertEquals("One ledger transaction should be created", 1, transactions.size)
+        val transaction = transactions.single()
+        assertEquals(Transaction.TYPE_BILL_PAYMENT, transaction.type)
+        assertEquals("Paid Water", transaction.title)
+        assertEquals(-1200L, transaction.amountCents)
+        assertEquals(billId, transaction.relatedBillId)
+        assertTrue("Protected bill status should be recorded", transaction.isProtected)
+        assertEquals(XpActivityTypes.baseXp(XpActivityTypes.PAY_BILL), transaction.xpEarned)
+
+        val xpEntries = database.xpEntryDao().getRecentXpEntries(10)
+        assertEquals("One XP ledger entry should be created", 1, xpEntries.size)
+        val xp = xpEntries.single()
+        assertEquals(XpActivityTypes.PAY_BILL, xp.activityType)
+        assertEquals(XpActivityTypes.baseXp(XpActivityTypes.PAY_BILL), xp.amount)
+        assertEquals(transaction.id, xp.relatedId)
+    }
+
+    @Test
+    fun `rejected bill payment does not append transaction or xp entries`() = runBlocking {
+        val billId = repository.createBill(
+            name = "Invalid Ledger Guard",
+            icon = "🧪",
+            amountCents = 2500L,
+            dueDate = "2026-08-12",
+            isProtected = true
+        )
+
+        val result = repository.payBill(billId, 2600L)
+
+        assertFalse("Overpayment should fail", result)
+        assertEquals(0, database.transactionDao().getRecentTransactions(10).size)
+        assertEquals(0, database.xpEntryDao().getRecentXpEntries(10).size)
     }
 }

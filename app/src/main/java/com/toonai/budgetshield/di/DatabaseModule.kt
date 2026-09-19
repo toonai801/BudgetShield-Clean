@@ -60,8 +60,8 @@ object DatabaseModule {
     // Repository providers
     @Provides
     @Singleton
-    fun provideBillRepository(billDao: BillDao): BillRepository {
-        return BillRepository(billDao)
+    fun provideBillRepository(database: BudgetShieldDatabase): BillRepository {
+        return BillRepository(database)
     }
 
     @Provides

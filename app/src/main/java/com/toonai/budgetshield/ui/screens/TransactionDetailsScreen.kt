@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,9 +27,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,7 +63,6 @@ fun TransactionDetailsScreen(
     onNavigateToGoals: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Load transaction when ID changes
     LaunchedEffect(transactionId) {
@@ -117,8 +112,7 @@ fun TransactionDetailsScreen(
                 val transaction = uiState.selectedTransaction
                 if (transaction != null) {
                     TransactionDetailCard(
-                        transaction = transaction,
-                        onDelete = { showDeleteDialog = true }
+                        transaction = transaction
                     )
                 } else {
                     TransactionDetailCardPlaceholder()
@@ -143,33 +137,6 @@ fun TransactionDetailsScreen(
         }
     }
 
-    // Delete confirmation dialog
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Transaction?", color = TextPrimary) },
-            text = { Text("This action cannot be undone.", color = TextMuted) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        transactionId?.let {
-                            viewModel.deleteTransaction(it)
-                            showDeleteDialog = false
-                            onNavigateBack()
-                        }
-                    }
-                ) {
-                    Text("Delete", color = DangerDot)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel", color = CyanAccent)
-                }
-            },
-            containerColor = PanelDark
-        )
-    }
 }
 
 @Composable
@@ -255,8 +222,7 @@ private fun ErrorBanner(message: String, onDismiss: () -> Unit) {
 
 @Composable
 private fun TransactionDetailCard(
-    transaction: com.toonai.budgetshield.data.model.Transaction,
-    onDelete: () -> Unit
+    transaction: com.toonai.budgetshield.data.model.Transaction
 ) {
     val amountText = if (transaction.isIncome) {
         "+$${transaction.amountCents / 100}.${kotlin.math.abs(transaction.amountCents % 100).toString().padStart(2, '0')}"
@@ -293,20 +259,20 @@ private fun TransactionDetailCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "🏠",
+                            text = transaction.icon,
                             fontSize = 28.sp
                         )
                     }
 
                     Column {
                         Text(
-                            text = "Rent Payment",
+                            text = transaction.title,
                             color = TextPrimary,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Housing • Bill",
+                            text = "${transaction.category} • ${transaction.type.replace('_', ' ')}",
                             color = TextMuted,
                             fontSize = 14.sp
                         )
@@ -320,13 +286,11 @@ private fun TransactionDetailCard(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    if (transaction.category != null) {
-                        Text(
-                            text = transaction.category,
-                            color = CyanAccent,
-                            fontSize = 12.sp
-                        )
-                    }
+                    Text(
+                        text = transaction.category,
+                        color = CyanAccent,
+                        fontSize = 12.sp
+                    )
                 }
             }
 
@@ -345,34 +309,9 @@ private fun TransactionDetailCard(
                 DetailRow("Date", transaction.transactionDate)
                 DetailRow("Description", transaction.description ?: "No description")
                 DetailRow("Type", if (transaction.isIncome) "Income" else "Expense")
-                DetailRow("Category", transaction.category ?: "Uncategorized")
+                DetailRow("Category", transaction.category)
                 DetailRow("Status", if (transaction.id > 0) "Synced ✓" else "Pending")
                 DetailRow("Transaction ID", "TXN-${transaction.id}")
-            }
-
-            // Delete button
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = DangerDot.copy(alpha = 0.15f)
-                ),
-                border = BorderStroke(1.dp, DangerDot.copy(alpha = 0.3f)),
-                onClick = onDelete
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🗑️ Delete Transaction",
-                        color = DangerDot,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
             }
 
             // XP indicator (if applicable)
@@ -685,5 +624,3 @@ private fun TransactionItem(
         }
     }
 }
-
-

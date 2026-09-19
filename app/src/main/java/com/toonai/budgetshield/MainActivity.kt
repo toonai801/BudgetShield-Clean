@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
             Log.d("BudgetShield", "Database initialized")
 
             repositories = AppRepositories(
-                billRepository = BillRepository(database.billDao()),
+                billRepository = BillRepository(database),
                 incomeRepository = IncomeRepository(database.incomeScheduleDao()),
                 transactionRepository = TransactionRepository(database.transactionDao()),
                 xpRepository = XpRepository(database.xpEntryDao(), database.achievementDao()),

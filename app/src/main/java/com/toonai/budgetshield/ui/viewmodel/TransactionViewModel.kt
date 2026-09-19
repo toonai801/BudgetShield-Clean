@@ -97,22 +97,6 @@ class TransactionViewModel(
     }
 
     /**
-     * Delete a transaction.
-     */
-    fun deleteTransaction(transactionId: Long) {
-        viewModelScope.launch {
-            try {
-                transactionRepository.deleteTransaction(transactionId)
-                loadRecentTransactions() // Refresh the list
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = "Failed to delete transaction: ${e.message}"
-                )
-            }
-        }
-    }
-
-    /**
      * Refresh transactions list.
      */
     fun refresh() {

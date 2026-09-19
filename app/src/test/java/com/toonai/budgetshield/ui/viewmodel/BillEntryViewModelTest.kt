@@ -34,7 +34,7 @@ class BillEntryViewModelTest {
             context,
             BudgetShieldDatabase::class.java
         ).allowMainThreadQueries().build()
-        repository = BillRepository(database.billDao())
+        repository = BillRepository(database)
         viewModel = BillEntryViewModel(repository)
     }
 

@@ -1,5 +1,18 @@
 # Project State
 
+## Task 20.4 Atomic Bill-Payment Ledger — 2026-09-19 (Current Authority)
+
+- **Status:** RED — bill-payment financial mutation increment verified; full product and release recovery remains in progress
+- **Implementation checkpoint:** pending commit on `recovery/full-audit-2026-08-02`
+- **Verified locally:** 243/243 JVM tests, `assembleDebug`, `assembleDebugAndroidTest`, and `lintDebug`
+- **Completed in this increment:** bill payment is a single Room transaction that updates bill paid state, appends a bill-payment transaction row, and appends the matching XP ledger row; rejected payments append no ledger side effects; Transaction Details no longer offers destructive transaction deletion and no longer displays hard-coded Rent Payment details
+- **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk`, 24,078,293 bytes, SHA-256 `c0139b2c3572383613b497344b3e1b756bc4eb1875d633e51b06bbad37218117`
+- **Device evidence:** connected UI tests were not run in this increment because no suitable Android phone emulator/device is attached; the only attached ADB hardware is a Wear watch and must not be used for this phone app
+- **Explicitly still open:** remaining atomic financial mutation paths, idempotency rules, navigation/placeholders, connected device matrix, visuals/accessibility, CI, signing, shrinking, and release provenance
+- **Task 20 result:** IN PROGRESS — this is not a beta/release completion declaration
+
+This section supersedes Task 20.3 as the current recovery status; prior checkpoints remain audit history below.
+
 ## Task 20.3 Migration and Schema Integrity — 2026-08-02 (Current Authority)
 
 - **Status:** RED — migration/schema increment verified; full product and release recovery remains in progress

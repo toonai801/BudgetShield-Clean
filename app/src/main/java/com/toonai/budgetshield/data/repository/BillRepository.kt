@@ -1,15 +1,24 @@
 package com.toonai.budgetshield.data.repository
 
+import androidx.room.withTransaction
 import com.toonai.budgetshield.data.database.BillDao
+import com.toonai.budgetshield.data.database.BudgetShieldDatabase
 import com.toonai.budgetshield.data.model.Bill
+import com.toonai.budgetshield.data.model.Transaction
+import com.toonai.budgetshield.data.model.TransactionCategories
+import com.toonai.budgetshield.data.model.XpActivityTypes
+import com.toonai.budgetshield.data.model.XpEntry
+import com.toonai.budgetshield.util.DateParser
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 
 /**
  * Repository for bill operations.
  * Single source of truth for bill data, abstracts DAO operations.
  */
-class BillRepository(private val billDao: BillDao) {
+class BillRepository(
+    private val database: BudgetShieldDatabase
+) {
+    private val billDao: BillDao = database.billDao()
     
     /** All bills as a reactive stream */
     val allBills: Flow<List<Bill>> = billDao.getAllBills()
@@ -65,22 +74,52 @@ class BillRepository(private val billDao: BillDao) {
      */
     suspend fun payBill(billId: Long, paymentCents: Long): Boolean {
         if (paymentCents <= 0) return false
-        
-        val bill = billDao.getBillById(billId) ?: return false
-        val remaining = bill.remainingDueCents
-        
-        if (paymentCents > remaining) return false
-        
-        val newPaidAmount = bill.paidAmountCents + paymentCents
-        val isNowFullyPaid = newPaidAmount >= bill.amountCents
-        
-        val updatedBill = bill.copy(
-            paidAmountCents = newPaidAmount,
-            isPaid = isNowFullyPaid
-        )
-        
-        billDao.updateBill(updatedBill)
-        return true
+
+        return database.withTransaction {
+            val bill = billDao.getBillById(billId) ?: return@withTransaction false
+            val remaining = bill.remainingDueCents
+
+            if (paymentCents > remaining) return@withTransaction false
+
+            val newPaidAmount = bill.paidAmountCents + paymentCents
+            val isNowFullyPaid = newPaidAmount >= bill.amountCents
+
+            val updatedBill = bill.copy(
+                paidAmountCents = newPaidAmount,
+                isPaid = isNowFullyPaid
+            )
+
+            billDao.updateBill(updatedBill)
+
+            val today = DateParser.today()
+            val transactionId = database.transactionDao().insertTransaction(
+                Transaction(
+                    type = Transaction.TYPE_BILL_PAYMENT,
+                    title = "Paid ${bill.name}",
+                    description = "Payment toward ${bill.name}",
+                    amountCents = -paymentCents,
+                    category = TransactionCategories.BILLS,
+                    icon = bill.icon,
+                    relatedBillId = bill.id,
+                    earnsXp = true,
+                    xpEarned = XpActivityTypes.baseXp(XpActivityTypes.PAY_BILL),
+                    isProtected = bill.isProtected,
+                    transactionDate = today
+                )
+            )
+
+            database.xpEntryDao().insertXpEntry(
+                XpEntry(
+                    amount = XpActivityTypes.baseXp(XpActivityTypes.PAY_BILL),
+                    activityType = XpActivityTypes.PAY_BILL,
+                    description = "Paid ${bill.name}",
+                    relatedId = transactionId,
+                    entryDate = today
+                )
+            )
+
+            true
+        }
     }
     
     /**

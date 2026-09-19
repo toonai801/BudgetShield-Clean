@@ -164,11 +164,6 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
         return transactionDao.insertTransaction(transaction)
     }
 
-    /** Delete a transaction */
-    suspend fun deleteTransaction(transactionId: Long) {
-        transactionDao.deleteTransactionById(transactionId)
-    }
-
     /** Get transaction count */
     suspend fun getTransactionCount(): Int {
         return transactionDao.getTransactionCount()
